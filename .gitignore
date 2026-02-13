@@ -4,5 +4,4 @@ obj/
 riderModule.iml
 /_ReSharper.Caches/
 .idea
-config.yml
 secrets/
