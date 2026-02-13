@@ -5,4 +5,4 @@ riderModule.iml
 /_ReSharper.Caches/
 .idea
 config.yml
-postgres_pwd.txt
+secrets/

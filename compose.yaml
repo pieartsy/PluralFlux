@@ -1,9 +1,4 @@
 ﻿services:
-  pluralflux:
-    image: pluralflux
-    build:
-      context: .
-      dockerfile: Dockerfile
   postgres:
     image: postgres:latest
     container_name: pluralflux-postgres
@@ -12,7 +7,7 @@
     secrets:
       - postgres_pwd
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql
     ports:
       - "5432:5432"
   pgadmin:
@@ -21,7 +16,7 @@
       - 5050:80
     environment:
       # Required by pgAdmin
-      PGADMIN_DEFAULT_EMAIL: pieartsy@pm.me
+      PGADMIN_DEFAULT_EMAIL: /run/secrets/postgres_email
       PGADMIN_DEFAULT_PASSWORD: /run/secrets/postgres_pwd
       # Don't require the user to login
       PGADMIN_CONFIG_SERVER_MODE: 'False'
@@ -29,10 +24,13 @@
       PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
     secrets:
       - postgres_pwd
+      - postgres_email
 
 volumes:
   pgdata:
 
 secrets:
   postgres_pwd:
-    file: ./postgres_pwd.txt
+    file: secrets/postgres_password.txt
+  postgres_email:
+    file: ./postgres-email.txt
