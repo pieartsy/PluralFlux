@@ -1,9 +1,9 @@
-﻿services:
+services:
   postgres:
     image: postgres:latest
     container_name: pluralflux-postgres
     environment:
-      POSTGRES_PASSWORD: /run/secrets/postgres_pwd
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_pwd
     secrets:
       - postgres_pwd
     volumes:
@@ -16,21 +16,18 @@
       - 5050:80
     environment:
       # Required by pgAdmin
-      PGADMIN_DEFAULT_EMAIL: /run/secrets/postgres_email
-      PGADMIN_DEFAULT_PASSWORD: /run/secrets/postgres_pwd
+      PGADMIN_DEFAULT_EMAIL: pieartsy@pm.me
+      PGADMIN_DEFAULT_PASSWORD_FILE: /run/secrets/postgres_pwd
       # Don't require the user to login
       PGADMIN_CONFIG_SERVER_MODE: 'False'
       # Don't require a "master" password after logging in
       PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
     secrets:
       - postgres_pwd
-      - postgres_email
 
 volumes:
   pgdata:
 
 secrets:
   postgres_pwd:
-    file: secrets/postgres_password.txt
-  postgres_email:
-    file: ./postgres-email.txt
+    file: ./secrets/postgres-password.txt
