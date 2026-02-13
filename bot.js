@@ -74,15 +74,10 @@ async function echo(api, data, command_name) {
 async function getOrCreateWebhook(api, data) {
     const name = 'PluralFlux Proxy Webhook';
     let webhook = await getWebhook(api, data, name);
-    console.log(webhook);
     if (webhook === undefined) {
         webhook = await api.channels.createWebhook(data.channel_id, {name: name});
-        console.log(webhook);
-        await api.channels.createMessage(data.channel_id, {content: 'Created webhook.'});
     }
-    else {
-        await api.channels.createMessage(data.channel_id, {content: 'Webhook already created.'});
-    }
+    return webhook;
 }
 
 async function getWebhook(api, data, name) {
@@ -93,7 +88,6 @@ async function getWebhook(api, data, name) {
     let pf_webhook;
     all_webhooks.forEach((webhook) => {
         if (webhook.name === name) {
-            console.log("match");
             pf_webhook = webhook;
         }
     })
