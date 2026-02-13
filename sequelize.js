@@ -29,7 +29,7 @@ database.members = sequelize.define('Member', {
     displayname: {
         type: DataTypes.STRING,
     },
-    avatar: {
+    propic: {
         type: DataTypes.STRING,
     },
     proxy: {
