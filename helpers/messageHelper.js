@@ -2,9 +2,9 @@ const msgh = {};
 
 msgh.prefix = "pf;"
 
-msgh.parse_message_args = function(text, command_name) {
+msgh.parse_command_args = function(text, command_name) {
     const message = text.slice(msgh.prefix.length + command_name.length).trim();
-    // message arguments
+    // slices up message arguments including retaining quoted strings
     return message.match(/\w+|"(?:\\"|[^"])+"/g);
 }
 
