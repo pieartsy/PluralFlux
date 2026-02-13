@@ -1,6 +1,7 @@
 import { Client, GatewayDispatchEvents } from "@discordjs/core";
 import { REST } from "@discordjs/rest";
 import { WebSocketManager } from "@discordjs/ws";
+import { db } from './sequelize.js';
 
 const token = process.env.FLUXER_BOT_TOKEN;
 
@@ -8,6 +9,8 @@ if (!token) {
     console.error("Missing FLUXER_BOT_TOKEN environment variable.");
     process.exit(1);
 }
+
+db.checkConnection();
 
 const rest = new REST({
     api: "https://api.fluxer.app",

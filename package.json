@@ -12,7 +12,10 @@
   "dependencies": {
     "@discordjs/core": "^2.4.0",
     "@discordjs/rest": "^2.6.0",
-    "@discordjs/ws": "^2.0.4"
+    "@discordjs/ws": "^2.0.4",
+    "pg": "^8.18.0",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.7"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
