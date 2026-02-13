@@ -28,45 +28,49 @@ mh.parse_member_command = async function(author_id, args){
         // case 'avatar':
         //     return await set_avatar(author_id, args)
         default:
-            return await get_member(author_id, args);
+            return await get_member_by_name(author_id, args);
     }
 }
 
 async function add_new_member(author_id, args) {
     const member_name = args[1];
     const display_name = args[2];
+    const proxy = args[3];
+    const propic = args[4];
     if (!member_name) {
         return `${errorEnums.NO_NAME_PROVIDED} adding.`;
     }
-    const member = await get_member(author_id, member_name);
+    const member = await get_member_by_name(author_id, member_name);
     if (member !== errorEnums.NO_MEMBER) {
         return errorEnums.MEMBER_EXISTS;
     }
     return await db.members.create({
         name: member_name,
         userid: author_id,
-        DisplayName: display_name,
+        displayname: display_name,
+        proxy: proxy,
+        propic: propic
     }).then((m) => {
-        let success = `Member ${m.dataValues.name} was added`
-        success += display_name !== null ? ` with display name ${m.dataValues.displayname}.` : ".";
+        let success = `Member was successfully added.\nName: ${m.dataValues.name}`
+        success += display_name ? `\nDisplay name: ${m.dataValues.displayname}` : "";
+        success += proxy ? `\nProxy tag: ${m.dataValues.proxy} `: "";
+        success += avatar ? `\nProfile picture: ${m.dataValues.proxy} `: "";
         return success;
     }).catch(e => {
         return `${errorEnums.ADD_ERROR}: ${e.message}`;
     })
 }
 
-async function get_member(author_id, member_name) {
+async function get_member_by_name(author_id, member_name) {
     let member = await db.members.findOne({ where: { name: member_name, userid: author_id } });
     if (member) {
         let member_info = `Member name: ${member.name}`;
-        member_info += member.DisplayName ? `\nDisplay name: ${member.DisplayName}` : '\nDisplay name: unset';
-        member_info += member.ProxyTag ? `\nProxy Tag: ${member.ProxyTag}` : '\nProxy tag: unset';
-        member_info += member.AvatarUrl ? `\nAvatar url: ${member.AvatarUrl}` : '\nAvatar url: unset';
+        member_info += member.displayname ? `\nDisplay name: ${member.displayname}` : '\nDisplay name: unset';
+        member_info += member.proxy ? `\nProxy Tag: ${member.proxy}` : '\nProxy tag: unset';
+        member_info += member.propic ? `\nProfile pic: ${member.propic}` : '\nProfile pic: unset';
         return member_info;
     }
-    else {
-        return errorEnums.NO_MEMBER;
-    }
+    return errorEnums.NO_MEMBER;
 }
 
 async function set_display_name(author_id, args) {
@@ -76,9 +80,9 @@ async function set_display_name(author_id, args) {
         return `${errorEnums.NO_NAME_PROVIDED} display name.`;
     }
     else if (!display_name) {
-        let member = await get_member(author_id, args);
-        if (member.DisplayName) {
-            return `Display name for ${member_name} is: ${member.DisplayName}.`;
+        let member = await get_member_by_name(author_id, args);
+        if (member.displayname) {
+            return `Display name for ${member_name} is: ${member.displayname}.`;
         }
         return `Display name ${errorEnums.NO_VALUE}`
     }
@@ -89,7 +93,6 @@ async function update_member(author_id, args) {
     const member_name = args[0];
     const column_Name = args[1];
     const value = args[2];
-    console.log(column_Name, value);
     return await db.members.update({[column_Name]: value}, { where: { name: member_name, userid: author_id } }).then((updated_member) => {
         return `Updated ${column_Name} for ${member_name} to ${updated_member.dataValues[column_Name]}`;
     }).catch(e => {
@@ -107,6 +110,14 @@ async function delete_member(author_id, args) {
     }).catch(e => {
         return `${errorEnums.NO_MEMBER}: ${e.message}`;
     });
+}
+
+mh.get_member_by_proxy = async function(author_id, proxy) {
+    let member = await db.members.findOne({ where: { name: member_name, proxy: proxy } });
+    if (member) {
+        return member;
+    }
+    return errorEnums.NO_MEMBER;
 }
 
 export const memberHelper = mh;
