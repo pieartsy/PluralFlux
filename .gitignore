@@ -1,8 +1,5 @@
-bin/
-obj/
-/packages/
-riderModule.iml
-/_ReSharper.Caches/
+node_modules
 .idea
-config.yml
 secrets/
+package-lock.json
+config.json
