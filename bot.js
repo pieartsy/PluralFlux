@@ -44,6 +44,9 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
     if (command_name === "echo") {
         await echo(api, data, command_name);
     }
+    if (command_name === "webhook") {
+        await getOrCreateWebhook(api, data);
+    }
 });
 
 client.on(GatewayDispatchEvents.Ready, ({ data }) => {
@@ -66,4 +69,33 @@ async function echo(api, data, command_name) {
     else {
         await api.channels.createMessage(data.channel_id, {content: '(Please input a message!)'});
     }
+}
+
+async function getOrCreateWebhook(api, data) {
+    const name = 'PluralFlux Proxy Webhook';
+    let webhook = await getWebhook(api, data, name);
+    console.log(webhook);
+    if (webhook === undefined) {
+        webhook = await api.channels.createWebhook(data.channel_id, {name: name});
+        console.log(webhook);
+        await api.channels.createMessage(data.channel_id, {content: 'Created webhook.'});
+    }
+    else {
+        await api.channels.createMessage(data.channel_id, {content: 'Webhook already created.'});
+    }
+}
+
+async function getWebhook(api, data, name) {
+    const all_webhooks = await api.channels.getWebhooks(data.channel_id);
+    if (all_webhooks.length === 0) {
+        return;
+    }
+    let pf_webhook;
+    all_webhooks.forEach((webhook) => {
+        if (webhook.name === name) {
+            console.log("match");
+            pf_webhook = webhook;
+        }
+    })
+    return pf_webhook;
 }
