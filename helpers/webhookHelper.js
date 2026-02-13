@@ -23,14 +23,14 @@ async function get_webhook(api, channel_id, name) {
     return pf_webhook;
 }
 
-wh.replace_message = async function (api, channel_id, text, member) {
+wh.replace_message = async function (api, data, text, member) {
     if (text.length > 0) {
-        const webhook = await wh.get_or_create_webhook(api, channel_id);
+        const webhook = await wh.get_or_create_webhook(api, data.channel_id);
         await api.webhooks.execute(webhook.id, webhook.token, {content: text, username: member.displayname ?? member.name, propic: member.propic});
-        await api.channels.deleteMessage(channel_id, data.id);
+        await api.channels.deleteMessage(data.channel_id, data.id);
     }
     else {
-        await api.channels.createMessage(channel_id, {content: '(Please input a message!)'});
+        await api.channels.createMessage(data.channel_id, {content: '(Please input a message!)'});
     }
 }
 
