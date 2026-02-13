@@ -1,0 +1,21 @@
+{
+  "name": "pluralflux",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bot.js",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pieartsy/PluralFlux.git"
+  },
+  "private": true,
+  "dependencies": {
+    "@discordjs/core": "^2.4.0",
+    "@discordjs/rest": "^2.6.0",
+    "@discordjs/ws": "^2.0.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.0.0"
+  }
+}
