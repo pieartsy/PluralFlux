@@ -36,9 +36,8 @@ client.on(Events.MessageCreate, async (message) => {
 
         const command = commands.get(commandName);
         if (command) {
-            await command.execute(message, client, args).catch(async () => {
-                await message.reply('An error occurred while running that command.')
-                throw new Error(`Error executing ${commandName}:`);
+            await command.execute(message, client, args).catch(async (e) => {
+                throw new Error(`Error executing ${commandName}: ${e.message}`);
             });
         }
     }
