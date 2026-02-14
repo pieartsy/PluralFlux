@@ -2,6 +2,7 @@ import { Client, Events, GatewayOpcodes } from '@fluxerjs/core';
 import { messageHelper } from "./helpers/messageHelper.js";
 import {enums} from "./enums.js";
 import {commands} from "./commands.js";
+import {webhookHelper} from "./helpers/webhookHelper.js";
 
 const token = process.env.FLUXER_BOT_TOKEN;
 
@@ -23,9 +24,7 @@ client.on(Events.MessageCreate, async (message) => {
 
         // If message doesn't start with the bot prefix, it could still be a message with a proxy tag
         if (!content.startsWith(messageHelper.prefix)) {
-            // wait until webhooks exist lol
-            //const successful = await webhookHelper.sendMessageAsMember(message, content);
-            // if (!successful) return;
+            await webhookHelper.sendMessageAsMember(client, message, content);
             return;
         }
 
@@ -37,15 +36,11 @@ client.on(Events.MessageCreate, async (message) => {
 
         const command = commands.get(commandName);
         if (command) {
-            try {
-                await command.execute(message, client, args);
-            } catch (err) {
-                console.error(`Error executing ${commandName}:`, err);
-                await message.reply('An error occurred while running that command.').catch(() => {
-                });
-            }
+            await command.execute(message, client, args).catch(async () => {
+                await message.reply('An error occurred while running that command.')
+                throw new Error(`Error executing ${commandName}:`);
+            });
         }
-
     }
     catch(error) {
         return await message.reply(error);

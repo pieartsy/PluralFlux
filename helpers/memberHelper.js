@@ -1,6 +1,7 @@
 import { db } from '../sequelize.js';
 import {enums} from "../enums.js";
 import { loadImage } from "canvas";
+import {EmptyResultError, InstanceError} from "sequelize";
 
 const mh = {};
 
@@ -12,18 +13,15 @@ const commandList = ['--help', 'add', 'remove', 'displayName', 'proxy', 'propic'
  *
  * @param {string} authorId - The author of the message
  * @param {string[]} args - The message arguments
- * @param {string} attachment - The message attachments
+ * @param {string} attachmentUrl - The message attachments
  * @returns {Promise<string>} A message.
  */
-mh.parseMemberCommand = async function(authorId, args, attachment){
+mh.parseMemberCommand = async function(authorId, args, attachmentUrl){
     console.log(authorId, args);
     let member;
     // checks whether command is in list, otherwise assumes it's a name
     if(!commandList.includes(args[0])) {
         member = await getMemberInfo(authorId, args[0]);
-        if (member === enums.err.NO_MEMBER) {
-            return member;
-        }
     }
     switch(args[0]) {
         case '--help':
@@ -49,7 +47,7 @@ mh.parseMemberCommand = async function(authorId, args, attachment){
         case 'proxy':
             return await updateProxy(authorId, args);
         case 'propic':
-            return await updatePropic(authorId, args, attachment)
+            return await updatePropic(authorId, args, attachmentUrl)
         default:
             return member;
     }
@@ -60,7 +58,8 @@ mh.parseMemberCommand = async function(authorId, args, attachment){
  *
  * @param {string} authorId - The author of the message
  * @param {string[]} args - The message arguments
- * @returns {Promise<string>} A successful addition, or an error message.
+ * @returns {Promise<string>} A successful addition.
+ * @throws {Error}  When creating a member doesn't work.
  */
 async function addNewMember(authorId, args) {
     if (args[1] && args[1] === "--help" || !args[1]) {
@@ -70,9 +69,6 @@ async function addNewMember(authorId, args) {
     const displayName = args[2];
 
     const member = await getMemberInfo(authorId, memberName);
-    if (member && member !== enums.err.NO_MEMBER) {
-        return enums.err.MEMBER_EXISTS;
-    }
     const trimmedName = displayName ? displayName.replaceAll(' ', '') : null;
     return await db.members.create({
         name: memberName,
@@ -83,7 +79,7 @@ async function addNewMember(authorId, args) {
         success += displayName ? `\nDisplay name: ${m.dataValues.displayname}` : "";
         return success;
     }).catch(e => {
-        return `${enums.err.ADD_ERROR}: ${e.message}`;
+        throw new Error(`${enums.err.ADD_ERROR}: ${e.message}`)
     })
 }
 
@@ -92,7 +88,8 @@ async function addNewMember(authorId, args) {
  *
  * @param {string} authorId - The author of the message
  * @param {string[]} args - The message arguments
- * @returns {Promise<string>} A successful update, or an error message.
+ * @returns {Promise<string>} A successful update.
+ * @throws {RangeError} When the display name is too long or doesn't exist.
  */
 async function updateDisplayName(authorId, args) {
     if (args[1] && args[1] === "--help" || !args[1]) {
@@ -108,12 +105,11 @@ async function updateDisplayName(authorId, args) {
         if (member.displayname) {
             return `Display name for ${memberName} is: \"${member.displayname}\".`;
         }
-        return `Display name ${enums.err.NO_VALUE}`
+        throw new RangeError(`Display name ${enums.err.NO_VALUE}`);
     }
     else if (displayName.length > 32) {
-        return enums.err.DISPLAY_NAME_TOO_LONG;
+        throw new RangeError(enums.err.DISPLAY_NAME_TOO_LONG);
     }
-    console.log(displayName);
     return updateMember(authorId, args);
 }
 
@@ -123,6 +119,7 @@ async function updateDisplayName(authorId, args) {
  * @param {string} authorId - The author of the message
  * @param {string[]} args - The message arguments
  * @returns {Promise<string> } A successful update, or an error message.
+ * @throws {RangeError | Error} When an empty proxy was provided, or no proxy exists.
  */
 async function updateProxy(authorId, args) {
     if (args[1] && args[1] === "--help" || !args[1]) {
@@ -132,13 +129,13 @@ async function updateProxy(authorId, args) {
     const trimmedProxy = proxy ? proxy.replaceAll(' ', '') : null;
 
     if (trimmedProxy == null) {
-        return `Proxy ${enums.err.NO_VALUE}`;
+        throw new RangeError(`Proxy ${enums.err.NO_VALUE}`);
     }
 
     const members = await mh.getMembersByAuthor(authorId);
     const proxyExists = members.some(member => member.proxy === proxy);
     if (proxyExists) {
-        return enums.err.PROXY_EXISTS;
+        throw new Error(enums.err.PROXY_EXISTS);
     }
     return updateMember(authorId, args);
 }
@@ -149,7 +146,8 @@ async function updateProxy(authorId, args) {
  * @param {string} authorId - The author of the message
  * @param {string[]} args - The message arguments
  * @param {string} attachment - The url of the first attachment in the message
- * @returns {Promise<string> } A successful update, or an error message.
+ * @returns {Promise<string>} A successful update.
+ * @throws {Error} When loading the profile picture from a URL doesn't work.
  */
 async function updatePropic(authorId, args, attachment) {
     if (args[1] && args[1] === "--help") {
@@ -170,7 +168,7 @@ async function updatePropic(authorId, args, attachment) {
     return await loadImage(img).then(() => {
         return updateMember(authorId, updatedArgs);
     }).catch((err) => {
-        return `${enums.err.PROPIC_CANNOT_LOAD}: ${err.message}`;
+        throw new Error(`${enums.err.PROPIC_CANNOT_LOAD}: ${err.message}`);
     });
 }
 
@@ -179,21 +177,19 @@ async function updatePropic(authorId, args, attachment) {
  *
  * @param {string} authorId - The author of the message
  * @param {string[]} args - The message arguments
- * @returns {Promise<string>} A successful removal, or an error message.
+ * @returns {Promise<string>} A successful removal.
+ * @throws {EmptyResultError} When there is no member to remove.
  */
 async function removeMember(authorId, args) {
-    if (args[1] && args[1] === "--help") {
+    if (args[1] && args[1] === "--help" || !args[1]) {
         return enums.help.REMOVE;
     }
 
     const memberName = args[1];
-    if (!memberName) {
-        return `${enums.err.NO_NAME_PROVIDED} deletion.`;
-    }
     return await db.members.destroy({ where: { name: memberName, userid: authorId } }).then(() => {
         return `Member "${memberName}" has been deleted.`;
     }).catch(e => {
-        return `${enums.err.NO_MEMBER}: ${e.message}`;
+        throw new EmptyResultError(`${enums.err.NO_MEMBER}: ${e.message}`);
     });
 }
 
@@ -204,7 +200,8 @@ async function removeMember(authorId, args) {
  *
  * @param {string} authorId - The author of the message
  * @param {string[]} args - The message arguments
- * @returns {Promise<string>} A successful update, or an error message.
+ * @returns {Promise<string>} A successful update.
+ * @throws {EmptyResultError | Error} When the member is not found, or catchall error.
  */
 async function updateMember(authorId, args) {
     const memberName = args[0];
@@ -220,7 +217,12 @@ async function updateMember(authorId, args) {
     return await db.members.update({[columnName]: value}, { where: { name: memberName, userid: authorId } }).then(() => {
         return `Updated ${columnName} for ${memberName} to "${value}"${fluxerPropicWarning ?? ''}.`;
     }).catch(e => {
-        return `${enums.err.NO_MEMBER}: ${e.message}`;
+        if (e === EmptyResultError) {
+            throw new EmptyResultError(`${enums.err.NO_MEMBER}: ${e.message}`);
+        }
+        else {
+            throw new Error(e.message);
+        }
     });
 }
 
@@ -228,11 +230,10 @@ async function updateMember(authorId, args) {
  * Sets the warning for an expiration date.
  *
  * @param {string} expirationString - An expiration date string.
- * @returns {string} A successful update, or an error message.
+ * @returns {string} A description of the expiration, interpolating the expiration string.
  */
 function setExpirationWarning(expirationString) {
     let expirationDate = new Date(expirationString);
-    console.log(expirationDate, expirationDate instanceof Date);
     if (!isNaN(expirationDate.valueOf())) {
         expirationDate = expirationDate.toDateString();
         return `\n**NOTE:** Because this profile picture was uploaded via Fluxer, it will currently expire on *${expirationDate}*. To avoid this, upload the picture to another website like <https://imgbb.com/> and link to it directly.`
@@ -244,18 +245,18 @@ function setExpirationWarning(expirationString) {
  *
  * @param {string} authorId - The author of the message
  * @param {string} memberName - The message arguments
- * @returns {Promise<string>} The member's info, or an error message.
+ * @returns {Promise<string>} The member's info.
+ * @throws { EmptyResultError } When the member is not found.
  */
 async function getMemberInfo(authorId, memberName) {
-    let member = await db.members.findOne({ where: { name: memberName, userid: authorId } });
-    if (member) {
-        let member_info = `Member name: ${member.name}`;
-        member_info += member.displayname ? `\nDisplay name: ${member.displayname}` : '\nDisplay name: unset';
-        member_info += member.proxy ? `\nProxy Tag: ${member.proxy}` : '\nProxy tag: unset';
-        member_info += member.propic ? `\nProfile pic: ${member.propic}` : '\nProfile pic: unset';
-        return member_info;
-    }
-    return enums.err.NO_MEMBER;
+    let member = await db.members.findOne({ where: { name: memberName, userid: authorId } }).catch(e => {
+        throw new EmptyResultError(`${enums.err.NO_MEMBER}: ${e.message}`);
+    });
+    let member_info = `Member name: ${member.name}`;
+    member_info += member.displayname ? `\nDisplay name: ${member.displayname}` : '\nDisplay name: unset';
+    member_info += member.proxy ? `\nProxy Tag: ${member.proxy}` : '\nProxy tag: unset';
+    member_info += member.propic ? `\nProfile pic: ${member.propic}` : '\nProfile pic: unset';
+    return member_info;
 }
 
 /**
@@ -263,11 +264,12 @@ async function getMemberInfo(authorId, memberName) {
  *
  * @param {string} authorId - The author of the message.
  * @param {string} name - The member's name.
- * @returns {Promise<model> | Promise<string>} The member object, or an error message.
+ * @returns {Promise<model>} The member object.
+ * @throws { EmptyResultError } When the member is not found.
  */
 mh.getMemberByName = async function(authorId, name) {
     return await db.members.findOne({ where: { userid: authorId, name: name } }).catch(e => {
-        return `${enums.err.NO_MEMBER}: ${e.message}`;
+        throw new EmptyResultError(`${enums.err.NO_MEMBER}: ${e.message}`);
     });
 }
 
@@ -276,11 +278,12 @@ mh.getMemberByName = async function(authorId, name) {
  *
  * @param {string} authorId - The author of the message
  * @param {string} proxy - The proxy tag
- * @returns {Promise<model> | Promise<string>} The member object, or an error message.
+ * @returns {Promise<model>} The member object.
+ * @throws { EmptyResultError } When the member is not found.
  */
 mh.getMemberByProxy = async function(authorId, proxy) {
     return await db.members.findOne({ where: { userid: authorId, proxy: proxy } }).catch(e => {
-        return `${enums.err.NO_MEMBER}: ${e.message}`;
+        throw new EmptyResultError(`${enums.err.NO_MEMBER}: ${e.message}`);
     });
 }
 
@@ -288,12 +291,12 @@ mh.getMemberByProxy = async function(authorId, proxy) {
  * Gets all members belonging to the author.
  *
  * @param {string} authorId - The author of the message
- * @returns {Promise<model[]> | Promise<string>} The member object, or an error message.
+ * @returns {Promise<model[]>} The member object array.
+ * @throws { EmptyResultError } When no members are found.
  */
 mh.getMembersByAuthor = async function(authorId) {
     return await db.members.findAll({ where: { userid: authorId } }).catch(e => {
-        // I have no idea how this could possibly happen but better safe than sorry
-        return `${enums.err.USER_NO_MEMBERS}: ${e.message}`;
+        throw new EmptyResultError(`${enums.err.USER_NO_MEMBERS}: ${e.message}`);
     });
 }
 
