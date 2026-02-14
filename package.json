@@ -13,6 +13,7 @@
     "@discordjs/core": "^2.4.0",
     "@discordjs/rest": "^2.6.0",
     "@discordjs/ws": "^2.0.4",
+    "@fluxerjs/core": "^1.0.4",
     "canvas": "^3.2.1",
     "pg": "^8.18.0",
     "pg-hstore": "^2.3.4",
