@@ -62,7 +62,7 @@ mh.parseMemberCommand = async function(author, args, attachmentUrl){
 }
 
 /**
- * Adds a member, first checking that there is no member of that name associated with the author.
+ * Adds a member.
  *
  * @param {string} authorId - The author of the message
  * @param {string[]} args - The message arguments
@@ -232,20 +232,31 @@ async function removeMember(authorId, args) {
 
 /*======Non-Subcommands======*/
 
+/**
+ * Adds a member with full details, first checking that there is no member of that name associated with the author.
+ *
+ * @param {string} authorId - The author of the message
+ * @param {string} memberName - The name of the member.
+ * @param {string} displayName - The display name of the member.
+ * @param {string} proxy - The proxy tag of the member.
+ * @param {string} propic - The profile picture URL of the member.
+ * @returns {Promise<string>} A successful addition.
+ * @throws {Error | RangeError}  When the member already exists, there are validation errors, or adding a member doesn't work.
+ */
 mh.addFullMember = async function(authorId, memberName, displayName, proxy, propic) {
     const member = await mh.getMemberByName(authorId, memberName);
     if (member) {
-        throw new Error(enums.err.MEMBER_EXISTS);
+        throw new Error(`Can't add ${memberName}. ${enums.err.MEMBER_EXISTS}`);
     }
 
     const trimmedName = displayName ? displayName.trim() : null;
     if (trimmedName && trimmedName.length > 32) {
-        throw new RangeError(enums.err.DISPLAY_NAME_TOO_LONG);
+        throw new RangeError(`Can't add ${memberName}. ${enums.err.DISPLAY_NAME_TOO_LONG}`);
     }
 
     if (propic) {
         await loadImage(propic).catch((err) => {
-            throw new Error(`${enums.err.PROPIC_CANNOT_LOAD}: ${err.message}`);
+            throw new Error(`Can't add ${memberName}. ${enums.err.PROPIC_CANNOT_LOAD}: ${err.message}`);
         });
     }
 
@@ -256,7 +267,7 @@ mh.addFullMember = async function(authorId, memberName, displayName, proxy, prop
         proxy: proxy,
         propic: propic,
     }).catch(e => {
-        throw new Error(`${enums.err.ADD_ERROR}: ${e.message}`)
+        throw new Error(`Can't add ${memberName}. ${enums.err.ADD_ERROR}: ${e.message}`)
     })
 }
 
@@ -283,10 +294,10 @@ async function updateMemberField(authorId, args) {
         return `Updated ${columnName} for ${memberName} to "${value}"${fluxerPropicWarning ?? ''}.`;
     }).catch(e => {
         if (e === EmptyResultError) {
-            throw new EmptyResultError(`${enums.err.NO_MEMBER}: ${e.message}`);
+            throw new EmptyResultError(`Can't update ${memberName}. ${enums.err.NO_MEMBER}: ${e.message}`);
         }
         else {
-            throw new Error(e.message);
+            throw new Error(`Can't update ${memberName}. ${e.message}`);
         }
     });
 }
@@ -349,13 +360,13 @@ async function getAllMembersInfo(authorId, authorName) {
  * Gets a member based on the author and proxy tag.
  *
  * @param {string} authorId - The author of the message.
- * @param {string} name - The member's name.
+ * @param {string} memberName - The member's name.
  * @returns {Promise<model>} The member object.
  * @throws { EmptyResultError } When the member is not found.
  */
-mh.getMemberByName = async function(authorId, name) {
-    return await db.members.findOne({ where: { userid: authorId, name: name } }).catch(e => {
-        throw new EmptyResultError(`${enums.err.NO_MEMBER}: ${e.message}`);
+mh.getMemberByName = async function(authorId, memberName) {
+    return await db.members.findOne({ where: { userid: authorId, name: memberName } }).catch(e => {
+        throw new EmptyResultError(`Can't get ${memberName}. ${enums.err.NO_MEMBER}: ${e.message}`);
     });
 }
 
@@ -369,7 +380,7 @@ mh.getMemberByName = async function(authorId, name) {
  */
 mh.getMemberByProxy = async function(authorId, proxy) {
     return await db.members.findOne({ where: { userid: authorId, proxy: proxy } }).catch(e => {
-        throw new EmptyResultError(`${enums.err.NO_MEMBER}: ${e.message}`);
+        throw new EmptyResultError(`Can't add ${memberName}. ${enums.err.NO_MEMBER}: ${e.message}`);
     });
 }
 
