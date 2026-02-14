@@ -8,7 +8,8 @@ helperEnums.err = {
     MEMBER_EXISTS: "A member with that name already exists. Please pick a unique name.",
     USER_NO_MEMBERS: "You have no members created.",
     DISPLAY_NAME_TOO_LONG: "The display name is too long. Please limit it to 32 characters or less.",
-    PROXY_EXISTS: "A duplicate proxy already exists for one of your members. Please pick a new one, or change the old one first."
+    PROXY_EXISTS: "A duplicate proxy already exists for one of your members. Please pick a new one, or change the old one first.",
+    NO_SUCH_COMMAND: "No such command exists."
 }
 
 helperEnums.help = {

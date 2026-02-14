@@ -3,6 +3,8 @@ import {enums} from "../enums.js";
 
 const mh = {};
 
+const commandList = ['--help', 'add', 'remove', 'displayName', 'proxy'];
+
 /**
  * Parses through the subcommands that come after "pf;member" and calls functions accordingly.
  *
@@ -12,6 +14,9 @@ const mh = {};
  */
 mh.parseMemberCommand = async function(authorId, args){
     console.log(authorId, args);
+    if(!commandList.includes(args[0])) {
+        return enums.err.NO_SUCH_COMMAND;
+    }
     switch(args[0]) {
         case '--help':
             return enums.help.MEMBER;
