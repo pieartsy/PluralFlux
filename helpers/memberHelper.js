@@ -2,22 +2,25 @@ import { db } from '../sequelize.js';
 import {enums} from "../enums.js";
 import { loadImage } from "canvas";
 import {EmptyResultError} from "sequelize";
+import {EmbedBuilder} from "@fluxerjs/core";
+import {messageHelper} from "./messageHelper.js";
 
 const mh = {};
 
 // Has an empty "command" to parse the help message properly
-const commandList = ['--help', 'add', 'remove', 'name', 'displayName', 'proxy', 'propic', ''];
+const commandList = ['--help', 'add', 'remove', 'name', 'listall', 'displayName', 'proxy', 'propic', ''];
 
 /**
  * Parses through the subcommands that come after "pf;member" and calls functions accordingly.
  *
- * @param {string} authorId - The author of the message
+ * @param {Object} author - The id of the message author
  * @param {string[]} args - The message arguments
- * @param {string} attachmentUrl - The message attachments
- * @returns {Promise<string>} A message.
+ * @param {string | null} attachmentUrl - The message attachments
+ * @returns {Promise<string> | Promise <EmbedBuilder>} A message, or an information embed.
  */
-mh.parseMemberCommand = async function(authorId, args, attachmentUrl){
-    console.log(authorId, args);
+mh.parseMemberCommand = async function(author, args, attachmentUrl){
+    const authorId = author.id;
+    const authorFull = `${author.username}${author.discriminator}`;
     let member;
     // checks whether command is in list, otherwise assumes it's a name
     if(!commandList.includes(args[0])) {
@@ -38,6 +41,8 @@ mh.parseMemberCommand = async function(authorId, args, attachmentUrl){
             return enums.help.PROXY;
         case 'propic':
             return enums.help.PROPIC;
+        case 'listall':
+            return await getAllMembersInfo(authorId, authorFull);
         case '':
             return enums.help.MEMBER;
     }
@@ -269,18 +274,39 @@ function setExpirationWarning(expirationString) {
  *
  * @param {string} authorId - The author of the message
  * @param {string} memberName - The message arguments
- * @returns {Promise<string>} The member's info.
+ * @returns {Promise<EmbedBuilder>} The member's info.
  * @throws { EmptyResultError } When the member is not found.
  */
 async function getMemberInfo(authorId, memberName) {
-    let member = await db.members.findOne({ where: { name: memberName, userid: authorId } }).catch(e => {
-        throw new EmptyResultError(`${enums.err.NO_MEMBER}: ${e.message}`);
-    });
-    let member_info = `Member name: ${member.name}`;
-    member_info += member.displayname ? `\nDisplay name: ${member.displayname}` : '\nDisplay name: unset';
-    member_info += member.proxy ? `\nProxy Tag: ${member.proxy}` : '\nProxy tag: unset';
-    member_info += member.propic ? `\nProfile pic: ${member.propic}` : '\nProfile pic: unset';
+    let member = mh.getMemberByName(authorId, memberName);
+    let member_info = new EmbedBuilder()
+        .setTitle(memberName)
+        .setDescription(`Details for ${memberName}`)
+        .addFields(
+            {name: 'Display name', value: member.displayname, inline:true},
+            {name: 'Proxy tag', value: member.proxy, inline:true},
+        )
+        .setImage(member.propic);
     return member_info;
+}
+
+/**
+ * Gets all members for an author.
+ *
+ * @param {string} authorId - The id of the message author
+ * @param {string} authorName - The id name the message author
+ * @returns {Promise<EmbedBuilder>} The info for all members.
+ */
+async function getAllMembersInfo(authorId, authorName) {
+    const members = await mh.getMembersByAuthor(authorId);
+    const fields = [...members.entries()].map(([name, member]) => ({
+        name: member.name,
+        value: `(Proxy: \`${member.proxy}\`)`,
+        inline: true,
+    }));
+    return new EmbedBuilder()
+        .setTitle(`Members for ${authorName}`)
+        .addFields(...fields);
 }
 
 /**
