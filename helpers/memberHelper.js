@@ -2,7 +2,7 @@ import { db } from '../sequelize.js';
 import {enums} from "../enums.js";
 import { loadImage } from "canvas";
 import {EmptyResultError} from "sequelize";
-import {EmbedBuilder} from "@fluxerjs/core";
+import {EmbedBuilder, User} from "@fluxerjs/core";
 import {messageHelper} from "./messageHelper.js";
 
 const mh = {};
@@ -13,7 +13,7 @@ const commandList = ['--help', 'add', 'remove', 'name', 'listall', 'displayName'
 /**
  * Parses through the subcommands that come after "pf;member" and calls functions accordingly.
  *
- * @param {Object} author - The id of the message author
+ * @param {User} author - The id of the message author
  * @param {string[]} args - The message arguments
  * @param {string | null} attachmentUrl - The message attachments
  * @returns {Promise<string> | Promise <EmbedBuilder>} A message, or an information embed.
