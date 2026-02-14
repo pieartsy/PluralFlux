@@ -32,37 +32,40 @@ let pluralFluxName = "PluralFlux";
 let pluralFluxDiscriminator = "8677";
 
 client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
-    if (data.webhook_id) {
-        return;
-    }
-    else if (data.author.username === pluralFluxName && data.author.discriminator === pluralFluxDiscriminator) {
-        return;
-    }
-    else if (data.content.startsWith(messageHelper.prefix)) {
-        const commandName = data.content.slice(messageHelper.prefix.length).split(" ")[0];
-        const args = messageHelper.parseCommandArgs(data.content, commandName);
-        if (!commandName) {
-            return await api.channels.createMessage(data.channel_id, {content: enums.help.PLURALFLUX});
-        }
-        switch (commandName) {
-            case 'm':
-            case 'member':
-                const attachment = data.attachments[0] ?? null;
-                const reply = await memberHelper.parseMemberCommand(data.author.id, args, attachment);
-                return await api.channels.createMessage(data.channel_id, {content: reply});
-            case 'help':
-                return await api.channels.createMessage(data.channel_id, {content: enums.help.PLURALFLUX});
-            default:
-                return await api.channels.createMessage(data.channel_id, {content: enums.err.NO_SUCH_COMMAND});
-        }
-    }
-    const proxyMatch = await messageHelper.parseProxyTags(data.author.id, data.content);
-    if (!proxyMatch.proxy) {
-        return;
-    }
-    const member = await memberHelper.getMemberByProxy(data.author.id, proxyMatch.proxy);
-    await webhookHelper.replaceMessage(api, data, proxyMatch.message, member);
+    try {
+        if (data.webhook_id) {
+            return;
+        } else if (data.author.username === pluralFluxName && data.author.discriminator === pluralFluxDiscriminator) {
+            return;
+        } else if (data.content.startsWith(messageHelper.prefix)) {
 
+            const commandName = data.content.slice(messageHelper.prefix.length).split(" ")[0];
+            const args = messageHelper.parseCommandArgs(data.content, commandName);
+            if (!commandName) {
+                return await api.channels.createMessage(data.channel_id, {content: enums.help.PLURALFLUX});
+            }
+            switch (commandName) {
+                case 'm':
+                case 'member':
+                    const attachment = data.attachments[0] ?? null;
+                    const reply = await memberHelper.parseMemberCommand(data.author.id, args, attachment);
+                    return await api.channels.createMessage(data.channel_id, {content: reply});
+                case 'help':
+                    return await api.channels.createMessage(data.channel_id, {content: enums.help.PLURALFLUX});
+                default:
+                    return await api.channels.createMessage(data.channel_id, {content: enums.err.NO_SUCH_COMMAND});
+            }
+            const proxyMatch = await messageHelper.parseProxyTags(data.author.id, data.content);
+            if (!proxyMatch.proxy) {
+                return;
+            }
+            const member = await memberHelper.getMemberByProxy(data.author.id, proxyMatch.proxy);
+            await webhookHelper.replaceMessage(api, data, proxyMatch.message, member);
+        }
+    }
+    catch(error) {
+        return await api.channels.createMessage(data.channel_id, {content: error});
+    }
 });
 
 client.on(GatewayDispatchEvents.Ready, async ({data}) => {

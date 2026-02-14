@@ -191,7 +191,7 @@ async function removeMember(authorId, args) {
         return `${enums.err.NO_NAME_PROVIDED} deletion.`;
     }
     return await db.members.destroy({ where: { name: memberName, userid: authorId } }).then(() => {
-        return `${memberName} has been deleted.`;
+        return `Member "${memberName}" has been deleted.`;
     }).catch(e => {
         return `${enums.err.NO_MEMBER}: ${e.message}`;
     });
@@ -218,7 +218,7 @@ async function updateMember(authorId, args) {
         fluxerPropicWarning = setExpirationWarning(args[3]);
     }
     return await db.members.update({[columnName]: value}, { where: { name: memberName, userid: authorId } }).then(() => {
-        return `Updated ${columnName} for ${memberName} to ${value}${fluxerPropicWarning}.`;
+        return `Updated ${columnName} for ${memberName} to "${value}"${fluxerPropicWarning ?? ''}.`;
     }).catch(e => {
         return `${enums.err.NO_MEMBER}: ${e.message}`;
     });
