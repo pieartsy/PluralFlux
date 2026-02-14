@@ -1,7 +1,15 @@
 import { db } from '../sequelize.js';
+import {enums} from "../enums.js";
 
 const mh = {};
 
+/**
+ * Parses through the subcommands that come after "pf;member" and calls functions accordingly.
+ *
+ * @param {string} authorId - The author of the message
+ * @param {string[]} args - The message arguments
+ * @returns {string} A message.
+ */
 mh.parseMemberCommand = async function(authorId, args){
     console.log(authorId, args);
     if (!args) {
@@ -11,24 +19,31 @@ mh.parseMemberCommand = async function(authorId, args){
         case '--help':
             return enums.help.MEMBER;
         case 'add':
-            return await addNewMember(authorId, args);
+            return addNewMember(authorId, args);
         case 'remove':
-            return await removeMember(authorId, args);
+            return removeMember(authorId, args);
     }
     switch(args[1]) {
         case '--help':
             return enums.help.MEMBER;
         case 'displayname':
-            return await updateDisplayName(authorId, args);
+            return updateDisplayName(authorId, args);
         case 'proxy':
-            return await updateProxy(authorId, args);
+            return updateProxy(authorId, args);
         // case 'avatar':
         //     return await set_avatar(authorId, args)
         default:
-            return await getMemberInfo(authorId, args);
+            return getMemberInfo(authorId, args[1]);
     }
 }
 
+/**
+ * Adds a member, first checking that there is no member of that name associated with the author.
+ *
+ * @param {string} authorId - The author of the message
+ * @param {string[]} args - The message arguments
+ * @returns {string} A successful addition, or an error message.
+ */
 async function addNewMember(authorId, args) {
     if (args[1] && args[1] === "--help" || !args[1]) {
         return enums.help.ADD;
@@ -36,9 +51,7 @@ async function addNewMember(authorId, args) {
     const memberName = args[1];
     const displayName = args[2];
 
-    const member = await getMemberInfo(authorId, memberName);
-    if (member !== errorEnums.NO_MEMBER) {
-        return errorEnums.MEMBER_EXISTS;
+    const member = getMemberInfo(authorId, memberName);
     if (member !== enums.err.NO_MEMBER) {
         return enums.err.MEMBER_EXISTS;
     }
@@ -56,6 +69,13 @@ async function addNewMember(authorId, args) {
     })
 }
 
+/**
+ * Updates the display name for a member.
+ *
+ * @param {string} authorId - The author of the message
+ * @param {string[]} args - The message arguments
+ * @returns {string} A successful update, or an error message.
+ */
 async function updateDisplayName(authorId, args) {
     if (args[1] && args[1] === "--help" || !args[1]) {
         return enums.help.DISPLAYNAME;
@@ -66,20 +86,26 @@ async function updateDisplayName(authorId, args) {
     const trimmed_name = displayName ? displayName.replaceAll(' ', '') : null;
 
     if (!displayName || trimmed_name === null ) {
-        let member = getMemberInfo(authorId, args);
+        let member = mh.getMemberByName(authorId, memberName);
         if (member.displayname) {
             return `Display name for ${memberName} is: ${member.displayname}.`;
         }
         return `Display name ${enums.err.NO_VALUE}`
     }
-    else if (displayName.count > 32) {
-        return errorEnums.DISPLAY_NAME_TOO_LONG;
+    else if (displayName.length > 32) {
         return enums.err.DISPLAY_NAME_TOO_LONG;
     }
     console.log(displayName);
-    return await updateMember(authorId, args);
+    return updateMember(authorId, args);
 }
 
+/**
+ * Updates the proxy for a member, first checking that no other members attached to the author have the tag.
+ *
+ * @param {string} authorId - The author of the message
+ * @param {string[]} args - The message arguments
+ * @returns {string} A successful update, or an error message.
+ */
 async function updateProxy(authorId, args) {
     if (args[1] && args[1] === "--help" || !args[1]) {
         return enums.help.PROXY;
@@ -96,9 +122,16 @@ async function updateProxy(authorId, args) {
     if (proxyExists) {
         return enums.err.PROXY_EXISTS;
     }
-    return await updateMember(authorId, args);
+    return updateMember(authorId, args);
 }
 
+/**
+ * Removes a member.
+ *
+ * @param {string} authorId - The author of the message
+ * @param {string[]} args - The message arguments
+ * @returns {string} A successful removal, or an error message.
+ */
 async function removeMember(authorId, args) {
     if (args[1] && args[1] === "--help") {
         return enums.help.REMOVE;
@@ -116,6 +149,14 @@ async function removeMember(authorId, args) {
 }
 
 /* non-commands */
+
+/**
+ * Updates a member's fields in the database.
+ *
+ * @param {string} authorId - The author of the message
+ * @param {string[]} args - The message arguments
+ * @returns {string} A successful update, or an error message.
+ */
 async function updateMember(authorId, args) {
     const memberName = args[0];
     const columnName = args[1];
@@ -127,6 +168,13 @@ async function updateMember(authorId, args) {
     });
 }
 
+/**
+ * Gets the details for a member.
+ *
+ * @param {string} authorId - The author of the message
+ * @param {string} memberName - The message arguments
+ * @returns {string} The member's info, or an error message.
+ */
 async function getMemberInfo(authorId, memberName) {
     let member = await db.members.findOne({ where: { name: memberName, userid: authorId } });
     if (member) {
@@ -139,12 +187,38 @@ async function getMemberInfo(authorId, memberName) {
     return enums.err.NO_MEMBER;
 }
 
+/**
+ * Gets a member based on the author and proxy tag.
+ *
+ * @param {string} authorId - The author of the message.
+ * @param {string} name - The member's name.
+ * @returns {model | string} The member object, or an error message.
+ */
+mh.getMemberByName = async function(authorId, name) {
+    return await db.members.findOne({ where: { userid: authorId, name: name } }).catch(e => {
+        return `${enums.err.NO_MEMBER}: ${e.message}`;
+    });
+}
+
+/**
+ * Gets a member based on the author and proxy tag.
+ *
+ * @param {string} authorId - The author of the message
+ * @param {string} proxy - The proxy tag
+ * @returns {model | string} The member object, or an error message.
+ */
 mh.getMemberByProxy = async function(authorId, proxy) {
     return await db.members.findOne({ where: { userid: authorId, proxy: proxy } }).catch(e => {
         return `${enums.err.NO_MEMBER}: ${e.message}`;
     });
 }
 
+/**
+ * Gets all members belonging to the author.
+ *
+ * @param {string} authorId - The author of the message
+ * @returns {model[] | string} The member object, or an error message.
+ */
 mh.getMembersByAuthor = async function(authorId) {
     return await db.members.findAll({ where: { userid: authorId } }).catch(e => {
         // I have no idea how this could possibly happen but better safe than sorry
