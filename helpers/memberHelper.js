@@ -3,7 +3,6 @@ import {enums} from "../enums.js";
 import { loadImage } from "canvas";
 import {EmptyResultError} from "sequelize";
 import {EmbedBuilder, User} from "@fluxerjs/core";
-import {messageHelper} from "./messageHelper.js";
 
 const mh = {};
 
@@ -68,7 +67,7 @@ mh.parseMemberCommand = async function(author, args, attachmentUrl){
  * @param {string} authorId - The author of the message
  * @param {string[]} args - The message arguments
  * @returns {Promise<string>} A successful addition.
- * @throws {Error}  When creating a member doesn't work.
+ * @throws {Error}  When the member exists, or creating a member doesn't work.
  */
 async function addNewMember(authorId, args) {
     if (args[1] && args[1] === "--help" || !args[1]) {
@@ -77,6 +76,10 @@ async function addNewMember(authorId, args) {
     const memberName = args[1];
     const displayName = args[2];
 
+    const member = await mh.getMemberByName(authorId, memberName);
+    if (member) {
+        throw new Error(enums.err.MEMBER_EXISTS);
+    }
     const trimmedName = displayName ? displayName.replaceAll(' ', '') : null;
     return await db.members.create({
         name: memberName,
@@ -157,9 +160,10 @@ async function updateProxy(authorId, args) {
     const proxy = args[2];
     const trimmedProxy = proxy ? proxy.replaceAll(' ', '') : null;
 
-    if (trimmedProxy == null) {
-        throw new RangeError(`Proxy ${enums.err.NO_VALUE}`);
-    }
+    if (trimmedProxy == null) throw new RangeError(`Proxy ${enums.err.NO_VALUE}`);
+    const splitProxy = proxy.trim().split("text");
+    if(splitProxy.length < 2) throw new Error(enums.err.NO_TEXT_FOR_PROXY);
+    if(!splitProxy[0] && !splitProxy[1]) throw new Error(enums.err.NO_PROXY_WRAPPER);
 
     const members = await mh.getMembersByAuthor(authorId);
     const proxyExists = members.some(member => member.proxy === proxy);

@@ -14,7 +14,9 @@ helperEnums.err = {
     PROPIC_CANNOT_LOAD: "Profile picture could not be loaded from URL.",
     NO_WEBHOOKS_ALLOWED: "Channel does not support webhooks.",
     NOT_IN_SERVER: "You can only proxy in a server.",
-    NO_MESSAGE_SENT_WITH_PROXY: 'Proxied message has no content.'
+    NO_MESSAGE_SENT_WITH_PROXY: 'Proxied message has no content.',
+    NO_TEXT_FOR_PROXY: "You need the word 'text' for the bot to detect proxy tags with.\nCorrect usage examples: `pf;member jane proxy J:text`, `pf;member jane [text]`",
+    NO_PROXY_WRAPPER: "You need at least one proxy tag surrounding 'text', either before or after.\nCorrect usage examples: `pf;member jane proxy J:text`, `pf;member jane [text]`"
 }
 
 helperEnums.help = {
@@ -27,7 +29,7 @@ helperEnums.help = {
     REMOVE: "Removes a member based on their name, for example: `pf;member remove jane`.",
     NAME: "Updates the name for a specific member based on their current name, for ex: `pf;member jane name jane`. The member name should ideally be short so you can write other commands with it easily.",
     DISPLAY_NAME: "Updates the display name for a specific member based on their name, for example: `pf;member jane \"Jane Doe | ze/hir\"`.This can be up to 32 characters long. If it has spaces, put it in __double quotes__.",
-    PROXY: "Updates the proxy tag for a specific member based on their name, for example: `pf;member jane proxy Jane:` or `pf;member amal proxy A=`. This is put at *the start* of a message to allow it to be proxied. Proxies that wrap around text or go at the end are *not* currently supported.",
+    PROXY: "Updates the proxy tag for a specific member based on their name. The proxy must be formatted with the tags surrounding the word 'text', for example: `pf;member jane proxy Jane:text` or `pf;member amal proxy [text]` This is so the bot can detect what the proxy tags are.",
     PROPIC: "Updates the profile picture for the member. Must be in JPG or PNG format. The two options are:\n1. Pass in a direct remote image URL, for example: `pf;member jane propic <https://cdn.pixabay.com/photo/2020/05/02/02/54/animal-5119676_1280.jpg>`. You can upload images on sites like <https://imgbb.com/>.\n2. Upload an attachment directly.\n\n**NOTE:** Fluxer does not save your attachments forever, so option #1 is recommended.",
 }
 
