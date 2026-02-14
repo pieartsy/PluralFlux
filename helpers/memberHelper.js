@@ -12,9 +12,6 @@ const mh = {};
  */
 mh.parseMemberCommand = async function(authorId, args){
     console.log(authorId, args);
-    if (!args) {
-        return enums.help.MEMBER;
-    }
     switch(args[0]) {
         case '--help':
             return enums.help.MEMBER;
@@ -22,6 +19,12 @@ mh.parseMemberCommand = async function(authorId, args){
             return addNewMember(authorId, args);
         case 'remove':
             return removeMember(authorId, args);
+        case 'displayname':
+            return enums.help.DISPLAYNAME;
+        case 'proxy':
+            return enums.help.PROXY;
+        case '':
+            return enums.help.MEMBER;
     }
     switch(args[1]) {
         case '--help':

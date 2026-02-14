@@ -13,10 +13,10 @@ helperEnums.err = {
 
 helperEnums.help = {
     MEMBER: "You can shorten this command to `pf;m`. The available subcommands for `pf;member` are `add`, `remove`, `displayname`, and `proxy`. Add ` --help` to the end of a subcommand to find out more about it, or just send it without arguments.",
-    ADD: "Creates a new member to proxy with: `pf;member jane`. The member name should ideally be short so you can write other commands with it. \nYou can optionally add a display name after the member name: `pf;member new jane \"Jane Doe | ze/hir\"`. If it has spaces, put it in **double quotes**. The length limit is 32 characters.",
-    REMOVE: "Removes a member based on their name. `pf;member remove jane`.",
-    DISPLAYNAME: "Updates the display name for a specific member based on their name. `pf;member jane \"Jane Doe | ze/hir\"`.This can be up to 32 characters long. If it has spaces, put it in quotes.",
-    PROXY: "Updates the proxy tag for a specific member based on their name. `pf;member jane proxy Jane:`. This is put at **the start** of a message to allow it to be proxied. Proxies that wrap around text or go at the end are **not** currently supported."
+    ADD: "Creates a new member to proxy with, for example: `pf;member jane`. The member name should ideally be short so you can write other commands with it. \nYou can optionally add a display name after the member name, for example: `pf;member new jane \"Jane Doe | ze/hir\"`. If it has spaces, put it in **double quotes**. The length limit is 32 characters.",
+    REMOVE: "Removes a member based on their name, for example: `pf;member remove jane`.",
+    DISPLAYNAME: "Updates the display name for a specific member based on their name, for example: `pf;member jane \"Jane Doe | ze/hir\"`.This can be up to 32 characters long. If it has spaces, put it in quotes.",
+    PROXY: "Updates the proxy tag for a specific member based on their name, for example: `pf;member jane proxy Jane:` or `pf;member amal proxy A=:`. This is put at **the start** of a message to allow it to be proxied. Proxies that wrap around text or go at the end are **not** currently supported."
 }
 
 export const enums = helperEnums;
