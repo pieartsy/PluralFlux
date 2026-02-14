@@ -1,11 +1,11 @@
 import { db } from '../sequelize.js';
 import {enums} from "../enums.js";
-import { loadImage, Image } from "canvas";
+import { loadImage } from "canvas";
 
 const mh = {};
 
 // Has an empty "command" to parse the help message properly
-const commandList = ['--help', 'add', 'remove', 'displayName', 'proxy', ''];
+const commandList = ['--help', 'add', 'remove', 'displayName', 'proxy', 'propic', ''];
 
 /**
  * Parses through the subcommands that come after "pf;member" and calls functions accordingly.
@@ -36,6 +36,8 @@ mh.parseMemberCommand = async function(authorId, args, attachment){
             return enums.help.DISPLAY_NAME;
         case 'proxy':
             return enums.help.PROXY;
+        case 'propic':
+            return enums.help.PROPIC;
         case '':
             return enums.help.MEMBER;
     }
@@ -141,6 +143,14 @@ async function updateProxy(authorId, args) {
     return updateMember(authorId, args);
 }
 
+/**
+ * Updates the profile pic for a member, based on either the attachment or the args provided.
+ *
+ * @param {string} authorId - The author of the message
+ * @param {string[]} args - The message arguments
+ * @param {string} attachment - The url of the first attachment in the message
+ * @returns {Promise<string> } A successful update, or an error message.
+ */
 async function updatePropic(authorId, args, attachment) {
     if (args[1] && args[1] === "--help") {
         return enums.help.PROPIC;
@@ -151,6 +161,7 @@ async function updatePropic(authorId, args, attachment) {
         return enums.help.PROPIC;
     } else if (attachment) {
         updatedArgs[2] = attachment.url;
+        updatedArgs[3] = attachment.expires_at;
     }
     if (updatedArgs[2]) {
         img = updatedArgs[2];
@@ -161,7 +172,6 @@ async function updatePropic(authorId, args, attachment) {
     }).catch((err) => {
         return `${enums.err.PROPIC_CANNOT_LOAD}: ${err.message}`;
     });
-
 }
 
 /**
@@ -200,11 +210,33 @@ async function updateMember(authorId, args) {
     const memberName = args[0];
     const columnName = args[1];
     const value = args[2];
+    let fluxerPropicWarning;
+
+    // indicates that an attachment was uploaded on Fluxer directly
+    if (columnName === "propic" && args[3]) {
+        console.log(args);
+        fluxerPropicWarning = setExpirationWarning(args[3]);
+    }
     return await db.members.update({[columnName]: value}, { where: { name: memberName, userid: authorId } }).then(() => {
-        return `Updated ${columnName} for ${memberName} to ${value}`;
+        return `Updated ${columnName} for ${memberName} to ${value}${fluxerPropicWarning}.`;
     }).catch(e => {
         return `${enums.err.NO_MEMBER}: ${e.message}`;
     });
+}
+
+/**
+ * Sets the warning for an expiration date.
+ *
+ * @param {string} expirationString - An expiration date string.
+ * @returns {string} A successful update, or an error message.
+ */
+function setExpirationWarning(expirationString) {
+    let expirationDate = new Date(expirationString);
+    console.log(expirationDate, expirationDate instanceof Date);
+    if (!isNaN(expirationDate.valueOf())) {
+        expirationDate = expirationDate.toDateString();
+        return `\n**NOTE:** Because this profile picture was uploaded via Fluxer, it will currently expire on *${expirationDate}*. To avoid this, upload the picture to another website like <https://imgbb.com/> and link to it directly.`
+    }
 }
 
 /**
