@@ -36,12 +36,11 @@ client.on(Events.MessageCreate, async (message) => {
 
         const command = commands.get(commandName);
         if (command) {
-            await command.execute(message, client, args).catch(async (e) => {
-                throw new Error(`Error executing ${commandName}: ${e.message}`);
-            });
+            await command.execute(message, client, args);
         }
     }
     catch(error) {
+        console.error(error);
         return await message.reply(error.message);
     }
 });

@@ -8,7 +8,7 @@ const cmds = new Map();
 cmds.set('member', {
     description: enums.help.SHORT_DESC_MEMBER,
     async execute(message, client, args) {
-        const reply = await memberHelper.parseMemberCommand(message.author, args, message.attachments[0] = null);
+        const reply = await memberHelper.parseMemberCommand(message.author, args, message.attachments[0] = null).catch(e => message.reply(e));
         if (typeof reply === 'string') {
             await message.reply(reply);
         }
