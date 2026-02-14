@@ -14,7 +14,8 @@ const errorEnums = {
 }
 
 const helpEnums = {
-    NEW: "Creates a new member to proxy with: `pf;member jane`. The member name should ideally be short so you can write other commands with it. \nYou can optionally add a display name after the member name: `pf;member new jane \"Jane Doe | ze/hir\"`. If it has spaces, put it in **double quotes**. The length limit is 32 characters.",
+    MEMBER: "You can shorten this command to `pf;m`. The available subcommands for `pf;member` are `add`, `remove`, `displayname`, and `proxy`. Add ` --help` to the end of a subcommand to find out more about it.",
+    ADD: "Creates a new member to proxy with: `pf;member jane`. The member name should ideally be short so you can write other commands with it. \nYou can optionally add a display name after the member name: `pf;member new jane \"Jane Doe | ze/hir\"`. If it has spaces, put it in **double quotes**. The length limit is 32 characters.",
     REMOVE: "Removes a member based on their name. `pf;member remove jane`.",
     DISPLAYNAME: "Updates the display name for a specific member based on their name. `pf;member jane \"Jane Doe | ze/hir\"`.This can be up to 32 characters long. If it has spaces, put it in quotes.",
     PROXY: "Updates the proxy tag for a specific member based on their name. `pf;member jane proxy Jane:`. This is put at **the start** of a message to allow it to be proxied. Proxies that wrap around text or go at the end are **not** currently supported."
@@ -26,14 +27,16 @@ mh.parse_member_command = async function(author_id, args){
         return `${errorEnums.NO_NAME_PROVIDED} querying.`
     }
     switch(args[0]) {
-        case 'new':
+        case '--help':
+            return helpEnums.MEMBER;
+        case 'add':
             return await add_new_member(author_id, args);
         case 'remove':
             return await remove_member(author_id, args);
     }
     switch(args[1]) {
         case '--help':
-            return
+            return helpEnums.MEMBER;
         case 'displayname':
             return await update_display_name(author_id, args);
         case 'proxy':
@@ -112,13 +115,11 @@ async function update_proxy(author_id, args) {
         return;
     }
 
-    const members = mh.get_members_by_author(author_id);
-    members.forEach(member => {
-        if (member.proxy === proxy) {
-            return errorEnums.PROXY_EXISTS;
-        }
-    })
-
+    const members = await mh.get_members_by_author(author_id);
+    const proxyExists = members.some(member => member.proxy === proxy);
+    if (proxyExists) {
+        return errorEnums.PROXY_EXISTS;
+    }
     return await update_member(author_id, args);
 }
 
