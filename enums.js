@@ -12,6 +12,7 @@ helperEnums.err = {
 }
 
 helperEnums.help = {
+    PLURALFLUX: "PluralFlux is a proxybot akin to PluralKit and Tupperbot, but for Fluxer. All commands are prefixed by `pf;`. The current commands are: `pf;member`. Add ` --help` to the end of a command to find out more about it, or just send it without arguments.",
     MEMBER: "You can shorten this command to `pf;m`. The available subcommands for `pf;member` are `add`, `remove`, `displayname`, and `proxy`. Add ` --help` to the end of a subcommand to find out more about it, or just send it without arguments.",
     ADD: "Creates a new member to proxy with, for example: `pf;member jane`. The member name should ideally be short so you can write other commands with it. \nYou can optionally add a display name after the member name, for example: `pf;member new jane \"Jane Doe | ze/hir\"`. If it has spaces, put it in **double quotes**. The length limit is 32 characters.",
     REMOVE: "Removes a member based on their name, for example: `pf;member remove jane`.",
