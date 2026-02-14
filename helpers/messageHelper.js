@@ -1,4 +1,5 @@
 import {memberHelper} from "./memberHelper.js";
+import {enums} from "../enums.js";
 
 const msgh = {};
 
@@ -33,14 +34,18 @@ msgh.parseCommandArgs = function(content, commandName) {
  * Parses proxy tags and sees if they match the tags of any member belonging to an author.
  *
  * @param {string} authorId - The author of the message.
+ * @param {Object} attachment - An attachment for the message, if any exists.
  * @param {string} content - The full message content.
  * @returns {Object} The proxy message object.
  */
-msgh.parseProxyTags = async function (authorId, content){
+msgh.parseProxyTags = async function (authorId, attachment, content){
     const members = await memberHelper.getMembersByAuthor(authorId);
+
     const proxyMessage = {}
     members.forEach(member => {
-        if (content.startsWith(member.proxy) && content.length > member.proxy.length) {
+        if (content.length <= member.proxy.length && !attachment) throw new Error(enums.err.NO_MESSAGE_SENT_WITH_PROXY);
+        const splitProxy = member.proxy.split("text");
+        if(content.startsWith(splitProxy[0]) && content.endsWith(splitProxy[1])) {
             proxyMessage.proxy = member.proxy;
             proxyMessage.message = content.slice(member.proxy.length).trim();
         }
