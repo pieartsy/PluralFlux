@@ -6,7 +6,7 @@ import {EmptyResultError} from "sequelize";
 const mh = {};
 
 // Has an empty "command" to parse the help message properly
-const commandList = ['--help', 'add', 'remove', 'displayName', 'proxy', 'propic', ''];
+const commandList = ['--help', 'add', 'remove', 'name', 'displayName', 'proxy', 'propic', ''];
 
 /**
  * Parses through the subcommands that come after "pf;member" and calls functions accordingly.
@@ -30,6 +30,8 @@ mh.parseMemberCommand = async function(authorId, args, attachmentUrl){
             return await addNewMember(authorId, args);
         case 'remove':
             return await removeMember(authorId, args);
+        case 'name':
+            return enums.help.NAME;
         case 'displayname':
             return enums.help.DISPLAY_NAME;
         case 'proxy':
@@ -42,6 +44,8 @@ mh.parseMemberCommand = async function(authorId, args, attachmentUrl){
     switch(args[1]) {
         case '--help':
             return enums.help.MEMBER;
+        case 'name':
+            return await updateName(authorId, args);
         case 'displayname':
             return await updateDisplayName(authorId, args);
         case 'proxy':
@@ -68,7 +72,6 @@ async function addNewMember(authorId, args) {
     const memberName = args[1];
     const displayName = args[2];
 
-    const member = await getMemberInfo(authorId, memberName);
     const trimmedName = displayName ? displayName.replaceAll(' ', '') : null;
     return await db.members.create({
         name: memberName,
@@ -81,6 +84,27 @@ async function addNewMember(authorId, args) {
     }).catch(e => {
         throw new Error(`${enums.err.ADD_ERROR}: ${e.message}`)
     })
+}
+
+/**
+ * Updates the name for a member.
+ *
+ * @param {string} authorId - The author of the message
+ * @param {string[]} args - The message arguments
+ * @returns {Promise<string>} A successful update.
+ * @throws {RangeError} When the name doesn't exist.
+ */
+async function updateName(authorId, args) {
+    if (args[1] && args[1] === "--help" || !args[1]) {
+        return enums.help.DISPLAY_NAME;
+    }
+
+    const name = args[2];
+    const trimmed_name = name ? name.replaceAll(' ', '') : null;
+    if (!name || trimmed_name === null) {
+        throw new RangeError(`Display name ${enums.err.NO_VALUE}`);
+    }
+    return updateMember(authorId, args);
 }
 
 /**
