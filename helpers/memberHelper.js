@@ -76,16 +76,7 @@ async function addNewMember(authorId, args) {
     const memberName = args[1];
     const displayName = args[2];
 
-    const member = await mh.getMemberByName(authorId, memberName);
-    if (member) {
-        throw new Error(enums.err.MEMBER_EXISTS);
-    }
-    const trimmedName = displayName ? displayName.replaceAll(' ', '') : null;
-    return await db.members.create({
-        name: memberName,
-        userid: authorId,
-        displayname: trimmedName !== null ? displayName : null,
-    }).then((m) => {
+    return await mh.addFullMember(authorId, memberName, displayName).then((m) => {
         let success = `Member was successfully added.\nName: ${m.dataValues.name}`
         success += displayName ? `\nDisplay name: ${m.dataValues.displayname}` : "";
         return success;
@@ -108,11 +99,11 @@ async function updateName(authorId, args) {
     }
 
     const name = args[2];
-    const trimmed_name = name ? name.replaceAll(' ', '') : null;
-    if (!name || trimmed_name === null) {
+    const trimmedName = name ? name.trim() : null;
+    if (!name || trimmedName === null) {
         throw new RangeError(`Display name ${enums.err.NO_VALUE}`);
     }
-    return updateMember(authorId, args);
+    return updateMemberField(authorId, args);
 }
 
 /**
@@ -130,9 +121,9 @@ async function updateDisplayName(authorId, args) {
 
     const memberName = args[0];
     const displayName = args[2];
-    const trimmed_name = displayName ? displayName.replaceAll(' ', '') : null;
+    const trimmedName = displayName ? displayName.trim() : null;
 
-    if (!displayName || trimmed_name === null ) {
+    if (!displayName || trimmedName === null ) {
         let member = await mh.getMemberByName(authorId, memberName);
         if (member.displayname) {
             return `Display name for ${memberName} is: \"${member.displayname}\".`;
@@ -142,7 +133,7 @@ async function updateDisplayName(authorId, args) {
     else if (displayName.length > 32) {
         throw new RangeError(enums.err.DISPLAY_NAME_TOO_LONG);
     }
-    return updateMember(authorId, args);
+    return updateMemberField(authorId, args);
 }
 
 /**
@@ -150,15 +141,29 @@ async function updateDisplayName(authorId, args) {
  *
  * @param {string} authorId - The author of the message
  * @param {string[]} args - The message arguments
- * @returns {Promise<string> } A successful update, or an error message.
+ * @returns {Promise<string> } A successful update.
  * @throws {RangeError | Error} When an empty proxy was provided, or no proxy exists.
  */
 async function updateProxy(authorId, args) {
     if (args[1] && args[1] === "--help" || !args[1]) {
         return enums.help.PROXY;
     }
-    const proxy = args[2];
-    const trimmedProxy = proxy ? proxy.replaceAll(' ', '') : null;
+    const proxyExists = await checkIfProxyExists(authorId, proxy);
+    if (!proxyExists) {
+        return updateMemberField(authorId, args);
+    }
+}
+
+/**
+ * Updates the proxy for a member, first checking that no other members attached to the author have the tag.
+ *
+ * @param {string} authorId - The author of the message
+ * @param {string} proxy - The proxy tag.
+ * @returns {Promise<boolean> } Whether the proxy exists.
+ * @throws {Error} When an empty proxy was provided, or no proxy exists.
+ */
+async function checkIfProxyExists(authorId, proxy) {
+    const trimmedProxy = proxy ? proxy.trim() : null;
 
     if (trimmedProxy == null) throw new RangeError(`Proxy ${enums.err.NO_VALUE}`);
     const splitProxy = proxy.trim().split("text");
@@ -170,9 +175,8 @@ async function updateProxy(authorId, args) {
     if (proxyExists) {
         throw new Error(enums.err.PROXY_EXISTS);
     }
-    return updateMember(authorId, args);
+    return false;
 }
-
 /**
  * Updates the profile pic for a member, based on either the attachment or the args provided.
  *
@@ -199,7 +203,7 @@ async function updatePropic(authorId, args, attachment) {
     }
 
     return await loadImage(img).then(() => {
-        return updateMember(authorId, updatedArgs);
+        return updateMemberField(authorId, updatedArgs);
     }).catch((err) => {
         throw new Error(`${enums.err.PROPIC_CANNOT_LOAD}: ${err.message}`);
     });
@@ -228,15 +232,43 @@ async function removeMember(authorId, args) {
 
 /*======Non-Subcommands======*/
 
+mh.addFullMember = async function(authorId, memberName, displayName, proxy, propic) {
+    const member = await mh.getMemberByName(authorId, memberName);
+    if (member) {
+        throw new Error(enums.err.MEMBER_EXISTS);
+    }
+
+    const trimmedName = displayName ? displayName.trim() : null;
+    if (trimmedName && trimmedName.length > 32) {
+        throw new RangeError(enums.err.DISPLAY_NAME_TOO_LONG);
+    }
+
+    if (propic) {
+        await loadImage(propic).catch((err) => {
+            throw new Error(`${enums.err.PROPIC_CANNOT_LOAD}: ${err.message}`);
+        });
+    }
+
+    return await db.members.create({
+        name: memberName,
+        userid: authorId,
+        displayname: displayName,
+        proxy: proxy,
+        propic: propic,
+    }).catch(e => {
+        throw new Error(`${enums.err.ADD_ERROR}: ${e.message}`)
+    })
+}
+
 /**
- * Updates a member's fields in the database.
+ * Updates one fields for a member in the database.
  *
  * @param {string} authorId - The author of the message
  * @param {string[]} args - The message arguments
  * @returns {Promise<string>} A successful update.
  * @throws {EmptyResultError | Error} When the member is not found, or catchall error.
  */
-async function updateMember(authorId, args) {
+async function updateMemberField(authorId, args) {
     const memberName = args[0];
     const columnName = args[1];
     const value = args[2];
