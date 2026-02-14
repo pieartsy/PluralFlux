@@ -1,17 +1,25 @@
+import {messageHelper} from "./messageHelper.js";
+import {memberHelper} from "./memberHelper.js";
+import { Webhook, Channel, Message } from '@fluxerjs/core';
+import {enums} from "../enums.js";
+
 const wh = {};
+
+const name = 'PluralFlux Proxy Webhook';
 
 /**
  * Gets or creates a webhook.
  *
- * @param api - The discord.js API.
- * @param {string} channelId - The channel the message was sent in.
- * @returns {Object} A webhook object.
+ * @param {Client} client - The fluxer.js client.
+ * @param {Channel} channel - The channel the message was sent in.
+ * @returns {Webhook} A webhook object.
+ * @throws {Error} When no webhooks are allowed in the channel.
  */
-wh.getOrCreateWebhook = async function (api, channelId) {
-    const name = 'PluralFlux Proxy Webhook';
-    let webhook = await getWebhook(api, channelId, name);
+async function getOrCreateWebhook(client, channel) {
+    if (!channel?.createWebhook) throw new Error(enums.err.NO_WEBHOOKS_ALLOWED);
+    let webhook = await getWebhook(client, channel);
     if (!webhook) {
-        webhook = await api.channels.createWebhook(channelId, {name: name});
+        webhook = await channel.createWebhook({name: name});
     }
     return webhook;
 }
@@ -19,18 +27,17 @@ wh.getOrCreateWebhook = async function (api, channelId) {
 /**
  * Gets an existing webhook.
  *
- * @param api - The discord.js API.
- * @param {string} channelId - The channel the message was sent in.
- * @param {string} name - The name of the webhook.
- * @returns {Object} A webhook object.
+ * @param {Client} client - The fluxer.js client.
+ * @param {Channel} channel - The channel the message was sent in.
+ * @returns {Webhook} A webhook object.
  */
-async function getWebhook(api, channelId, name) {
-    const allWebhooks = await api.channels.getWebhooks(channelId);
-    if (allWebhooks.length === 0) {
+async function getWebhook(client, channel) {
+    const channelWebhooks = await channel?.fetchWebhooks() ?? [];
+    if (channelWebhooks.length === 0) {
         return;
     }
     let pf_webhook;
-    allWebhooks.forEach((webhook) => {
+    channelWebhooks.forEach((webhook) => {
         if (webhook.name === name) {
             pf_webhook = webhook;
         }
@@ -40,21 +47,44 @@ async function getWebhook(api, channelId, name) {
 
 /**
  * Replaces a proxied message with a webhook using the member information.
- *
- * @param api - The discord.js API.
- * @param data - The discord.js data.
+ * @param {Client} client - The fluxer.js client.
+ * @param {Message} message - The message to be deleted.
+ * @param {string} channelId - The channel id to send the webhook message in.
  * @param {string} text - The text to send via the webhook.
  * @param {Object} member - A member object from the database.
+ * @throws {Error} When there's no message to send.
  */
-wh.replaceMessage = async function (api, data, text, member) {
+async function replaceMessage(client, message, channelId, text, member) {
     if (text.length > 0) {
-        const webhook = await wh.getOrCreateWebhook(api, data.channel_id);
-        await api.webhooks.execute(webhook.id, webhook.token, {content: text, username: member.displayname ?? member.name, avatar_url: member.propic});
-        await api.channels.deleteMessage(data.channel_id, data.id);
+        const channel = client.channels.get(channelId);
+        const webhook = await getOrCreateWebhook(client, channel);
+        await webhook.send({content: text, username: member.displayname ?? member.name, avatar_url: member.propic});
+        await message.delete();
     }
     else {
-        await api.channels.createMessage(data.channel_id, {content: '(Please input a message!)'});
+        throw new Error(enums.err.NO_MESSAGE_SENT_WITH_PROXY);
     }
+}
+
+/**
+ * Replaces a proxied message with a webhook using the member information.
+ * @param {Client} client - The fluxer.js client.
+ * @param {Message} message - The full message object.
+ * @param {string} content - The full content of the message.
+ * @throws {Error} When the proxy message is not in a server.
+ */
+wh.sendMessageAsMember = async function(client, message, content) {
+
+    const proxyMatch = await messageHelper.parseProxyTags(message.author.id, content);
+    // If the message doesn't match a proxy, just return.
+    if (!proxyMatch.proxy) {
+        return;
+    }
+    if (!message.guildId) {
+        throw new Error(enums.err.NOT_IN_SERVER);
+    }
+    const member = await memberHelper.getMemberByProxy(message.author.id, proxyMatch.proxy);
+    await replaceMessage(client, message, message.channelId, proxyMatch.message, member);
 }
 
 export const webhookHelper = wh;
