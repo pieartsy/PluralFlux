@@ -16,7 +16,8 @@ helperEnums.err = {
     NOT_IN_SERVER: "You can only proxy in a server.",
     NO_MESSAGE_SENT_WITH_PROXY: 'Proxied message has no content.',
     NO_TEXT_FOR_PROXY: "You need the word 'text' for the bot to detect proxy tags with.\nCorrect usage examples: `pf;member jane proxy J:text`, `pf;member jane [text]`",
-    NO_PROXY_WRAPPER: "You need at least one proxy tag surrounding 'text', either before or after.\nCorrect usage examples: `pf;member jane proxy J:text`, `pf;member jane [text]`"
+    NO_PROXY_WRAPPER: "You need at least one proxy tag surrounding 'text', either before or after.\nCorrect usage examples: `pf;member jane proxy J:text`, `pf;member jane [text]`",
+    NOT_JSON: "Please attach a valid JSON file."
 }
 
 helperEnums.help = {
