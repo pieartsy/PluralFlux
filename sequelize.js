@@ -48,7 +48,7 @@ database.check_connection = async function() {
 }
 
 async function syncModels() {
-    await sequelize.sync().then((result) => {
+    await sequelize.sync().then(() => {
         console.log('Models synced successfully.');
     }).catch((err) => {
         console.error('Syncing models did not work', err);
