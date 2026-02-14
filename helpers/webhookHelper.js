@@ -89,7 +89,7 @@ function preventSameNameCollapse(channel, username) {
  */
 wh.sendMessageAsMember = async function(client, message, content) {
 
-    const proxyMatch = await messageHelper.parseProxyTags(message.author.id, content);
+    const proxyMatch = await messageHelper.parseProxyTags(message.author.id, message.attachments[0] ?? null, content);
     // If the message doesn't match a proxy, just return.
     if (!proxyMatch.proxy) {
         return;
