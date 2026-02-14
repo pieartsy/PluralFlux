@@ -7,12 +7,12 @@ msgh.prefix = "pf;"
 /**
  * Parses and slices up message arguments, retaining quoted strings.
  *
- * @param {string} text - The full message content.
+ * @param {string} content - The full message content.
  * @param {string} commandName - The command name.
  * @returns {string[]} An array of arguments.
  */
-msgh.parseCommandArgs = function(text, commandName) {
-    const message = text.slice(msgh.prefix.length + commandName.length).trim();
+msgh.parseCommandArgs = function(content, commandName) {
+    const message = content.slice(msgh.prefix.length + commandName.length).trim();
 
     return message.match(/\\?.|^$/g).reduce((accumulator, chara) => {
         if (chara === '"') {
@@ -33,16 +33,16 @@ msgh.parseCommandArgs = function(text, commandName) {
  * Parses proxy tags and sees if they match the tags of any member belonging to an author.
  *
  * @param {string} authorId - The author of the message.
- * @param {string} text - The full message content.
+ * @param {string} content - The full message content.
  * @returns {Object} The proxy message object.
  */
-msgh.parseProxyTags = async function (authorId, text){
+msgh.parseProxyTags = async function (authorId, content){
     const members = await memberHelper.getMembersByAuthor(authorId);
     const proxyMessage = {}
     members.forEach(member => {
-        if (text.startsWith(member.proxy) && text.length > member.proxy.length) {
+        if (content.startsWith(member.proxy) && content.length > member.proxy.length) {
             proxyMessage.proxy = member.proxy;
-            proxyMessage.message = text.slice(member.proxy.length).trim();
+            proxyMessage.message = content.slice(member.proxy.length).trim();
         }
     })
     return proxyMessage;
