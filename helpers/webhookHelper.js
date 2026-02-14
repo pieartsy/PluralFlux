@@ -51,18 +51,32 @@ async function getWebhook(client, channel) {
  * @param {Message} message - The message to be deleted.
  * @param {string} channelId - The channel id to send the webhook message in.
  * @param {string} text - The text to send via the webhook.
- * @param {Object} member - A member object from the database.
+ * @param {model} member - A member object from the database.
  * @throws {Error} When there's no message to send.
  */
 async function replaceMessage(client, message, channelId, text, member) {
     if (text.length > 0) {
         const channel = client.channels.get(channelId);
         const webhook = await getOrCreateWebhook(client, channel);
-        await webhook.send({content: text, username: member.displayname ?? member.name, avatar_url: member.propic});
+        const username = member.displayname ?? member.name;
+        await webhook.send({content: text, username: username, avatar_url: member.propic});
         await message.delete();
     }
     else {
         throw new Error(enums.err.NO_MESSAGE_SENT_WITH_PROXY);
+    }
+}
+
+/**
+ * Fluxer collapses same-name messages, so if two would be sent by different users, break them up with a tiny space.
+ * @param {string} channelId - The channel id to send the webhook message in.
+ * @param {string} username - The text to send via the webhook.
+ */
+
+function preventSameNameCollapse(channel, username) {
+
+    if(bot.recent[msg.channel.id] && msg.author.id !== bot.recent[msg.channel.id][0].user_id && un === bot.recent[msg.channel.id][0].name) {
+        username = un.substring(0,1) + "\u200a" + un.substring(1);
     }
 }
 
