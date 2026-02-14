@@ -35,7 +35,7 @@ client.on(Events.MessageCreate, async (message) => {
         const args = messageHelper.parseCommandArgs(content, commandName);
 
         const command = commands.get(commandName);
-        if (command || command.alias) {
+        if (command) {
             try {
                 await command.execute(message, client, args);
             } catch (err) {
