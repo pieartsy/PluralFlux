@@ -47,7 +47,8 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
         switch (commandName) {
             case 'm':
             case 'member':
-                const reply = await memberHelper.parseMemberCommand(data.author.id, args);
+                const attachment = data.attachments[0] ?? null;
+                const reply = await memberHelper.parseMemberCommand(data.author.id, args, attachment);
                 return await api.channels.createMessage(data.channel_id, {content: reply});
             case 'help':
                 return await api.channels.createMessage(data.channel_id, {content: enums.help.PLURALFLUX});
