@@ -5,6 +5,7 @@ import { db } from './sequelize.js';
 import { webhookHelper } from "./helpers/webhookHelper.js";
 import { messageHelper } from "./helpers/messageHelper.js";
 import { memberHelper } from "./helpers/memberHelper.js";
+import {enums} from "./enums.js";
 
 const token = process.env.FLUXER_BOT_TOKEN;
 
@@ -27,8 +28,8 @@ const gateway = new WebSocketManager({
 
 export const client = new Client({ rest, gateway });
 
-let pluralFluxName = "";
-let pluralFluxDiscriminator = "";
+let pluralFluxName = "PluralFlux";
+let pluralFluxDiscriminator = "8677";
 
 client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
     if (data.webhook_id) {
@@ -37,22 +38,29 @@ client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
     else if (data.author.username === pluralFluxName && data.author.discriminator === pluralFluxDiscriminator) {
         return;
     }
-    else if (!data.content.startsWith(messageHelper.prefix)) {
-        const proxyMatch = await messageHelper.parseProxyTags(data.author.id, data.content);
-        if (!proxyMatch.proxy) {
-            return;
+    else if (data.content.startsWith(messageHelper.prefix)) {
+        const commandName = data.content.slice(messageHelper.prefix.length).split(" ")[0];
+        const args = messageHelper.parseCommandArgs(data.content, commandName);
+        if (!commandName) {
+            return await api.channels.createMessage(data.channel_id, {content: enums.help.PLURALFLUX});
         }
-        const member = await memberHelper.getMemberByProxy(data.author.id, proxyMatch.proxy);
-        await webhookHelper.replaceMessage(api, data, proxyMatch.message, member);
+        switch (commandName) {
+            case 'm':
+            case 'member':
+                const reply = await memberHelper.parseMemberCommand(data.author.id, args);
+                return await api.channels.createMessage(data.channel_id, {content: reply});
+            case 'help':
+                return await api.channels.createMessage(data.channel_id, {content: enums.help.PLURALFLUX});
+            default:
+                return await api.channels.createMessage(data.channel_id, {content: enums.err.NO_SUCH_COMMAND});
+        }
+    }
+    const proxyMatch = await messageHelper.parseProxyTags(data.author.id, data.content);
+    if (!proxyMatch.proxy) {
         return;
     }
-    const command_name = data.content.slice(messageHelper.prefix.length).split(" ")[0];
-    const args = messageHelper.parseCommandArgs(data.content, command_name);
-
-    if (command_name === "member" || command_name === "m") {
-        const reply = await memberHelper.parseMemberCommand(data.author.id, args);
-        await api.channels.createMessage(data.channel_id, {content: reply});
-    }
+    const member = await memberHelper.getMemberByProxy(data.author.id, proxyMatch.proxy);
+    await webhookHelper.replaceMessage(api, data, proxyMatch.message, member);
 
 });
 
@@ -63,4 +71,4 @@ client.on(GatewayDispatchEvents.Ready, async ({data}) => {
     await db.check_connection();
 });
 
-gateway.connect();
+await gateway.connect();
