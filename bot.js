@@ -22,7 +22,7 @@ client.on(Events.MessageCreate, async (message) => {
         // Parse command and arguments
         const content = message.content.trim();
 
-        // If message doesn't start with the bot prefix, it could still be a message with a proxy tag
+        // If message doesn't start with the bot prefix, it could still be a message with a proxy tag. If it's not, return.
         if (!content.startsWith(messageHelper.prefix)) {
             await webhookHelper.sendMessageAsMember(client, message, content);
             return;
@@ -30,7 +30,7 @@ client.on(Events.MessageCreate, async (message) => {
 
         const commandName = content.slice(messageHelper.prefix.length).split(" ")[0];
         // If there's no command name (ie just the prefix)
-        if (!commandName) return await message.reply(enums.help.SHORT_DESC_PLURALFLUX);
+        if (!commandName) await message.reply(enums.help.SHORT_DESC_PLURALFLUX);
 
         const args = messageHelper.parseCommandArgs(content, commandName);
 
@@ -42,7 +42,7 @@ client.on(Events.MessageCreate, async (message) => {
         }
     }
     catch(error) {
-        return await message.reply(error);
+        return await message.reply(error.message);
     }
 });
 
