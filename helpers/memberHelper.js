@@ -3,7 +3,8 @@ import {enums} from "../enums.js";
 
 const mh = {};
 
-const commandList = ['--help', 'add', 'remove', 'displayName', 'proxy'];
+// Has an empty "command" to parse the help message properly
+const commandList = ['--help', 'add', 'remove', 'displayName', 'proxy', ''];
 
 /**
  * Parses through the subcommands that come after "pf;member" and calls functions accordingly.
@@ -14,18 +15,23 @@ const commandList = ['--help', 'add', 'remove', 'displayName', 'proxy'];
  */
 mh.parseMemberCommand = async function(authorId, args){
     console.log(authorId, args);
+    let member;
+    // checks whether command is in list, otherwise assumes it's a name
     if(!commandList.includes(args[0])) {
-        return enums.err.NO_SUCH_COMMAND;
+        member = await getMemberInfo(authorId, args[0]);
+        if (!member) {
+            return enums.err.NO_SUCH_COMMAND;
+        }
     }
     switch(args[0]) {
         case '--help':
             return enums.help.MEMBER;
         case 'add':
-            return addNewMember(authorId, args);
+            return await addNewMember(authorId, args);
         case 'remove':
-            return removeMember(authorId, args);
+            return await removeMember(authorId, args);
         case 'displayname':
-            return enums.help.DISPLAYNAME;
+            return enums.help.DISPLAY_NAME;
         case 'proxy':
             return enums.help.PROXY;
         case '':
@@ -35,13 +41,13 @@ mh.parseMemberCommand = async function(authorId, args){
         case '--help':
             return enums.help.MEMBER;
         case 'displayname':
-            return updateDisplayName(authorId, args);
+            return await updateDisplayName(authorId, args);
         case 'proxy':
-            return updateProxy(authorId, args);
+            return await updateProxy(authorId, args);
         // case 'avatar':
         //     return await set_avatar(authorId, args)
         default:
-            return getMemberInfo(authorId, args[1]);
+            return member;
     }
 }
 
@@ -59,8 +65,8 @@ async function addNewMember(authorId, args) {
     const memberName = args[1];
     const displayName = args[2];
 
-    const member = getMemberInfo(authorId, memberName);
-    if (member !== enums.err.NO_MEMBER) {
+    const member = await getMemberInfo(authorId, memberName);
+    if (member && member !== enums.err.NO_MEMBER) {
         return enums.err.MEMBER_EXISTS;
     }
     const trimmedName = displayName ? displayName.replaceAll(' ', '') : null;
@@ -86,7 +92,7 @@ async function addNewMember(authorId, args) {
  */
 async function updateDisplayName(authorId, args) {
     if (args[1] && args[1] === "--help" || !args[1]) {
-        return enums.help.DISPLAYNAME;
+        return enums.help.DISPLAY_NAME;
     }
 
     const memberName = args[0];
@@ -94,9 +100,9 @@ async function updateDisplayName(authorId, args) {
     const trimmed_name = displayName ? displayName.replaceAll(' ', '') : null;
 
     if (!displayName || trimmed_name === null ) {
-        let member = mh.getMemberByName(authorId, memberName);
+        let member = await mh.getMemberByName(authorId, memberName);
         if (member.displayname) {
-            return `Display name for ${memberName} is: ${member.displayname}.`;
+            return `Display name for ${memberName} is: \"${member.displayname}\".`;
         }
         return `Display name ${enums.err.NO_VALUE}`
     }
