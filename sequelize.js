@@ -37,6 +37,9 @@ database.members = sequelize.define('Member', {
     }
 });
 
+/**
+ * Checks Sequelize database connection.
+ */
 database.check_connection = async function() {
         await sequelize.authenticate().then(async (result) => {
             console.log('Connection has been established successfully.');
@@ -47,6 +50,9 @@ database.check_connection = async function() {
         });
 }
 
+/**
+ * Syncs Sequelize models.
+ */
 async function syncModels() {
     await sequelize.sync().then(() => {
         console.log('Models synced successfully.');
