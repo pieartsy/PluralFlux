@@ -49,7 +49,7 @@ async function getWebhook(api, channelId, name) {
 wh.replaceMessage = async function (api, data, text, member) {
     if (text.length > 0) {
         const webhook = await wh.getOrCreateWebhook(api, data.channel_id);
-        await api.webhooks.execute(webhook.id, webhook.token, {content: text, username: member.displayname ?? member.name, propic: member.propic});
+        await api.webhooks.execute(webhook.id, webhook.token, {content: text, username: member.displayname ?? member.name, avatar_url: member.propic});
         await api.channels.deleteMessage(data.channel_id, data.id);
     }
     else {

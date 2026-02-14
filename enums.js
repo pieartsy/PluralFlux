@@ -9,10 +9,13 @@ helperEnums.err = {
     USER_NO_MEMBERS: "You have no members created.",
     DISPLAY_NAME_TOO_LONG: "The display name is too long. Please limit it to 32 characters or less.",
     PROXY_EXISTS: "A duplicate proxy already exists for one of your members. Please pick a new one, or change the old one first.",
-    NO_SUCH_COMMAND: "No such command exists"
+    NO_SUCH_COMMAND: "No such command exists.",
+    PROPIC_FAILS_REQUIREMENTS: "Profile picture must be in JPG or PNG format.",
+    PROPIC_CANNOT_LOAD: "Profile picture could not be loaded from URL."
 }
 
 helperEnums.help = {
+    PROPIC: "test",
     PLURALFLUX: "PluralFlux is a proxybot akin to PluralKit and Tupperbot, but for Fluxer. All commands are prefixed by `pf;`. Add ` --help` to the end of a command to find out more about it, or just send it without arguments.\n\nThe current commands are: `pf;member` and `pf;help`.",
     MEMBER: "You can shorten this command to `pf;m`. The available subcommands for `pf;member` are `add`, `remove`, `displayname`, and `proxy`. Add ` --help` to the end of a subcommand to find out more about it, or just send it without arguments.",
     ADD: "Creates a new member to proxy with, for example: `pf;member jane`. The member name should ideally be short so you can write other commands with it. \n\nYou can optionally add a display name after the member name, for example: `pf;member new jane \"Jane Doe | ze/hir\"`. If it has spaces, put it in **double quotes**. The length limit is 32 characters.",

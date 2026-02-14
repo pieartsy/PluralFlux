@@ -1,5 +1,6 @@
 import { db } from '../sequelize.js';
 import {enums} from "../enums.js";
+import { loadImage, Image } from "canvas";
 
 const mh = {};
 
@@ -11,16 +12,17 @@ const commandList = ['--help', 'add', 'remove', 'displayName', 'proxy', ''];
  *
  * @param {string} authorId - The author of the message
  * @param {string[]} args - The message arguments
- * @returns {string} A message.
+ * @param {string} attachment - The message attachments
+ * @returns {Promise<string>} A message.
  */
-mh.parseMemberCommand = async function(authorId, args){
+mh.parseMemberCommand = async function(authorId, args, attachment){
     console.log(authorId, args);
     let member;
     // checks whether command is in list, otherwise assumes it's a name
     if(!commandList.includes(args[0])) {
         member = await getMemberInfo(authorId, args[0]);
-        if (!member) {
-            return enums.err.NO_SUCH_COMMAND;
+        if (member === enums.err.NO_MEMBER) {
+            return member;
         }
     }
     switch(args[0]) {
@@ -44,8 +46,8 @@ mh.parseMemberCommand = async function(authorId, args){
             return await updateDisplayName(authorId, args);
         case 'proxy':
             return await updateProxy(authorId, args);
-        // case 'avatar':
-        //     return await set_avatar(authorId, args)
+        case 'propic':
+            return await updatePropic(authorId, args, attachment)
         default:
             return member;
     }
@@ -56,7 +58,7 @@ mh.parseMemberCommand = async function(authorId, args){
  *
  * @param {string} authorId - The author of the message
  * @param {string[]} args - The message arguments
- * @returns {string} A successful addition, or an error message.
+ * @returns {Promise<string>} A successful addition, or an error message.
  */
 async function addNewMember(authorId, args) {
     if (args[1] && args[1] === "--help" || !args[1]) {
@@ -88,7 +90,7 @@ async function addNewMember(authorId, args) {
  *
  * @param {string} authorId - The author of the message
  * @param {string[]} args - The message arguments
- * @returns {string} A successful update, or an error message.
+ * @returns {Promise<string>} A successful update, or an error message.
  */
 async function updateDisplayName(authorId, args) {
     if (args[1] && args[1] === "--help" || !args[1]) {
@@ -118,7 +120,7 @@ async function updateDisplayName(authorId, args) {
  *
  * @param {string} authorId - The author of the message
  * @param {string[]} args - The message arguments
- * @returns {string} A successful update, or an error message.
+ * @returns {Promise<string> } A successful update, or an error message.
  */
 async function updateProxy(authorId, args) {
     if (args[1] && args[1] === "--help" || !args[1]) {
@@ -128,7 +130,7 @@ async function updateProxy(authorId, args) {
     const trimmedProxy = proxy ? proxy.replaceAll(' ', '') : null;
 
     if (trimmedProxy == null) {
-        return;
+        return `Proxy ${enums.err.NO_VALUE}`;
     }
 
     const members = await mh.getMembersByAuthor(authorId);
@@ -139,12 +141,35 @@ async function updateProxy(authorId, args) {
     return updateMember(authorId, args);
 }
 
+async function updatePropic(authorId, args, attachment) {
+    if (args[1] && args[1] === "--help") {
+        return enums.help.PROPIC;
+    }
+    let img;
+    const updatedArgs = args;
+    if (!updatedArgs[1] && !attachment) {
+        return enums.help.PROPIC;
+    } else if (attachment) {
+        updatedArgs[2] = attachment.url;
+    }
+    if (updatedArgs[2]) {
+        img = updatedArgs[2];
+    }
+
+    return await loadImage(img).then(() => {
+        return updateMember(authorId, updatedArgs);
+    }).catch((err) => {
+        return `${enums.err.PROPIC_CANNOT_LOAD}: ${err.message}`;
+    });
+
+}
+
 /**
  * Removes a member.
  *
  * @param {string} authorId - The author of the message
  * @param {string[]} args - The message arguments
- * @returns {string} A successful removal, or an error message.
+ * @returns {Promise<string>} A successful removal, or an error message.
  */
 async function removeMember(authorId, args) {
     if (args[1] && args[1] === "--help") {
@@ -162,14 +187,14 @@ async function removeMember(authorId, args) {
     });
 }
 
-/* non-commands */
+/*======Non-Subcommands======*/
 
 /**
  * Updates a member's fields in the database.
  *
  * @param {string} authorId - The author of the message
  * @param {string[]} args - The message arguments
- * @returns {string} A successful update, or an error message.
+ * @returns {Promise<string>} A successful update, or an error message.
  */
 async function updateMember(authorId, args) {
     const memberName = args[0];
@@ -187,7 +212,7 @@ async function updateMember(authorId, args) {
  *
  * @param {string} authorId - The author of the message
  * @param {string} memberName - The message arguments
- * @returns {string} The member's info, or an error message.
+ * @returns {Promise<string>} The member's info, or an error message.
  */
 async function getMemberInfo(authorId, memberName) {
     let member = await db.members.findOne({ where: { name: memberName, userid: authorId } });
@@ -206,7 +231,7 @@ async function getMemberInfo(authorId, memberName) {
  *
  * @param {string} authorId - The author of the message.
  * @param {string} name - The member's name.
- * @returns {model | string} The member object, or an error message.
+ * @returns {Promise<model> | Promise<string>} The member object, or an error message.
  */
 mh.getMemberByName = async function(authorId, name) {
     return await db.members.findOne({ where: { userid: authorId, name: name } }).catch(e => {
@@ -219,7 +244,7 @@ mh.getMemberByName = async function(authorId, name) {
  *
  * @param {string} authorId - The author of the message
  * @param {string} proxy - The proxy tag
- * @returns {model | string} The member object, or an error message.
+ * @returns {Promise<model> | Promise<string>} The member object, or an error message.
  */
 mh.getMemberByProxy = async function(authorId, proxy) {
     return await db.members.findOne({ where: { userid: authorId, proxy: proxy } }).catch(e => {
@@ -231,7 +256,7 @@ mh.getMemberByProxy = async function(authorId, proxy) {
  * Gets all members belonging to the author.
  *
  * @param {string} authorId - The author of the message
- * @returns {model[] | string} The member object, or an error message.
+ * @returns {Promise<model[]> | Promise<string>} The member object, or an error message.
  */
 mh.getMembersByAuthor = async function(authorId) {
     return await db.members.findAll({ where: { userid: authorId } }).catch(e => {
