@@ -26,6 +26,7 @@ client.on(Events.MessageCreate, async (message) => {
             // wait until webhooks exist lol
             //const successful = await webhookHelper.sendMessageAsMember(message, content);
             // if (!successful) return;
+            return;
         }
 
         const commandName = content.slice(messageHelper.prefix.length).split(" ")[0];
