@@ -14,8 +14,8 @@ const commandList = ['--help', 'add', 'remove', 'name', 'listall', 'displayName'
  *
  * @param {User} author - The id of the message author
  * @param {string[]} args - The message arguments
- * @param {string | null} attachmentUrl - The message attachments
- * @returns {Promise<string> | Promise <EmbedBuilder>} A message, or an information embed.
+ * @param {string | null} attachmentUrl - The message attachment url.
+ * @returns {Promise<string> | Promise <EmbedBuilder>} A message, or an informational embed.
  */
 mh.parseMemberCommand = async function(author, args, attachmentUrl){
     const authorId = author.id;

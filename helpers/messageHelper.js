@@ -42,10 +42,10 @@ msgh.parseProxyTags = async function (authorId, attachment, content){
     const members = await memberHelper.getMembersByAuthor(authorId);
 
     const proxyMessage = {}
-    members.forEach(member => {
-        if (content.length <= member.proxy.length && !attachment) throw new Error(enums.err.NO_MESSAGE_SENT_WITH_PROXY);
+    members.filter(member => member.proxy).forEach(member => {
         const splitProxy = member.proxy.split("text");
         if(content.startsWith(splitProxy[0]) && content.endsWith(splitProxy[1])) {
+            if (content.length <= member.proxy.length && !attachment) throw new Error(enums.err.NO_MESSAGE_SENT_WITH_PROXY);
             proxyMessage.proxy = member.proxy;
             proxyMessage.message = content.slice(member.proxy.length).trim();
         }
