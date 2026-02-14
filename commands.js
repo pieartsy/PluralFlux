@@ -6,10 +6,11 @@ import {EmbedBuilder} from "@fluxerjs/core";
 const cmds = new Map();
 
 cmds.set('member', {
-    alias: 'm',
     description: enums.help.SHORT_DESC_MEMBER,
     async execute(message, client, args) {
-        const reply = await memberHelper.parseMemberCommand(message.author.id, args, message.attachments[0] ?? null);
+        const reply = await memberHelper.parseMemberCommand(message.author.id, args, message.attachments[0] ?? null).catch(async (e) => {
+            return await message.reply(e);
+        });
         return await message.reply(reply);
     }
 })

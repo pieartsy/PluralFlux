@@ -1,7 +1,7 @@
 import { db } from '../sequelize.js';
 import {enums} from "../enums.js";
 import { loadImage } from "canvas";
-import {EmptyResultError, InstanceError} from "sequelize";
+import {EmptyResultError} from "sequelize";
 
 const mh = {};
 
