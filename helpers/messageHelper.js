@@ -4,7 +4,7 @@ const msgh = {};
 
 msgh.prefix = "pf;"
 
-msgh.parse_command_args = function(text, command_name) {
+msgh.parseCommandArgs = function(text, command_name) {
     const message = text.slice(msgh.prefix.length + command_name.length).trim();
     // slices up message arguments including retaining quoted strings
     return message.match(/\\?.|^$/g).reduce((accumulator, chara) => {
@@ -22,8 +22,8 @@ msgh.parse_command_args = function(text, command_name) {
     }, {array: ['']}).array // initial array with empty string for the reducer
 }
 
-msgh.parse_proxy_tags = async function (author_id, text){
-    const members = await memberHelper.get_members_by_author(author_id);
+msgh.parseProxyTags = async function (author_id, text){
+    const members = await memberHelper.getMembersByAuthor(author_id);
     const proxyMessage = {}
     members.forEach(member => {
         if (text.startsWith(member.proxy) && text.length > member.proxy.length) {

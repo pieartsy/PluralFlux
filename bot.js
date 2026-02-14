@@ -27,39 +27,39 @@ const gateway = new WebSocketManager({
 
 export const client = new Client({ rest, gateway });
 
-let plural_flux_name = "";
-let plural_flux_discriminator = "";
+let pluralFluxName = "";
+let pluralFluxDiscriminator = "";
 
 client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
     if (data.webhook_id) {
         return;
     }
-    else if (data.author.username === plural_flux_name && data.author.discriminator === plural_flux_discriminator) {
+    else if (data.author.username === pluralFluxName && data.author.discriminator === pluralFluxDiscriminator) {
         return;
     }
     else if (!data.content.startsWith(messageHelper.prefix)) {
-        const proxyMatch = await messageHelper.parse_proxy_tags(data.author.id, data.content);
+        const proxyMatch = await messageHelper.parseProxyTags(data.author.id, data.content);
         if (!proxyMatch.proxy) {
             return;
         }
-        const member = await memberHelper.get_member_by_proxy(data.author.id, proxyMatch.proxy);
-        await webhookHelper.replace_message(api, data, proxyMatch.message, member);
+        const member = await memberHelper.getMemberByProxy(data.author.id, proxyMatch.proxy);
+        await webhookHelper.replaceMessage(api, data, proxyMatch.message, member);
+        return;
     }
-    else {
-        const command_name = data.content.slice(messageHelper.prefix.length).split(" ")[0];
-        const args = messageHelper.parse_command_args(data.content, command_name);
+    const command_name = data.content.slice(messageHelper.prefix.length).split(" ")[0];
+    const args = messageHelper.parseCommandArgs(data.content, command_name);
 
-        if (command_name === "member" || command_name === "m") {
-            const reply = await memberHelper.parse_member_command(data.author.id, args);
-            await api.channels.createMessage(data.channel_id, {content: reply});
-        }
+    if (command_name === "member" || command_name === "m") {
+        const reply = await memberHelper.parseMemberCommand(data.author.id, args);
+        await api.channels.createMessage(data.channel_id, {content: reply});
     }
+
 });
 
 client.on(GatewayDispatchEvents.Ready, async ({data}) => {
     console.log(`Logged in as ${data.user.username}#${data.user.discriminator}`);
-    plural_flux_name = data.user.username;
-    plural_flux_discriminator = data.user.discriminator;
+    pluralFluxName = data.user.username;
+    pluralFluxDiscriminator = data.user.discriminator;
     await db.check_connection();
 });
 
