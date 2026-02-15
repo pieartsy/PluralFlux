@@ -1,21 +1,24 @@
-import { db } from '../sequelize.js';
+import {db} from '../db.js';
 import {enums} from "../enums.js";
-import { loadImage } from "canvas";
+import {loadImage} from "canvas";
 import {EmptyResultError} from "sequelize";
-import {EmbedBuilder, User} from "@fluxerjs/core";
+import {EmbedBuilder} from "@fluxerjs/core";
 
 const mh = {};
 
 // Has an empty "command" to parse the help message properly
-const commandList = ['--help', 'add', 'remove', 'name', 'listall', 'displayName', 'proxy', 'propic', ''];
+const commandList = ['--help', 'add', 'remove', 'name', 'list', 'displayName', 'proxy', 'propic', ''];
 
 /**
  * Parses through the subcommands that come after "pf;member" and calls functions accordingly.
  *
- * @param {User} author - The id of the message author
+ * @async
+ * @param {string} authorId - The id of the message author
+ * @param {string} authorFull - The username and discriminator of the message author
  * @param {string[]} args - The message arguments
  * @param {string | null} attachmentUrl - The message attachment url.
  * @returns {Promise<string> | Promise <EmbedBuilder>} A message, or an informational embed.
+ * @throws {Error}
  */
 mh.parseMemberCommand = async function(authorId, authorFull, args, attachmentUrl){
     let member;
