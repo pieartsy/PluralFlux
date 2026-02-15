@@ -11,7 +11,6 @@ if (!token) {
     process.exit(1);
 }
 
-const BOT_STATUS = process.env.FLUXER_BOT_STATUS ?? 'online';
 const client = new Client({ intents: 0 });
 
 client.on(Events.MessageCreate, async (message) => {
