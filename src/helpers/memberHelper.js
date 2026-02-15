@@ -367,7 +367,7 @@ mh.getAllMembersInfo = async function(authorId, authorName) {
 mh.getMemberByName = async function(authorId, memberName) {
     return await db.members.findOne({ where: { userid: authorId, name: memberName } }).then((result) => {
         if (!result) {
-            throw new EmptyResultError(`Can't get ${memberName}. ${enums.err.NO_MEMBER}: ${result.message}`);
+            throw new EmptyResultError(`Can't get ${memberName}. ${enums.err.NO_MEMBER}`);
         }
         return result;
     });
@@ -385,7 +385,7 @@ mh.getMemberByName = async function(authorId, memberName) {
 mh.getMemberByProxy = async function(authorId, proxy) {
     return await db.members.findOne({ where: { userid: authorId, proxy: proxy } }).then((result) => {
         if (!result) {
-            throw new EmptyResultError(`Can't find member with that proxy. ${enums.err.NO_MEMBER}: ${result.message}`);
+            throw new EmptyResultError(`Can't find member with that proxy. ${enums.err.NO_MEMBER}.`);
         }
         return result;
     });
