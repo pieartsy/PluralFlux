@@ -44,14 +44,11 @@ msgh.parseProxyTags = async function (authorId, attachment, content){
     const proxyMessage = {}
     members.filter(member => member.proxy).forEach(member => {
         const splitProxy = member.proxy.split("text");
-        console.log(splitProxy);
         if(content.startsWith(splitProxy[0]) && content.endsWith(splitProxy[1])) {
-            console.log(content);
             proxyMessage.proxy = member.proxy;
             const removePrefix = new RegExp("^" + splitProxy[0]);
             const removeSuffix = new RegExp(splitProxy[1] + "$");
             proxyMessage.message = content.replace(removePrefix, "").replace(removeSuffix, "");
-            console.log(proxyMessage);
             if (proxyMessage.message.length <= splitProxy[0].length + splitProxy[1].length && !attachment) throw new Error(enums.err.NO_MESSAGE_SENT_WITH_PROXY);
 
         }
