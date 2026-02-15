@@ -24,8 +24,10 @@ wh.sendMessageAsMember = async function(client, message, content) {
     if (!message.guildId) {
         throw new Error(enums.err.NOT_IN_SERVER);
     }
-    const member = await memberHelper.getMemberByProxy(message.author.id, proxyMatch.proxy).catch(e =>{throw e});
-    await replaceMessage(client, message, message.channelId, proxyMatch.message, member).catch(e =>{throw e});
+    const member = await memberHelper.getMemberByProxy(message.author.id, proxyMatch.proxy);
+    if (member) {
+        await replaceMessage(client, message, message.channelId, proxyMatch.message, member).catch(e =>{throw e});
+    }
 }
 
 /**

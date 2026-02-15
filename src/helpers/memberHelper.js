@@ -24,7 +24,7 @@ mh.parseMemberCommand = async function(authorId, authorFull, args, attachmentUrl
     let member;
     // checks whether command is in list, otherwise assumes it's a name
     if(!commandList.includes(args[0])) {
-        member = await mh.getMemberInfo(authorId, args[0]).catch((e) =>{throw e});
+        member = await mh.getMemberInfo(authorId, args[0]);
     }
     switch(args[0]) {
         case '--help':
@@ -127,12 +127,13 @@ mh.updateDisplayName = async function(authorId, args) {
 
     if (!displayName || trimmedName === null ) {
         return await mh.getMemberByName(authorId, memberName).then((member) => {
-            if (member.displayname) {
+            if (member && member.displayname) {
                 return `Display name for ${memberName} is: \"${member.displayname}\".`;
             }
-            throw new RangeError(`Display name ${enums.err.NO_VALUE}`);
-        }).catch((e) =>{throw e});
-
+            else if (member) {
+                throw new RangeError(`Display name ${enums.err.NO_VALUE}`);
+            }
+        });
     }
     else if (displayName.length > 32) {
         throw new RangeError(enums.err.DISPLAY_NAME_TOO_LONG);
@@ -187,7 +188,6 @@ mh.updatePropic = async function(authorId, args, attachmentUrl, attachmentExpiry
     if (updatedArgs[2]) {
         img = updatedArgs[2];
     }
-    console.log(img);
     const isValidImage = await mh.checkImageFormatValidity(img).catch((e) =>{throw e});
     if (isValidImage) {
         return await mh.updateMemberField(authorId, updatedArgs).catch((e) =>{throw e});
@@ -249,10 +249,11 @@ mh.removeMember = async function(authorId, args) {
  * @throws {Error | RangeError}  When the member already exists, there are validation errors, or adding a member doesn't work.
  */
 mh.addFullMember = async function(authorId, memberName, displayName = null, proxy = null, propic= null) {
-    const member = await mh.getMemberByName(authorId, memberName).catch(() =>{console.log("Now we can add the member.")});
-    if (member) {
-        throw new Error(`Can't add ${memberName}. ${enums.err.MEMBER_EXISTS}`);
-    }
+    await mh.getMemberByName(authorId, memberName).then((member) => {
+        if (member) {
+            throw new Error(`Can't add ${memberName}. ${enums.err.MEMBER_EXISTS}`);
+        }
+    });
     if (displayName) {
         const trimmedName = displayName ? displayName.trim() : null;
         if (trimmedName && trimmedName.length > 32) {
@@ -329,19 +330,20 @@ mh.setExpirationWarning = function(expirationString) {
  * @param {string} authorId - The author of the message
  * @param {string} memberName - The message arguments
  * @returns {Promise<EmbedBuilder>} The member's info.
- * @throws {Error}
  */
-mh.getMemberInfo = async function(authorId, memberName) {
+mh.getMemberInfo = async function (authorId, memberName) {
     return await mh.getMemberByName(authorId, memberName).then((member) => {
-        return new EmbedBuilder()
-            .setTitle(member.name)
-            .setDescription(`Details for ${member.name}`)
-            .addFields(
-                {name: 'Display name: ', value: member.displayname ?? 'unset', inline: true},
-                {name: 'Proxy tag: ', value: member.proxy ?? 'unset', inline: true},
-            )
-            .setImage(member.propic);
-    }).catch((e) =>{throw e})
+        if (member) {
+            return new EmbedBuilder()
+                .setTitle(member.name)
+                .setDescription(`Details for ${member.name}`)
+                .addFields(
+                    {name: 'Display name: ', value: member.displayname ?? 'unset', inline: true},
+                    {name: 'Proxy tag: ', value: member.proxy ?? 'unset', inline: true},
+                )
+                .setImage(member.propic);
+        }
+    });
 }
 
 /**
@@ -351,10 +353,11 @@ mh.getMemberInfo = async function(authorId, memberName) {
  * @param {string} authorId - The id of the message author
  * @param {string} authorName - The id name the message author
  * @returns {Promise<EmbedBuilder>} The info for all members.
- * @throws {Error}
+ * @throws {Error} When there are no members for an author.
  */
 mh.getAllMembersInfo = async function(authorId, authorName) {
-    const members = await mh.getMembersByAuthor(authorId).catch(e =>{throw e});
+    const members = await mh.getMembersByAuthor(authorId);
+    if (members == null) throw Error(enums.err.USER_NO_MEMBERS);
     const fields = [...members.entries()].map(([name, member]) => ({
         name: member.name,
         value: `(Proxy: \`${member.proxy ?? "unset"}\`)`,
@@ -375,12 +378,7 @@ mh.getAllMembersInfo = async function(authorId, authorName) {
  * @throws { EmptyResultError } When the member is not found.
  */
 mh.getMemberByName = async function(authorId, memberName) {
-    return await db.members.findOne({ where: { userid: authorId, name: memberName } }).then((result) => {
-        if (!result) {
-            throw new EmptyResultError(`Can't get ${memberName}. ${enums.err.NO_MEMBER}`);
-        }
-        return result;
-    });
+    return await db.members.findOne({ where: { userid: authorId, name: memberName } });
 }
 
 /**
@@ -390,15 +388,9 @@ mh.getMemberByName = async function(authorId, memberName) {
  * @param {string} authorId - The author of the message
  * @param {string} proxy - The proxy tag
  * @returns {Promise<model>} The member object.
- * @throws { EmptyResultError } When the member is not found.
  */
 mh.getMemberByProxy = async function(authorId, proxy) {
-    return await db.members.findOne({ where: { userid: authorId, proxy: proxy } }).then((result) => {
-        if (!result) {
-            throw new EmptyResultError(`Can't find member with that proxy. ${enums.err.NO_MEMBER}.`);
-        }
-        return result;
-    });
+    return await db.members.findOne({ where: { userid: authorId, proxy: proxy } });
 }
 
 /**
@@ -406,16 +398,10 @@ mh.getMemberByProxy = async function(authorId, proxy) {
  *
  * @async
  * @param {string} authorId - The author of the message
- * @returns {Promise<model[]>} The member object array.
- * @throws { EmptyResultError } When no members are found.
+ * @returns {Promise<model[] | null>} The member object array.
  */
 mh.getMembersByAuthor = async function(authorId) {
-    return await db.members.findAll({ where: { userid: authorId } }).then((result) => {
-        if (result.length === 0) {
-            throw new EmptyResultError(`${enums.err.USER_NO_MEMBERS}: ${e.message}`);
-        }
-        return result;
-    });
+    return await db.members.findAll({ where: { userid: authorId } });
 }
 
 

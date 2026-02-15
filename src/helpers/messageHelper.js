@@ -31,15 +31,20 @@ msgh.parseCommandArgs = function(content, commandName) {
 }
 
 /**
- * Parses proxy tags and sees if they match the tags of any member belonging to an author.
+ * Parses messages to see if any part of the text matches the tags of any member belonging to an author.
  *
  * @param {string} authorId - The author of the message.
  * @param {Object} attachment - An attachment for the message, if any exists.
  * @param {string} content - The full message content.
  * @returns {Object} The proxy message object.
+ * @throws {Error} If a proxy message is sent with no message within it.
  */
 msgh.parseProxyTags = async function (authorId, attachment, content){
-    const members = await memberHelper.getMembersByAuthor(authorId).catch(e =>{throw e});
+    const members = await memberHelper.getMembersByAuthor(authorId);
+    // If an author has no members, no sense in searching for proxy
+    if (members.length === 0) {
+        return;
+    }
 
     const proxyMessage = {}
     members.filter(member => member.proxy).forEach(member => {
