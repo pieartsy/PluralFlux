@@ -3,3 +3,4 @@ node_modules
 secrets/
 package-lock.json
 config.json
+coverage
