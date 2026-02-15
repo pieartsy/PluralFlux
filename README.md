@@ -12,7 +12,7 @@ All commands are prefixed by `pf;`. Currently only a few are implemented.
 
 - `pf;help` - Sends the current list of commands.
 
-- `pf;import` - Imports from PluralKit using the JSON file provided by their export command. Importing from other proxy bots is *TBD*. `pf;import` and attach your JSON file to the message.
+- `pf;import` - Imports from PluralKit using the JSON file provided by their export command. Importing from other proxy bots is *TBD*. `pf;import` and attach your JSON file to the message. This will only save the fields that are present in the bot currently (the stuff above), not anything else like birthdays or system handles (yet?).
 
 - `pf;member` - Accesses the sub-commands related to editing proxy members. The available subcommands are:
   - `new` - Creates a new member to proxy with, for example: `pf;member new jane`. The member name should ideally be short so you can write other commands with it easily.
@@ -24,6 +24,7 @@ You can optionally add a display name after the member name, for example: `pf;me
     1. Pass in a direct remote image URL, for example: `pf;member jane propic <https://cdn.pixabay.com/photo/2020/05/02/02/54/animal-5119676_1280.jpg>`. You can upload images on sites like <https://imgbb.com/>.
     2. Upload an attachment directly.
     **NOTE:** Fluxer does not save your attachments forever, so option #1 is recommended.
+  - `proxy` Updates the proxy tag for a specific member based on their name. The proxy must be formatted with the tags surrounding the word 'text', for example: `pf;member jane proxy Jane:text` or `pf;member amal proxy [text]` This is so the bot can detect what the proxy tags are. Only one proxy can be set per member currently.
 
 ## Upcoming
 - [ ] React with x to delete message
