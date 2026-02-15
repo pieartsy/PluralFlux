@@ -11,6 +11,7 @@ const database = {};
 
 const sequelize = new Sequelize('postgres', 'postgres', password, {
     host: 'localhost',
+    logging: false,
     dialect: 'postgres'
 });
 
