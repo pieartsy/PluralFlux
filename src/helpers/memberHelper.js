@@ -54,7 +54,7 @@ mh.parseMemberCommand = async function(authorId, authorFull, args, attachmentUrl
         case 'proxy':
             return await mh.updateProxy(authorId, args).catch((e) =>{throw e});
         case 'propic':
-            return await mh.updatePropic(authorId, args, attachmentUrl).catch((e) =>{throw e});
+            return await mh.updatePropic(authorId, args, attachmentUrl, attachmentExpiration).catch((e) =>{throw e});
         default:
             return member;
     }
@@ -168,11 +168,11 @@ mh.updateProxy = async function(authorId, args) {
  * @param {string} authorId - The author of the message
  * @param {string[]} args - The message arguments
  * @param {string} attachmentUrl - The url of the first attachment in the message
- * @param {string} attachmentExpiry - The expiration date of the first attachment in the message
+ * @param {string | null} attachmentExpiry - The expiration date of the first attachment in the message (if uploaded to Fluxer)
  * @returns {Promise<string>} A successful update.
  * @throws {Error} When loading the profile picture from a URL doesn't work.
  */
-mh.updatePropic = async function(authorId, args, attachmentUrl, attachmentExpiry) {
+mh.updatePropic = async function(authorId, args, attachmentUrl, attachmentExpiry= null) {
     if (args[1] && args[1] === "--help") {
         return enums.help.PROPIC;
     }
@@ -302,7 +302,7 @@ mh.updateMemberField = async function(authorId, args) {
  * @param {string} expirationString - An expiration date string.
  * @returns {string} A description of the expiration, interpolating the expiration string.
  */
-mh.setExpirationWarning = async function(expirationString) {
+mh.setExpirationWarning = function(expirationString) {
     let expirationDate = new Date(expirationString);
     if (!isNaN(expirationDate.valueOf())) {
         expirationDate = expirationDate.toDateString();
