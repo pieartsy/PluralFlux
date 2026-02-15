@@ -18,3 +18,9 @@ You can optionally add a display name after the member name, for example: `pf;me
     1. Pass in a direct remote image URL, for example: `pf;member jane propic <https://cdn.pixabay.com/photo/2020/05/02/02/54/animal-5119676_1280.jpg>`. You can upload images on sites like <https://imgbb.com/>.
     2. Upload an attachment directly.
     **NOTE:** Fluxer does not save your attachments forever, so option #1 is recommended.
+
+## Upcoming
+- [ ] React with x to delete message
+- [ ] Reply to edit message
+- [ ] System tag at the end of messages
+- [ ] Optionally keep proxy tag in message
