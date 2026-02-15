@@ -177,12 +177,11 @@ mh.checkIfProxyExists = async function(authorId, proxy) {
     if(splitProxy.length < 2) throw new Error(enums.err.NO_TEXT_FOR_PROXY);
     if(!splitProxy[0] && !splitProxy[1]) throw new Error(enums.err.NO_PROXY_WRAPPER);
 
-    const members = await mh.getMembersByAuthor(authorId).then(() => {
-        const proxyExists = members.some(member => member.proxy === proxy);
+    await mh.getMembersByAuthor(authorId).then((memberList) => {
+        const proxyExists = memberList.some(member => member.proxy === proxy);
         if (proxyExists) {
             throw new Error(enums.err.PROXY_EXISTS);
         }
-        return false;
     }).catch(e =>{throw e});
 
 }
@@ -252,23 +251,26 @@ mh.removeMember = async function(authorId, args) {
  * @async
  * @param {string} authorId - The author of the message
  * @param {string} memberName - The name of the member.
- * @param {string} displayName - The display name of the member.
+ * @param {string | null} displayName - The display name of the member.
  * @param {string | null} proxy - The proxy tag of the member.
  * @param {string | null} propic - The profile picture URL of the member.
  * @returns {Promise<string>} A successful addition.
  * @throws {Error | RangeError}  When the member already exists, there are validation errors, or adding a member doesn't work.
  */
-mh.addFullMember = async function(authorId, memberName, displayName, proxy = null, propic= null) {
-    const member = await mh.getMemberByName(authorId, memberName);
+mh.addFullMember = async function(authorId, memberName, displayName = null, proxy = null, propic= null) {
+    const member = await mh.getMemberByName(authorId, memberName).catch((e) =>{throw e});
     if (member) {
         throw new Error(`Can't add ${memberName}. ${enums.err.MEMBER_EXISTS}`);
     }
-
-    const trimmedName = displayName ? displayName.trim() : null;
-    if (trimmedName && trimmedName.length > 32) {
-        throw new RangeError(`Can't add ${memberName}. ${enums.err.DISPLAY_NAME_TOO_LONG}`);
+    if (displayName) {
+        const trimmedName = displayName ? displayName.trim() : null;
+        if (trimmedName && trimmedName.length > 32) {
+            throw new RangeError(`Can't add ${memberName}. ${enums.err.DISPLAY_NAME_TOO_LONG}`);
+        }
     }
-
+    if (proxy) {
+        await mh.checkIfProxyExists(authorId, proxy).catch((e) =>{throw e});
+    }
     if (propic) {
         await loadImage(propic).catch((err) => {
             throw new Error(`Can't add ${memberName}. ${enums.err.PROPIC_CANNOT_LOAD}: ${err.message}`);
@@ -365,9 +367,9 @@ mh.getMemberInfo = async function(authorId, memberName) {
  */
 mh.getAllMembersInfo = async function(authorId, authorName) {
     const members = await mh.getMembersByAuthor(authorId).catch(e =>{throw e});
-    const fields = [...members.entries()].map(([member]) => ({
+    const fields = [...members.entries()].map(([name, member]) => ({
         name: member.name,
-        value: `(Proxy: \`${member.proxy}\`)`,
+        value: `(Proxy: \`${member.proxy ?? "unset"}\`)`,
         inline: true,
     }));
     return new EmbedBuilder()
