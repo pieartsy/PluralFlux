@@ -11,7 +11,6 @@
   "private": true,
   "dependencies": {
     "@fluxerjs/core": "^1.0.6",
-    "canvas": "^3.2.1",
     "pg": "^8.18.0",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.7"

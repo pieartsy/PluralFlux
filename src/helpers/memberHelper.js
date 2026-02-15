@@ -1,6 +1,5 @@
 import {db} from '../db.js';
 import {enums} from "../enums.js";
-import {loadImage} from "canvas";
 import {EmptyResultError} from "sequelize";
 import {EmbedBuilder} from "@fluxerjs/core";
 
@@ -188,15 +187,29 @@ mh.updatePropic = async function(authorId, args, attachmentUrl, attachmentExpiry
     if (updatedArgs[2]) {
         img = updatedArgs[2];
     }
-
-    const loadedImage = await loadImage(img).then((li) => {
-        return li;
-    }).catch((err) => {
-        throw new Error(`${enums.err.PROPIC_CANNOT_LOAD}: ${err.message}`);
-    });
-    if (loadedImage) {
+    console.log(img);
+    const isValidImage = await mh.checkImageFormatValidity(img).catch((e) =>{throw e});
+    if (isValidImage) {
         return await mh.updateMemberField(authorId, updatedArgs).catch((e) =>{throw e});
     }
+}
+
+/**
+ * Checks if an uploaded picture is in the right format.
+ *
+ * @async
+ * @param {string} imageUrl - The url of the image
+ * @returns {Promise<boolean>} - If the image is a valid format.
+ * @throws {Error} When loading the profile picture from a URL doesn't work, or it fails requirements.
+ */
+mh.checkImageFormatValidity = async function(imageUrl) {
+    const acceptableImages = ['image/png', 'image/jpg', 'image/jpeg', 'image/webp'];
+    return await fetch(imageUrl).then(r => r.blob()).then(blobFile => {
+        if (blobFile.size > 1000000 || !acceptableImages.includes(blobFile.type)) throw new Error(enums.err.PROPIC_FAILS_REQUIREMENTS);
+        return true;
+    }).catch((error) => {
+        throw new Error(`${enums.err.PROPIC_CANNOT_LOAD}: ${error.message}`);
+    });
 }
 
 /**
@@ -250,9 +263,10 @@ mh.addFullMember = async function(authorId, memberName, displayName = null, prox
         await mh.checkIfProxyExists(authorId, proxy).catch((e) =>{throw e});
     }
     if (propic) {
-        await loadImage(propic).catch((err) => {
-            throw new Error(`Can't add ${memberName}. ${enums.err.PROPIC_CANNOT_LOAD}: ${err.message}`);
-        });
+        const isValidImage = await mh.checkImageFormatValidity(img).catch((e) =>{throw e});
+        if (isValidImage) {
+            return await mh.updateMemberField(authorId, updatedArgs).catch((e) =>{throw e});
+        }
     }
 
     return await db.members.create({
