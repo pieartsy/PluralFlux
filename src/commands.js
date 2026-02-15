@@ -43,29 +43,24 @@ cmds.set('help', {
 cmds.set('import', {
     description: enums.help.IMPORT,
     async execute(message) {
-        try {
-            const attachmentUrl = message.attachments.size > 0 ? message.attachments.first().url : null;
+        const attachmentUrl = message.attachments.size > 0 ? message.attachments.first().url : null;
 
-            const successfullyAdded = importHelper.pluralKitImport(message.author.id, attachmentUrl);
-            console.log(successfullyAdded + "added");
+        return await importHelper.pluralKitImport(message.author.id, attachmentUrl).then(async (successfullyAdded) => {
             await message.reply(successfullyAdded);
-        }
-        catch(error) {
+        }).catch(async (error) => {
             console.log(error.message)
             if (error instanceof AggregateError) {
+                console.log(error);
                 // errors.message can be a list of successfully added members, or say that none were successful.
-                let errorsText = `${error.message}.\nThese errors occurred: ${error.join('\n')}`;
+                let errorsText = `${error.message}.\nThese errors occurred:\n${error.errors.join('\n')}`;
                 await message.reply(errorsText);
             }
             // If just one error was returned.
             else {
                 return await message.reply(error.message);
             }
-
-
-        }
-    },
+        })
+    }
 })
-
 
 export const commands = cmds;
