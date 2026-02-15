@@ -24,7 +24,9 @@ client.on(Events.MessageCreate, async (message) => {
 
         // If message doesn't start with the bot prefix, it could still be a message with a proxy tag. If it's not, return.
         if (!content.startsWith(messageHelper.prefix)) {
-            await webhookHelper.sendMessageAsMember(client, message, content).catch(e => throw e);
+            await webhookHelper.sendMessageAsMember(client, message, content).catch((e) => {
+                throw e
+            });
             return;
         }
 
@@ -36,7 +38,9 @@ client.on(Events.MessageCreate, async (message) => {
 
         const command = commands.get(commandName);
         if (command) {
-            await command.execute(message, client, args).catch(e => throw e);
+            await command.execute(message, client, args).catch(e => {
+                throw e
+            });
         }
     }
     catch(error) {
