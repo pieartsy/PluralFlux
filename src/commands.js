@@ -48,9 +48,7 @@ cmds.set('import', {
         return await importHelper.pluralKitImport(message.author.id, attachmentUrl).then(async (successfullyAdded) => {
             await message.reply(successfullyAdded);
         }).catch(async (error) => {
-            console.log(error.message)
             if (error instanceof AggregateError) {
-                console.log(error);
                 // errors.message can be a list of successfully added members, or say that none were successful.
                 let errorsText = `${error.message}.\nThese errors occurred:\n${error.errors.join('\n')}`;
                 await message.reply(errorsText);

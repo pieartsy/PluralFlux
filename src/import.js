@@ -28,7 +28,6 @@ ih.pluralKitImport = async function (authorId, attachmentUrl) {
                     errors.push(`${pkMember.name}: ${e.message}`);
                 });
             }
-            console.log(addedMembers);
             const aggregatedText = addedMembers.length > 0 ? `Successfully added members: ${addedMembers.join(', ')}` : enums.err.NO_MEMBERS_IMPORTED;
             if (errors.length > 0) {
                 throw new AggregateError(errors, aggregatedText);
