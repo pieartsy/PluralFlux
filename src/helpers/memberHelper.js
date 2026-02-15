@@ -71,7 +71,7 @@ mh.parseMemberCommand = async function(authorId, authorFull, args, attachmentUrl
  */
 mh.addNewMember = async function(authorId, args) {
     if (args[1] && args[1] === "--help" || !args[1]) {
-        return enums.help.ADD;
+        return enums.help.NEW;
     }
     const memberName = args[1];
     const displayName = args[2];
