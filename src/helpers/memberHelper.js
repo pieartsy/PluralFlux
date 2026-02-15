@@ -344,8 +344,8 @@ mh.setExpirationWarning = async function(expirationString) {
 mh.getMemberInfo = async function(authorId, memberName) {
     return await mh.getMemberByName(authorId, memberName).then((member) => {
         return new EmbedBuilder()
-            .setTitle(memberName)
-            .setDescription(`Details for ${memberName}`)
+            .setTitle(member.name)
+            .setDescription(`Details for ${member.name}`)
             .addFields(
                 {name: 'Display name: ', value: member.displayname ?? 'unset', inline: true},
                 {name: 'Proxy tag: ', value: member.proxy ?? 'unset', inline: true},
@@ -385,7 +385,9 @@ mh.getAllMembersInfo = async function(authorId, authorName) {
  * @throws { EmptyResultError } When the member is not found.
  */
 mh.getMemberByName = async function(authorId, memberName) {
+    console.log(memberName);
     return await db.members.findOne({ where: { userid: authorId, name: memberName } }).catch(e => {
+        console.log(e);
         throw new EmptyResultError(`Can't get ${memberName}. ${enums.err.NO_MEMBER}: ${e.message}`);
     });
 }
