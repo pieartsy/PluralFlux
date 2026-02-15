@@ -15,7 +15,7 @@ All commands are prefixed by `pf;`. Currently only a few are implemented.
 - `pf;import` - Imports from PluralKit using the JSON file provided by their export command. Importing from other proxy bots is *TBD*. `pf;import` and attach your JSON file to the message.
 
 - `pf;member` - Accesses the sub-commands related to editing proxy members. The available subcommands are:
-  - `add` - Creates a new member to proxy with, for example: `pf;member jane`. The member name should ideally be short so you can write other commands with it easily.
+  - `new` - Creates a new member to proxy with, for example: `pf;member jane`. The member name should ideally be short so you can write other commands with it easily.
 You can optionally add a display name after the member name, for example: `pf;member new jane "Jane Doe | ze/hir"`. If it has spaces, put it in __double quotes__. The length limit is 32 characters.
   - `remove` - Removes a member based on their name, for example: `pf;member remove jane`.
   - `name` - Updates the name for a specific member based on their current name, for ex: `pf;member john name jane`. The member name should ideally be short so you can write other commands with it easily.

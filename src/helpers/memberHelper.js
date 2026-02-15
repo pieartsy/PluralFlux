@@ -6,7 +6,7 @@ import {EmbedBuilder} from "@fluxerjs/core";
 const mh = {};
 
 // Has an empty "command" to parse the help message properly
-const commandList = ['--help', 'add', 'remove', 'name', 'list', 'displayName', 'proxy', 'propic', ''];
+const commandList = ['--help', 'new', 'remove', 'name', 'list', 'displayName', 'proxy', 'propic', ''];
 
 /**
  * Parses through the subcommands that come after "pf;member" and calls functions accordingly.
@@ -29,7 +29,7 @@ mh.parseMemberCommand = async function(authorId, authorFull, args, attachmentUrl
     switch(args[0]) {
         case '--help':
             return enums.help.MEMBER;
-        case 'add':
+        case 'new':
             return await mh.addNewMember(authorId, args).catch((e) =>{throw e});
         case 'remove':
             return await mh.removeMember(authorId, args).catch((e) =>{throw e});
