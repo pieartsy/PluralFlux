@@ -232,11 +232,11 @@ mh.removeMember = async function(authorId, args) {
  * @param {string | null} displayName - The display name of the member.
  * @param {string | null} proxy - The proxy tag of the member.
  * @param {string | null} propic - The profile picture URL of the member.
- * @returns {Promise<string>} A successful addition.
+ * @returns {Promise<model>} A successful addition.
  * @throws {Error | RangeError}  When the member already exists, there are validation errors, or adding a member doesn't work.
  */
 mh.addFullMember = async function(authorId, memberName, displayName = null, proxy = null, propic= null) {
-    const member = await mh.getMemberByName(authorId, memberName).catch((e) =>{throw e});
+    const member = await mh.getMemberByName(authorId, memberName).catch((e) =>{console.log("Now we can add the member.")});
     if (member) {
         throw new Error(`Can't add ${memberName}. ${enums.err.MEMBER_EXISTS}`);
     }
@@ -322,7 +322,6 @@ mh.setExpirationWarning = function(expirationString) {
  */
 mh.getMemberInfo = async function(authorId, memberName) {
     return await mh.getMemberByName(authorId, memberName).then((member) => {
-        console.log(member);
         return new EmbedBuilder()
             .setTitle(member.name)
             .setDescription(`Details for ${member.name}`)

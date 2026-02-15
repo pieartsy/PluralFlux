@@ -6,24 +6,36 @@ const ih = {};
 /**
  * Tries to import from Pluralkit.
  *
+ * @async
  * @param {string} authorId - The author of the message
- * @param {string} attachment - The attached JSON url.
- * @returns {string} A successful addition.
+ * @param {string} attachmentUrl - The attached JSON url.
+ * @returns {string} A successful addition of all members.
  * @throws {Error}  When the member exists, or creating a member doesn't work.
  */
-ih.pluralKitImport = function (authorId, attachment) {
-    try {
-        const pkData = JSON.parse(attachment);
-        const pkMembers = pkData.members;
-        pkMembers.forEach(async(pkMember) => {
-            const proxy = `${pkMember.proxy_tags.prefix}text${pkMember.proxy_tags.suffix}`;
-            await memberHelper.addFullMember(authorId, pkMember.name, pkMember.display_name, proxy, avatar_url);
-        })
-        return "All members imported.";
+ih.pluralKitImport = async function (authorId, attachmentUrl) {
+    if (!attachmentUrl) {
+        throw new Error(enums.err.NOT_JSON_FILE);
     }
-    catch {
-        throw new Error(enums.err.NOT_JSON);
-    }
+    return fetch(attachmentUrl).then((res) => res.json()).then(async(pkData) => {
+            const pkMembers = pkData.members;
+            const errors = [];
+            const addedMembers = [];
+            for (let pkMember of pkMembers) {
+                const proxy = pkMember.proxy_tags[0] ? `${pkMember.proxy_tags[0].prefix ?? ''}text${pkMember.proxy_tags[0].suffix ?? ''}` : null;
+
+                // can't add profile pic until i figure out how to convert webp
+                await memberHelper.addFullMember(authorId, pkMember.name, pkMember.display_name, proxy).then((member) => {
+                    addedMembers.push(member.name);
+                }).catch(e => {
+                    errors.push(`${pkMember.name}: ${e.message}`);
+                });
+            }
+            const aggregatedText = addedMembers > 0 ? `Successfully added members: ${addedMembers.join(', ')}` : enums.err.NO_MEMBERS_IMPORTED;
+            if (errors.length > 0) {
+                throw new AggregateError(errors, aggregatedText);
+            }
+            return aggregatedText;
+        });
 }
 
 export const importHelper = ih;

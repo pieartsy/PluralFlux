@@ -2,6 +2,7 @@ import {messageHelper} from "./helpers/messageHelper.js";
 import {enums} from "./enums.js";
 import {memberHelper} from "./helpers/memberHelper.js";
 import {EmbedBuilder} from "@fluxerjs/core";
+import {importHelper} from "./import.js";
 
 const cmds = new Map();
 
@@ -38,5 +39,33 @@ cmds.set('help', {
         await message.reply({ embeds: [embed.toJSON()] });
     },
 })
+
+cmds.set('import', {
+    description: enums.help.IMPORT,
+    async execute(message) {
+        try {
+            const attachmentUrl = message.attachments.size > 0 ? message.attachments.first().url : null;
+
+            const successfullyAdded = importHelper.pluralKitImport(message.author.id, attachmentUrl);
+            console.log(successfullyAdded + "added");
+            await message.reply(successfullyAdded);
+        }
+        catch(error) {
+            console.log(error.message)
+            if (error instanceof AggregateError) {
+                // errors.message can be a list of successfully added members, or say that none were successful.
+                let errorsText = `${error.message}.\nThese errors occurred: ${error.join('\n')}`;
+                await message.reply(errorsText);
+            }
+            // If just one error was returned.
+            else {
+                return await message.reply(error.message);
+            }
+
+
+        }
+    },
+})
+
 
 export const commands = cmds;

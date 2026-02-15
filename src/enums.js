@@ -17,7 +17,8 @@ helperEnums.err = {
     NO_MESSAGE_SENT_WITH_PROXY: 'Proxied message has no content.',
     NO_TEXT_FOR_PROXY: "You need the word 'text' for the bot to detect proxy tags with.\nCorrect usage examples: `pf;member jane proxy J:text`, `pf;member jane [text]`",
     NO_PROXY_WRAPPER: "You need at least one proxy tag surrounding 'text', either before or after.\nCorrect usage examples: `pf;member jane proxy J:text`, `pf;member jane [text]`",
-    NOT_JSON: "Please attach a valid JSON file."
+    NOT_JSON_FILE: "Please attach a valid JSON file.",
+    NO_MEMBERS_IMPORTED: 'No members were imported.'
 }
 
 helperEnums.help = {
@@ -32,6 +33,7 @@ helperEnums.help = {
     DISPLAY_NAME: "Updates the display name for a specific member based on their name, for example: `pf;member jane \"Jane Doe | ze/hir\"`.This can be up to 32 characters long. If it has spaces, put it in __double quotes__.",
     PROXY: "Updates the proxy tag for a specific member based on their name. The proxy must be formatted with the tags surrounding the word 'text', for example: `pf;member jane proxy Jane:text` or `pf;member amal proxy [text]` This is so the bot can detect what the proxy tags are.",
     PROPIC: "Updates the profile picture for the member. Must be in JPG or PNG format. The two options are:\n1. Pass in a direct remote image URL, for example: `pf;member jane propic <https://cdn.pixabay.com/photo/2020/05/02/02/54/animal-5119676_1280.jpg>`. You can upload images on sites like <https://imgbb.com/>.\n2. Upload an attachment directly.\n\n**NOTE:** Fluxer does not save your attachments forever, so option #1 is recommended.",
+    IMPORT: "Imports from PluralKit using the JSON file provided by their export command. Importing from other proxy bots is TBD. `pf;import` and attach your JSON file to the message."
 }
 
 export const enums = helperEnums;
