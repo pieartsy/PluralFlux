@@ -208,7 +208,7 @@ mh.checkImageFormatValidity = async function(imageUrl) {
         if (blobFile.size > 1000000 || !acceptableImages.includes(blobFile.type)) throw new Error(enums.err.PROPIC_FAILS_REQUIREMENTS);
         return true;
     }).catch((error) => {
-        throw new Error(`${enums.err.PROPIC_CANNOT_LOAD}: ${error.message}, ${error.cause}`);
+        throw new Error(`${enums.err.PROPIC_CANNOT_LOAD}: ${error.message}`);
     });
 }
 
