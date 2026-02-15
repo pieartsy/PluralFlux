@@ -2,7 +2,7 @@
   "name": "pluralflux",
   "version": "1.0.0",
   "description": "",
-  "main": "bot.js",
+  "main": "src/bot.js",
   "type": "module",
   "repository": {
     "type": "git",
