@@ -41,7 +41,7 @@ cmds.set('help', {
 })
 
 cmds.set('import', {
-    description: enums.help.IMPORT,
+    description: enums.help.SHORT_DESC_IMPORT,
     async execute(message) {
         const attachmentUrl = message.attachments.size > 0 ? message.attachments.first().url : null;
 

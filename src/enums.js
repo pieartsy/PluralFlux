@@ -24,6 +24,7 @@ helperEnums.err = {
 helperEnums.help = {
     SHORT_DESC_HELP: "Lists available commands.",
     SHORT_DESC_MEMBER: "Commands and sub-commands related to proxy members.",
+    SHORT_DESC_IMPORT: "Imports from PluralKit.",
     SHORT_DESC_PLURALFLUX: "PluralFlux is a proxybot akin to PluralKit and Tupperbot, but for Fluxer. All commands are prefixed by `pf;`. Type `pf;help` for info on the bot itself.",
     PLURALFLUX: "PluralFlux is a proxybot akin to PluralKit and Tupperbot, but for Fluxer. All commands are prefixed by `pf;`. Add ` --help` to the end of a command to find out more about it, or just send it without arguments.",
     MEMBER: "Accesses the sub-commands related to editing proxy members. The available subcommands are `list`, `add`, `remove`, `displayname`, `proxy`, and `propic`. Add ` --help` to the end of a subcommand to find out more about it, or just send it without arguments.",
