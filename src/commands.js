@@ -9,7 +9,7 @@ cmds.set('member', {
     description: enums.help.SHORT_DESC_MEMBER,
     async execute(message, client, args) {
         const authorFull = `${message.author.username}#${message.author.discriminator}`
-        const reply = await memberHelper.parseMemberCommand(message.author.id, authorFull, args, message.attachments[0] = null).catch(e => throw e);
+        const reply = await memberHelper.parseMemberCommand(message.author.id, authorFull, args, message.attachments[0] = null).catch(e =>{throw e});
         if (typeof reply === 'string') {
             return await message.reply(reply);
         }

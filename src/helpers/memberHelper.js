@@ -17,21 +17,19 @@ const commandList = ['--help', 'add', 'remove', 'name', 'listall', 'displayName'
  * @param {string | null} attachmentUrl - The message attachment url.
  * @returns {Promise<string> | Promise <EmbedBuilder>} A message, or an informational embed.
  */
-mh.parseMemberCommand = async function(author, args, attachmentUrl){
-    const authorId = author.id;
-    const authorFull = `${author.username}${author.discriminator}`;
+mh.parseMemberCommand = async function(authorId, authorFull, args, attachmentUrl){
     let member;
     // checks whether command is in list, otherwise assumes it's a name
     if(!commandList.includes(args[0])) {
-        member = await getMemberInfo(authorId, args[0]);
+        member = await mh.getMemberInfo(authorId, args[0]).catch((e) =>{throw e});
     }
     switch(args[0]) {
         case '--help':
             return enums.help.MEMBER;
         case 'add':
-            return await mh.addNewMember(authorId, args).catch((e) => throw e);
+            return await mh.addNewMember(authorId, args).catch((e) =>{throw e});
         case 'remove':
-            return await mh.removeMember(authorId, args).catch((e) => throw e);
+            return await mh.removeMember(authorId, args).catch((e) =>{throw e});
         case 'name':
             return enums.help.NAME;
         case 'displayname':
@@ -41,19 +39,19 @@ mh.parseMemberCommand = async function(author, args, attachmentUrl){
         case 'propic':
             return enums.help.PROPIC;
         case 'list':
-            return await mh.getAllMembersInfo(authorId, authorFull).catch((e) => throw e);
+            return await mh.getAllMembersInfo(authorId, authorFull).catch((e) =>{throw e});
         case '':
             return enums.help.MEMBER;
     }
     switch(args[1]) {
         case 'name':
-            return await mh.updateName(authorId, args).catch((e) => throw e);
+            return await mh.updateName(authorId, args).catch((e) =>{throw e});
         case 'displayname':
-            return await mh.updateDisplayName(authorId, args).catch((e) => throw e);
+            return await mh.updateDisplayName(authorId, args).catch((e) =>{throw e});
         case 'proxy':
-            return await mh.updateProxy(authorId, args).catch((e) => throw e);
+            return await mh.updateProxy(authorId, args).catch((e) =>{throw e});
         case 'propic':
-            return await mh.updatePropic(authorId, args, attachmentUrl).catch((e) => throw e);
+            return await mh.updatePropic(authorId, args, attachmentUrl).catch((e) =>{throw e});
         default:
             return member;
     }
@@ -103,7 +101,7 @@ mh.updateName = async function (authorId, args) {
     if (!name || trimmedName === null) {
         throw new RangeError(`Display name ${enums.err.NO_VALUE}`);
     }
-    return await mh.updateMemberField(authorId, args).catch((e) => throw e);
+    return await mh.updateMemberField(authorId, args).catch((e) =>{throw e});
 }
 
 /**
@@ -130,13 +128,13 @@ mh.updateDisplayName = async function(authorId, args) {
                 return `Display name for ${memberName} is: \"${member.displayname}\".`;
             }
             throw new RangeError(`Display name ${enums.err.NO_VALUE}`);
-        }).catch((e) => throw e);
+        }).catch((e) =>{throw e});
 
     }
     else if (displayName.length > 32) {
         throw new RangeError(enums.err.DISPLAY_NAME_TOO_LONG);
     }
-    return await mh.updateMemberField(authorId, args).catch((e) => throw e);
+    return await mh.updateMemberField(authorId, args).catch((e) =>{throw e});
 }
 
 /**
@@ -154,9 +152,9 @@ mh.updateProxy = async function(authorId, args) {
     }
     const proxyExists = await mh.checkIfProxyExists(authorId, args[2]).then((proxyExists) => {
         return proxyExists;
-    }).catch((e) => throw e);
+    }).catch((e) =>{throw e});
     if (!proxyExists) {
-        return await mh.updateMemberField(authorId, args).catch((e) => throw e);
+        return await mh.updateMemberField(authorId, args).catch((e) =>{throw e});
     }
 }
 
@@ -182,7 +180,7 @@ mh.checkIfProxyExists = async function(authorId, proxy) {
             throw new Error(enums.err.PROXY_EXISTS);
         }
         return false;
-    }).catch(e => throw e);
+    }).catch(e =>{throw e});
 
 }
 /**
@@ -217,7 +215,7 @@ mh.updatePropic = async function(authorId, args, attachment) {
         throw new Error(`${enums.err.PROPIC_CANNOT_LOAD}: ${err.message}`);
     });
     if (loadedImage) {
-        return await mh.updateMemberField(authorId, updatedArgs).catch((e) => throw e);
+        return await mh.updateMemberField(authorId, updatedArgs).catch((e) =>{throw e});
     }
 }
 
@@ -350,7 +348,7 @@ mh.getMemberInfo = async function(authorId, memberName) {
                 {name: 'Proxy tag: ', value: member.proxy ?? 'unset', inline: true},
             )
             .setImage(member.propic);
-    }).catch((e) => throw e)
+    }).catch((e) =>{throw e})
 }
 
 /**
@@ -363,7 +361,7 @@ mh.getMemberInfo = async function(authorId, memberName) {
  * @throws {Error}
  */
 mh.getAllMembersInfo = async function(authorId, authorName) {
-    const members = await mh.getMembersByAuthor(authorId).catch(e => throw e);
+    const members = await mh.getMembersByAuthor(authorId).catch(e =>{throw e});
     const fields = [...members.entries()].map(([member]) => ({
         name: member.name,
         value: `(Proxy: \`${member.proxy}\`)`,

@@ -15,7 +15,7 @@ const name = 'PluralFlux Proxy Webhook';
  * @throws {Error} When the proxy message is not in a server.
  */
 wh.sendMessageAsMember = async function(client, message, content) {
-    const proxyMatch = await messageHelper.parseProxyTags(message.author.id, message.attachments[0] ?? null, content).catch(e => throw e);
+    const proxyMatch = await messageHelper.parseProxyTags(message.author.id, message.attachments[0] ?? null, content).catch(e =>{throw e});
     // If the message doesn't match a proxy, just return.
     if (!proxyMatch.proxy) {
         return;
@@ -24,8 +24,8 @@ wh.sendMessageAsMember = async function(client, message, content) {
     if (!message.guildId) {
         throw new Error(enums.err.NOT_IN_SERVER);
     }
-    const member = await memberHelper.getMemberByProxy(message.author.id, proxyMatch.proxy).catch(e => throw e);
-    await replaceMessage(client, message, message.channelId, proxyMatch.message, member).catch(e => throw e);
+    const member = await memberHelper.getMemberByProxy(message.author.id, proxyMatch.proxy).catch(e =>{throw e});
+    await replaceMessage(client, message, message.channelId, proxyMatch.message, member).catch(e =>{throw e});
 }
 
 /**
@@ -40,7 +40,7 @@ wh.sendMessageAsMember = async function(client, message, content) {
 async function replaceMessage(client, message, channelId, text, member) {
     if (text.length > 0) {
         const channel = client.channels.get(channelId);
-        const webhook = await getOrCreateWebhook(client, channel).catch((e) => throw e);
+        const webhook = await getOrCreateWebhook(client, channel).catch((e) =>{throw e});
         const username = member.displayname ?? member.name;
         await webhook.send({content: text, username: username, avatar_url: member.propic});
         await message.delete();
@@ -74,7 +74,7 @@ async function replaceMessage(client, message, channelId, text, member) {
 async function getOrCreateWebhook(client, channel) {
     // If channel doesn't allow webhooks
     if (!channel?.createWebhook) throw new Error(enums.err.NO_WEBHOOKS_ALLOWED);
-    let webhook = await getWebhook(client, channel).catch((e) => throw e);
+    let webhook = await getWebhook(client, channel).catch((e) =>{throw e});
     if (!webhook) {
         webhook = await channel.createWebhook({name: name});
     }
