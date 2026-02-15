@@ -16,7 +16,10 @@ cmds.set('member', {
         if (typeof reply === 'string') {
             return await message.reply(reply);
         }
-        await message.reply({embeds: [reply.toJSON()]})
+        else if (reply instanceof EmbedBuilder) {
+            await message.reply({embeds: [reply.toJSON()]})
+        }
+
     }
 })
 
