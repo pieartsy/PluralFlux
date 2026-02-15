@@ -208,7 +208,7 @@ mh.checkImageFormatValidity = async function(imageUrl) {
         if (blobFile.size > 1000000 || !acceptableImages.includes(blobFile.type)) throw new Error(enums.err.PROPIC_FAILS_REQUIREMENTS);
         return true;
     }).catch((error) => {
-        throw new Error(`${enums.err.PROPIC_CANNOT_LOAD}: ${error.message}`);
+        throw new Error(`${enums.err.PROPIC_CANNOT_LOAD}: ${error.message}, ${error.cause}`);
     });
 }
 
@@ -249,7 +249,7 @@ mh.removeMember = async function(authorId, args) {
  * @throws {Error | RangeError}  When the member already exists, there are validation errors, or adding a member doesn't work.
  */
 mh.addFullMember = async function(authorId, memberName, displayName = null, proxy = null, propic= null) {
-    const member = await mh.getMemberByName(authorId, memberName).catch((e) =>{console.log("Now we can add the member.")});
+    const member = await mh.getMemberByName(authorId, memberName).catch(() =>{console.log("Now we can add the member.")});
     if (member) {
         throw new Error(`Can't add ${memberName}. ${enums.err.MEMBER_EXISTS}`);
     }
@@ -263,10 +263,7 @@ mh.addFullMember = async function(authorId, memberName, displayName = null, prox
         await mh.checkIfProxyExists(authorId, proxy).catch((e) =>{throw e});
     }
     if (propic) {
-        const isValidImage = await mh.checkImageFormatValidity(img).catch((e) =>{throw e});
-        if (isValidImage) {
-            return await mh.updateMemberField(authorId, updatedArgs).catch((e) =>{throw e});
-        }
+        await mh.checkImageFormatValidity(propic).catch((e) =>{throw e});
     }
 
     return await db.members.create({
@@ -300,7 +297,7 @@ mh.updateMemberField = async function(authorId, args) {
         fluxerPropicWarning = mh.setExpirationWarning(args[3]);
     }
     return await db.members.update({[columnName]: value}, { where: { name: memberName, userid: authorId } }).then(() => {
-        return `Updated ${columnName} for ${memberName} to "${value}"${fluxerPropicWarning ?? ''}.`;
+        return `Updated ${columnName} for ${memberName} to ${value}${fluxerPropicWarning ?? ''}.`;
     }).catch(e => {
         if (e === EmptyResultError) {
             throw new EmptyResultError(`Can't update ${memberName}. ${enums.err.NO_MEMBER}: ${e.message}`);
@@ -321,7 +318,7 @@ mh.setExpirationWarning = function(expirationString) {
     let expirationDate = new Date(expirationString);
     if (!isNaN(expirationDate.valueOf())) {
         expirationDate = expirationDate.toDateString();
-        return `\n**NOTE:** Because this profile picture was uploaded via Fluxer, it will currently expire on *${expirationDate}*. To avoid this, upload the picture to another website like <https://imgbb.com/> and link to it directly.`
+        return `\n**NOTE:** Because this profile picture was uploaded via Fluxer, it will currently expire on *${expirationDate}*. To avoid this, upload the picture to another website like <https://imgbb.com/> and link to it directly`
     }
 }
 

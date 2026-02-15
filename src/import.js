@@ -22,9 +22,7 @@ ih.pluralKitImport = async function (authorId, attachmentUrl) {
             const addedMembers = [];
             for (let pkMember of pkMembers) {
                 const proxy = pkMember.proxy_tags[0] ? `${pkMember.proxy_tags[0].prefix ?? ''}text${pkMember.proxy_tags[0].suffix ?? ''}` : null;
-
-                // can't add profile pic until i figure out how to convert webp
-                await memberHelper.addFullMember(authorId, pkMember.name, pkMember.display_name, proxy).then((member) => {
+                await memberHelper.addFullMember(authorId, pkMember.name, pkMember.display_name, proxy, pkMember.avatar_url).then((member) => {
                     addedMembers.push(member.name);
                 }).catch(e => {
                     errors.push(`${pkMember.name}: ${e.message}`);

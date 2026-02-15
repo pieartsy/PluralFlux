@@ -61,6 +61,7 @@ client.on(Events.Ready, () => {
 
 try {
     await client.login(token);
+    // await db.check_connection();
     console.log('Gateway connected');
 } catch (err) {
     console.error('Login failed:', err);
