@@ -52,17 +52,11 @@ client.on(Events.MessageCreate, async (message) => {
 client.on(Events.Ready, () => {
     console.log(`Logged in as ${client.user?.username}`);
     console.log(`Serving ${client.guilds.size} guild(s)`);
-    const status = ['online', 'idle', 'dnd', 'invisible'].includes(BOT_STATUS) ? BOT_STATUS : 'online';
-    client.sendToGateway(0, {
-        op: GatewayOpcodes.PresenceUpdate,
-        d: { status },
-    });
 });
 
 try {
     await client.login(token);
     // await db.check_connection();
-    console.log('Gateway connected');
 } catch (err) {
     console.error('Login failed:', err);
     process.exit(1);
