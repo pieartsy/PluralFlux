@@ -39,7 +39,7 @@ msgh.parseCommandArgs = function(content, commandName) {
  * @returns {Object} The proxy message object.
  */
 msgh.parseProxyTags = async function (authorId, attachment, content){
-    const members = await memberHelper.getMembersByAuthor(authorId);
+    const members = await memberHelper.getMembersByAuthor(authorId).catch(e => throw e);
 
     const proxyMessage = {}
     members.filter(member => member.proxy).forEach(member => {
