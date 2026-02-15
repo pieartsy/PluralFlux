@@ -55,7 +55,8 @@ msgh.parseProxyTags = async function (authorId, attachment, content){
             const removePrefix = new RegExp("^" + splitProxy[0]);
             const removeSuffix = new RegExp(splitProxy[1] + "$");
             proxyMessage.message = content.replace(removePrefix, "").replace(removeSuffix, "");
-            if (proxyMessage.message.length <= splitProxy[0].length + splitProxy[1].length && !attachment) throw new Error(enums.err.NO_MESSAGE_SENT_WITH_PROXY);
+
+            if (proxyMessage.message.length === 0 && !attachment) throw new Error(enums.err.NO_MESSAGE_SENT_WITH_PROXY);
         }
     })
     return proxyMessage;

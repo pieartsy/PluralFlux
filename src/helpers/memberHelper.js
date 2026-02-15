@@ -414,9 +414,6 @@ mh.getMembersByAuthor = async function(authorId) {
  * @throws {Error} When an empty proxy was provided, or no proxy exists.
  */
 mh.checkIfProxyExists = async function(authorId, proxy) {
-    const trimmedProxy = proxy ? proxy.trim() : null;
-
-    if (trimmedProxy == null) throw new RangeError(`Proxy ${enums.err.NO_VALUE}`);
     const splitProxy = proxy.trim().split("text");
     if(splitProxy.length < 2) throw new Error(enums.err.NO_TEXT_FOR_PROXY);
     if(!splitProxy[0] && !splitProxy[1]) throw new Error(enums.err.NO_PROXY_WRAPPER);

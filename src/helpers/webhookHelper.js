@@ -17,7 +17,7 @@ const name = 'PluralFlux Proxy Webhook';
 wh.sendMessageAsMember = async function(client, message, content) {
     const proxyMatch = await messageHelper.parseProxyTags(message.author.id, message.attachments[0] ?? null, content).catch(e =>{throw e});
     // If the message doesn't match a proxy, just return.
-    if (!proxyMatch.proxy) {
+    if (!proxyMatch || !proxyMatch.proxy) {
         return;
     }
     // If the message does match a proxy but is in a guild server
