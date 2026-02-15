@@ -50,19 +50,6 @@ async function replaceMessage(client, message, channelId, text, member) {
     }
 }
 
-// /**
-//  * Fluxer collapses same-name messages, so if two would be sent by different users, break them up with a tiny space. (Inspired by Tupperbox)
-//  * @param {string} channelId - The channel id to send the webhook message in.
-//  * @param {string} username - The text to send via the webhook.
-//  */
-//
-// function preventSameNameCollapse(channelId, username) {
-//
-//     if(bot.recent[msg.channel.id] && msg.author.id !== bot.recent[msg.channel.id][0].user_id && un === bot.recent[msg.channel.id][0].name) {
-//         username = un.substring(0,1) + "\u200a" + un.substring(1);
-//     }
-// }
-
 /**
  * Gets or creates a webhook.
  *
