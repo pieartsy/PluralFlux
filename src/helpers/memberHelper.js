@@ -20,7 +20,7 @@ const commandList = ['--help', 'add', 'remove', 'name', 'list', 'displayName', '
  * @returns {Promise<string> | Promise <EmbedBuilder>} A message, or an informational embed.
  * @throws {Error}
  */
-mh.parseMemberCommand = async function(authorId, authorFull, args, attachmentUrl){
+mh.parseMemberCommand = async function(authorId, authorFull, args, attachmentUrl = null, attachmentExpiration = null){
     let member;
     // checks whether command is in list, otherwise assumes it's a name
     if(!commandList.includes(args[0])) {
@@ -162,50 +162,27 @@ mh.updateProxy = async function(authorId, args) {
 }
 
 /**
- * Updates the proxy for a member, first checking that no other members attached to the author have the tag.
- *
- * @param {string} authorId - The author of the message
- * @param {string} proxy - The proxy tag.
- * @returns {Promise<boolean> } Whether the proxy exists.
- * @throws {Error} When an empty proxy was provided, or no proxy exists.
- */
-mh.checkIfProxyExists = async function(authorId, proxy) {
-    const trimmedProxy = proxy ? proxy.trim() : null;
-
-    if (trimmedProxy == null) throw new RangeError(`Proxy ${enums.err.NO_VALUE}`);
-    const splitProxy = proxy.trim().split("text");
-    if(splitProxy.length < 2) throw new Error(enums.err.NO_TEXT_FOR_PROXY);
-    if(!splitProxy[0] && !splitProxy[1]) throw new Error(enums.err.NO_PROXY_WRAPPER);
-
-    await mh.getMembersByAuthor(authorId).then((memberList) => {
-        const proxyExists = memberList.some(member => member.proxy === proxy);
-        if (proxyExists) {
-            throw new Error(enums.err.PROXY_EXISTS);
-        }
-    }).catch(e =>{throw e});
-
-}
-/**
  * Updates the profile pic for a member, based on either the attachment or the args provided.
  *
  * @async
  * @param {string} authorId - The author of the message
  * @param {string[]} args - The message arguments
- * @param {string} attachment - The url of the first attachment in the message
+ * @param {string} attachmentUrl - The url of the first attachment in the message
+ * @param {string} attachmentExpiry - The expiration date of the first attachment in the message
  * @returns {Promise<string>} A successful update.
  * @throws {Error} When loading the profile picture from a URL doesn't work.
  */
-mh.updatePropic = async function(authorId, args, attachment) {
+mh.updatePropic = async function(authorId, args, attachmentUrl, attachmentExpiry) {
     if (args[1] && args[1] === "--help") {
         return enums.help.PROPIC;
     }
     let img;
     const updatedArgs = args;
-    if (!updatedArgs[1] && !attachment) {
+    if (!updatedArgs[1] && !attachmentUrl) {
         return enums.help.PROPIC;
-    } else if (attachment) {
-        updatedArgs[2] = attachment.url;
-        updatedArgs[3] = attachment.expires_at;
+    } else if (attachmentUrl) {
+        updatedArgs[2] = attachmentUrl;
+        updatedArgs[3] = attachmentExpiry;
     }
     if (updatedArgs[2]) {
         img = updatedArgs[2];
@@ -305,7 +282,6 @@ mh.updateMemberField = async function(authorId, args) {
 
     // indicates that an attachment was uploaded on Fluxer directly
     if (columnName === "propic" && args[3]) {
-        console.log(args);
         fluxerPropicWarning = mh.setExpirationWarning(args[3]);
     }
     return await db.members.update({[columnName]: value}, { where: { name: memberName, userid: authorId } }).then(() => {
@@ -387,9 +363,7 @@ mh.getAllMembersInfo = async function(authorId, authorName) {
  * @throws { EmptyResultError } When the member is not found.
  */
 mh.getMemberByName = async function(authorId, memberName) {
-    console.log(memberName);
     return await db.members.findOne({ where: { userid: authorId, name: memberName } }).catch(e => {
-        console.log(e);
         throw new EmptyResultError(`Can't get ${memberName}. ${enums.err.NO_MEMBER}: ${e.message}`);
     });
 }
@@ -421,6 +395,31 @@ mh.getMembersByAuthor = async function(authorId) {
     return await db.members.findAll({ where: { userid: authorId } }).catch(e => {
         throw new EmptyResultError(`${enums.err.USER_NO_MEMBERS}: ${e.message}`);
     });
+}
+
+
+/**
+ * Checks if proxy exists for a member.
+ *
+ * @param {string} authorId - The author of the message
+ * @param {string} proxy - The proxy tag.
+ * @returns {Promise<boolean> } Whether the proxy exists.
+ * @throws {Error} When an empty proxy was provided, or no proxy exists.
+ */
+mh.checkIfProxyExists = async function(authorId, proxy) {
+    const trimmedProxy = proxy ? proxy.trim() : null;
+
+    if (trimmedProxy == null) throw new RangeError(`Proxy ${enums.err.NO_VALUE}`);
+    const splitProxy = proxy.trim().split("text");
+    if(splitProxy.length < 2) throw new Error(enums.err.NO_TEXT_FOR_PROXY);
+    if(!splitProxy[0] && !splitProxy[1]) throw new Error(enums.err.NO_PROXY_WRAPPER);
+
+    await mh.getMembersByAuthor(authorId).then((memberList) => {
+        const proxyExists = memberList.some(member => member.proxy === proxy);
+        if (proxyExists) {
+            throw new Error(enums.err.PROXY_EXISTS);
+        }
+    }).catch(e =>{throw e});
 }
 
 
