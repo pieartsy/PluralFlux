@@ -13,7 +13,8 @@
     "@fluxerjs/core": "^1.0.9",
     "pg": "^8.18.0",
     "pg-hstore": "^2.3.4",
-    "sequelize": "^6.37.7"
+    "sequelize": "^6.37.7",
+    "tmp": "^0.2.5"
   },
   "devDependencies": {
     "jest": "^30.2.0"

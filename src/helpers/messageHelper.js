@@ -1,5 +1,6 @@
 import {memberHelper} from "./memberHelper.js";
 import {enums} from "../enums.js";
+import tmp from "tmp";
 
 const msgh = {};
 
@@ -55,10 +56,18 @@ msgh.parseProxyTags = async function (authorId, attachment, content){
             const removeSuffix = new RegExp(splitProxy[1] + "$");
             proxyMessage.message = content.replace(removePrefix, "").replace(removeSuffix, "");
             if (proxyMessage.message.length <= splitProxy[0].length + splitProxy[1].length && !attachment) throw new Error(enums.err.NO_MESSAGE_SENT_WITH_PROXY);
-
         }
     })
     return proxyMessage;
+}
+
+msgh.sendMessageAsAttachment = async function(text, message) {
+    if (text.length > 2000) {
+        tmp.file(async (err, path, fd, cleanupCallback) => {
+            if (err) throw err;
+            await message.reply({attachments: [path]});
+        });
+    }
 }
 
 export const messageHelper = msgh;

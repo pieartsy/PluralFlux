@@ -51,7 +51,10 @@ cmds.set('import', {
             if (error instanceof AggregateError) {
                 // errors.message can be a list of successfully added members, or say that none were successful.
                 let errorsText = `${error.message}.\nThese errors occurred:\n${error.errors.join('\n')}`;
-                await message.reply(errorsText);
+
+                await message.reply(errorsText).catch(async () => {
+                    await messageHelper.sendMessageAsAttachment(errorsText, message);
+                });
             }
             // If just one error was returned.
             else {
