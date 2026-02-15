@@ -8,11 +8,12 @@ const cmds = new Map();
 cmds.set('member', {
     description: enums.help.SHORT_DESC_MEMBER,
     async execute(message, client, args) {
-        const reply = await memberHelper.parseMemberCommand(message.author, args, message.attachments[0] = null).catch(e => message.reply(e));
+        const authorFull = `${message.author.username}#${message.author.discriminator}`
+        const reply = await memberHelper.parseMemberCommand(message.author.id, authorFull, args, message.attachments[0] = null).catch(e => throw e);
         if (typeof reply === 'string') {
-            await message.reply(reply);
+            return await message.reply(reply);
         }
-        await message.reply({embeds: [embed.toJSON()]})
+        await message.reply({embeds: [reply.toJSON()]})
     }
 })
 
