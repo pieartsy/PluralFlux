@@ -17,6 +17,7 @@ const commandList = ['--help', 'add', 'remove', 'name', 'list', 'displayName', '
  * @param {string} authorFull - The username and discriminator of the message author
  * @param {string[]} args - The message arguments
  * @param {string | null} attachmentUrl - The message attachment url.
+ * @param {string | null} attachmentExpiration - The message attachment expiration (if uploaded via Fluxer)
  * @returns {Promise<string> | Promise <EmbedBuilder>} A message, or an informational embed.
  * @throws {Error}
  */
@@ -321,6 +322,7 @@ mh.setExpirationWarning = function(expirationString) {
  */
 mh.getMemberInfo = async function(authorId, memberName) {
     return await mh.getMemberByName(authorId, memberName).then((member) => {
+        console.log(member);
         return new EmbedBuilder()
             .setTitle(member.name)
             .setDescription(`Details for ${member.name}`)
@@ -363,8 +365,11 @@ mh.getAllMembersInfo = async function(authorId, authorName) {
  * @throws { EmptyResultError } When the member is not found.
  */
 mh.getMemberByName = async function(authorId, memberName) {
-    return await db.members.findOne({ where: { userid: authorId, name: memberName } }).catch(e => {
-        throw new EmptyResultError(`Can't get ${memberName}. ${enums.err.NO_MEMBER}: ${e.message}`);
+    return await db.members.findOne({ where: { userid: authorId, name: memberName } }).then((result) => {
+        if (!result) {
+            throw new EmptyResultError(`Can't get ${memberName}. ${enums.err.NO_MEMBER}: ${e.message}`);
+        }
+        return result;
     });
 }
 
@@ -378,8 +383,11 @@ mh.getMemberByName = async function(authorId, memberName) {
  * @throws { EmptyResultError } When the member is not found.
  */
 mh.getMemberByProxy = async function(authorId, proxy) {
-    return await db.members.findOne({ where: { userid: authorId, proxy: proxy } }).catch(e => {
-        throw new EmptyResultError(`Can't find member with that proxy. ${enums.err.NO_MEMBER}: ${e.message}`);
+    return await db.members.findOne({ where: { userid: authorId, proxy: proxy } }).then((result) => {
+        if (!result) {
+            throw new EmptyResultError(`Can't find member with that proxy. ${enums.err.NO_MEMBER}: ${e.message}`);
+        }
+        return result;
     });
 }
 
@@ -392,8 +400,11 @@ mh.getMemberByProxy = async function(authorId, proxy) {
  * @throws { EmptyResultError } When no members are found.
  */
 mh.getMembersByAuthor = async function(authorId) {
-    return await db.members.findAll({ where: { userid: authorId } }).catch(e => {
-        throw new EmptyResultError(`${enums.err.USER_NO_MEMBERS}: ${e.message}`);
+    return await db.members.findAll({ where: { userid: authorId } }).then((result) => {
+        if (result.length === 0) {
+            throw new EmptyResultError(`${enums.err.USER_NO_MEMBERS}: ${e.message}`);
+        }
+        return result;
     });
 }
 
