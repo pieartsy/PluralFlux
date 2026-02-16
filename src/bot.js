@@ -1,9 +1,9 @@
-import { Client, Events, GatewayOpcodes } from '@fluxerjs/core';
-import { messageHelper } from "./helpers/messageHelper.js";
-import {enums} from "./enums.js";
-import {commands} from "./commands.js";
-import {webhookHelper} from "./helpers/webhookHelper.js";
-import * as env from 'dotenv';
+const {messageHelper} = require('./helpers/messageHelper.js');
+const {enums} = require('enums.js');
+const {commands} = require('commands.js');
+const {webhookHelper} = require('helpers/webhookHelper.js');
+const {Client, Events } = require('@fluxerjs/core');
+const {env} = require('dotenv');
 
 env.config();
 
@@ -26,7 +26,7 @@ client.on(Events.MessageCreate, async (message) => {
 
         // If message doesn't start with the bot prefix, it could still be a message with a proxy tag. If it's not, return.
         if (!content.startsWith(messageHelper.prefix)) {
-            await webhookHelper.sendMessageAsMember(client, message, content).catch((e) => {
+            await webhookHelper.sendMessageAsMember(client, message).catch((e) => {
                 throw e
             });
             return;

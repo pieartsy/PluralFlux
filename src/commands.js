@@ -1,12 +1,13 @@
-import {messageHelper} from "./helpers/messageHelper.js";
-import {enums} from "./enums.js";
-import {memberHelper} from "./helpers/memberHelper.js";
-import {EmbedBuilder} from "@fluxerjs/core";
-import {importHelper} from "./import.js";
+const {messageHelper} = require('helpers/messageHelper.js')
+const {enums} = require('enums.js')
+const {memberHelper} = require('helpers/memberHelper.js')
+const {importHelper} = require('helpers/importHelper.js');
+const {EmbedBuilder} = require('@fluxerjs/core');
 
-const cmds = new Map();
 
-cmds.set('member', {
+let commands = new Map();
+
+commands.set('member', {
     description: enums.help.SHORT_DESC_MEMBER,
     async execute(message, client, args) {
         const authorFull = `${message.author.username}#${message.author.discriminator}`
@@ -23,10 +24,10 @@ cmds.set('member', {
     }
 })
 
-cmds.set('help', {
+commands.set('help', {
     description: enums.help.SHORT_DESC_HELP,
     async execute(message) {
-        const fields = [...cmds.entries()].map(([name, cmd]) => ({
+        const fields = [...commands.entries()].map(([name, cmd]) => ({
             name: `${messageHelper.prefix}${name}`,
             value: cmd.description,
             inline: true,
@@ -43,7 +44,7 @@ cmds.set('help', {
     },
 })
 
-cmds.set('import', {
+commands.set('import', {
     description: enums.help.SHORT_DESC_IMPORT,
     async execute(message) {
         if (message.content.includes('--help')) {
@@ -70,4 +71,4 @@ cmds.set('import', {
     }
 })
 
-export const commands = cmds;
+module.exports = commands;
