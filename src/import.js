@@ -17,9 +17,6 @@ ih.pluralKitImport = async function (authorId, attachmentUrl) {
     if (!attachmentUrl) {
         throw new Error(enums.err.NOT_JSON_FILE);
     }
-    if (attachmentUrl === '--help') {
-        return enums.help.IMPORT;
-    }
     return fetch(attachmentUrl).then((res) => res.json()).then(async(pkData) => {
             const pkMembers = pkData.members;
             const errors = [];
