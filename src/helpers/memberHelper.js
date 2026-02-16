@@ -227,11 +227,12 @@ mh.removeMember = async function(authorId, args) {
     }
 
     const memberName = args[1];
-    return await db.members.destroy({ where: { name: memberName, userid: authorId } }).then(() => {
-        return `Member "${memberName}" has been deleted.`;
-    }).catch(e => {
-        throw new EmptyResultError(`${enums.err.NO_MEMBER}: ${e.message}`);
-    });
+    return await db.members.destroy({ where: { name: memberName, userid: authorId } }).then((result) => {
+        if (result) {
+            return `Member "${memberName}" has been deleted.`;
+        }
+            throw new EmptyResultError(`${enums.err.NO_MEMBER}: ${e.message}`);
+    })
 }
 
 /*======Non-Subcommands======*/
