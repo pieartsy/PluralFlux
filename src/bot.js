@@ -3,6 +3,9 @@ import { messageHelper } from "./helpers/messageHelper.js";
 import {enums} from "./enums.js";
 import {commands} from "./commands.js";
 import {webhookHelper} from "./helpers/webhookHelper.js";
+import * as env from 'dotenv';
+
+env.config();
 
 const token = process.env.FLUXER_BOT_TOKEN;
 
@@ -43,6 +46,7 @@ client.on(Events.MessageCreate, async (message) => {
         }
     }
     catch(error) {
+        console.error(error);
         return await message.reply(error.message);
     }
 });

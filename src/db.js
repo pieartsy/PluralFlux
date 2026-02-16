@@ -1,4 +1,7 @@
 import {DataTypes, Sequelize} from 'sequelize';
+import * as env from 'dotenv';
+
+env.config();
 
 const password = process.env.POSTGRES_PASSWORD;
 
