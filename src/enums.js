@@ -18,7 +18,8 @@ helperEnums.err = {
     NO_TEXT_FOR_PROXY: "You need the word 'text' for the bot to detect proxy tags with.\nCorrect usage examples: `pf;member jane proxy J:text`, `pf;member jane [text]`",
     NO_PROXY_WRAPPER: "You need at least one proxy tag surrounding 'text', either before or after.\nCorrect usage examples: `pf;member jane proxy J:text`, `pf;member jane [text]`",
     NOT_JSON_FILE: "Please attach a valid JSON file.",
-    NO_MEMBERS_IMPORTED: 'No members were imported.'
+    NO_MEMBERS_IMPORTED: 'No members were imported.',
+    IMPORT_ERROR: "Please see attached file for logs on the member import process."
 }
 
 helperEnums.help = {

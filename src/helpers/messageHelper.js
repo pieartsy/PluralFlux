@@ -1,12 +1,14 @@
 import {memberHelper} from "./memberHelper.js";
 import {enums} from "../enums.js";
-import tmp from "tmp";
+import tmp, {setGracefulCleanup} from "tmp";
 import fs from 'fs';
 import {Message} from "@fluxerjs/core";
 
 const msgh = {};
 
 msgh.prefix = "pf;"
+
+setGracefulCleanup();
 
 /**
  * Parses and slices up message arguments, retaining quoted strings.
@@ -75,11 +77,11 @@ msgh.parseProxyTags = async function (authorId, content, attachmentUrl= null){
 msgh.sendMessageAsAttachment = async function(text, message) {
     if (text.length > 2000) {
         tmp.file(async (err, path, fd, cleanupCallback) => {
-            fs.writeFile('path', text, (err) => {
+            fs.writeFile(path, text, (err) => {
                 if (err) throw err;
             })
             if (err) throw err;
-            await message.reply({attachments: [path]});
+            await message.reply({content: enums.err.IMPORT_ERROR, attachments: [path]});
         });
     }
 }
