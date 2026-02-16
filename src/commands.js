@@ -46,6 +46,9 @@ cmds.set('help', {
 cmds.set('import', {
     description: enums.help.SHORT_DESC_IMPORT,
     async execute(message) {
+        if (message.content.includes('--help')) {
+            return await message.reply(enums.help.IMPORT);
+        }
         const attachmentUrl = message.attachments.size > 0 ? message.attachments.first().url : null;
 
         return await importHelper.pluralKitImport(message.author.id, attachmentUrl).then(async (successfullyAdded) => {
