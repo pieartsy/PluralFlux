@@ -1,6 +1,6 @@
 import {messageHelper} from "./messageHelper.js";
 import {memberHelper} from "./memberHelper.js";
-import { Webhook, Channel, Message } from '@fluxerjs/core';
+import {Webhook, Channel, Message, EmbedBuilder} from '@fluxerjs/core';
 import {enums} from "../enums.js";
 
 const wh = {};
@@ -11,11 +11,11 @@ const name = 'PluralFlux Proxy Webhook';
  * Replaces a proxied message with a webhook using the member information.
  * @param {Client} client - The fluxer.js client.
  * @param {Message} message - The full message object.
- * @param {string} content - The full content of the message.
  * @throws {Error} When the proxy message is not in a server.
  */
-wh.sendMessageAsMember = async function(client, message, content) {
-    const proxyMatch = await messageHelper.parseProxyTags(message.author.id, message.attachments[0] ?? null, content).catch(e =>{throw e});
+wh.sendMessageAsMember = async function(client, message) {
+    const attachmentUrl = message.attachments.size > 0 ? message.attachments.first().url : null;
+    const proxyMatch = await messageHelper.parseProxyTags(message.author.id, message.content, attachmentUrl).catch(e =>{throw e});
     // If the message doesn't match a proxy, just return.
     if (!proxyMatch || !proxyMatch.proxy) {
         return;
@@ -26,7 +26,7 @@ wh.sendMessageAsMember = async function(client, message, content) {
     }
     const member = await memberHelper.getMemberByProxy(message.author.id, proxyMatch.proxy);
     if (member) {
-        await replaceMessage(client, message, message.channelId, proxyMatch.message, member).catch(e =>{throw e});
+        await replaceMessage(client, message, proxyMatch.message, member).catch(e =>{throw e});
     }
 }
 
@@ -34,23 +34,46 @@ wh.sendMessageAsMember = async function(client, message, content) {
  * Replaces a proxied message with a webhook using the member information.
  * @param {Client} client - The fluxer.js client.
  * @param {Message} message - The message to be deleted.
- * @param {string} channelId - The channel id to send the webhook message in.
  * @param {string} text - The text to send via the webhook.
  * @param {model} member - A member object from the database.
  * @throws {Error} When there's no message to send.
  */
-async function replaceMessage(client, message, channelId, text, member) {
-    if (text.length > 0) {
-        const channel = client.channels.get(channelId);
+async function replaceMessage(client, message, text, member) {
+    if (text.length > 0 || message.attachments.size > 0) {
+        const channel = client.channels.get(message.channelId);
         const webhook = await getOrCreateWebhook(client, channel).catch((e) =>{throw e});
         const username = member.displayname ?? member.name;
-        await webhook.send({content: text, username: username, avatar_url: member.propic});
+        if (message.attachments.size > 0) {
+            const embeds = createAttachmentEmbedsForWebhook(webhook, message.attachments);
+            await webhook.send({username: username, avatar_url: member.propic, embeds: embeds});
+        }
+        else {
+            await webhook.send({content: text, username: username, avatar_url: member.propic});
+        }
         await message.delete();
     }
     else {
         throw new Error(enums.err.NO_MESSAGE_SENT_WITH_PROXY);
     }
 }
+
+/**
+ * Creates attachment embeds for the webhook since right now sending images is not supported.
+ *
+ * @param {Object[]} attachments - The attachments.
+ * @returns {Object[]} A series of embeds.
+ */
+function createAttachmentEmbedsForWebhook(attachments) {
+    let embeds = [];
+    attachments.forEach(attachment => {
+        const embed = new EmbedBuilder()
+            .setTitle(attachment.filename)
+            .setImage(attachment.url).toJSON()
+        embeds.push(embed);
+    });
+    return embeds;
+}
+
 
 /**
  * Gets or creates a webhook.
