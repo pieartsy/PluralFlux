@@ -377,7 +377,7 @@ mh.getAllMembersInfo = async function(authorId, authorName) {
         inline: true,
     }));
     return new EmbedBuilder()
-        .setTitle(`Members for ${authorName}`)
+        .setTitle(`${fields > 25 ? "First 25 m" : "M"}embers for ${authorName}`)
         .addFields(...fields);
 }
 
