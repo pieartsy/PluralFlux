@@ -365,6 +365,9 @@ mh.getMemberInfo = async function (authorId, memberName) {
  * @throws {Error} When there are no members for an author.
  */
 mh.getAllMembersInfo = async function(authorId, authorName) {
+    if (args[1] && args[1] === "--help") {
+        return enums.help.LIST;
+    }
     const members = await mh.getMembersByAuthor(authorId);
     if (members == null) throw Error(enums.err.USER_NO_MEMBERS);
     const fields = [...members.entries()].map(([name, member]) => ({
