@@ -1,6 +1,8 @@
 import {memberHelper} from "./memberHelper.js";
 import {enums} from "../enums.js";
 import tmp from "tmp";
+import fs from 'fs';
+import {Message} from "@fluxerjs/core";
 
 const msgh = {};
 
@@ -35,12 +37,12 @@ msgh.parseCommandArgs = function(content, commandName) {
  * Parses messages to see if any part of the text matches the tags of any member belonging to an author.
  *
  * @param {string} authorId - The author of the message.
- * @param {Object} attachment - An attachment for the message, if any exists.
- * @param {string} content - The full message content.
+ * @param {string} content - The full message content
+ * @param {Object | null} attachment - An attachment for the message, if any exists.
  * @returns {Object} The proxy message object.
  * @throws {Error} If a proxy message is sent with no message within it.
  */
-msgh.parseProxyTags = async function (authorId, attachment, content){
+msgh.parseProxyTags = async function (authorId, content, attachment= null){
     const members = await memberHelper.getMembersByAuthor(authorId);
     // If an author has no members, no sense in searching for proxy
     if (members.length === 0) {
@@ -62,9 +64,19 @@ msgh.parseProxyTags = async function (authorId, attachment, content){
     return proxyMessage;
 }
 
+/**
+ * Sends a message as an attachment if it's too long.
+ *
+ * @param {string} text - The text of the message.
+ * @param {Message} message - The message object.
+ * @throws {Error} If a proxy message is sent with no message within it.
+ */
 msgh.sendMessageAsAttachment = async function(text, message) {
     if (text.length > 2000) {
         tmp.file(async (err, path, fd, cleanupCallback) => {
+            fs.writeFile('path', text, (err) => {
+                if (err) throw err;
+            })
             if (err) throw err;
             await message.reply({attachments: [path]});
         });
