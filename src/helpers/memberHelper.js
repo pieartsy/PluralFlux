@@ -1,6 +1,6 @@
 import {db} from '../db.js';
 import {enums} from "../enums.js";
-import {EmptyResultError} from "sequelize";
+import {EmptyResultError, Op} from "sequelize";
 import {EmbedBuilder} from "@fluxerjs/core";
 
 const mh = {};
@@ -231,7 +231,7 @@ mh.removeMember = async function(authorId, args) {
     }
 
     const memberName = args[1];
-    return await db.members.destroy({ where: { name: memberName, userid: authorId } }).then((result) => {
+    return await db.members.destroy({ where: { name: {[Op.iLike]: memberName}, userid: authorId } }).then((result) => {
         if (result) {
             return `Member "${memberName}" has been deleted.`;
         }
@@ -312,7 +312,7 @@ mh.updateMemberField = async function(authorId, args) {
     if (columnName === "propic" && args[3]) {
         fluxerPropicWarning = mh.setExpirationWarning(args[3]);
     }
-    return await db.members.update({[columnName]: value}, { where: { name: memberName, userid: authorId } }).then(() => {
+    return await db.members.update({[columnName]: value}, { where: { name: {[Op.iLike]: memberName}, userid: authorId } }).then(() => {
         return `Updated ${columnName} for ${memberName} to ${value}${fluxerPropicWarning ?? ''}.`;
     }).catch(e => {
         if (e === EmptyResultError) {
@@ -393,7 +393,7 @@ mh.getAllMembersInfo = async function(authorId, authorName) {
  * @throws { EmptyResultError } When the member is not found.
  */
 mh.getMemberByName = async function(authorId, memberName) {
-    return await db.members.findOne({ where: { userid: authorId, name: memberName } });
+    return await db.members.findOne({ where: { userid: authorId, name: {[Op.iLike]: memberName}}});
 }
 
 /**
