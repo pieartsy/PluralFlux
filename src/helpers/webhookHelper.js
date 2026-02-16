@@ -17,7 +17,7 @@ wh.sendMessageAsMember = async function(client, message) {
     const attachmentUrl = message.attachments.size > 0 ? message.attachments.first().url : null;
     const proxyMatch = await messageHelper.parseProxyTags(message.author.id, message.content, attachmentUrl).catch(e =>{throw e});
     // If the message doesn't match a proxy, just return.
-    if (!proxyMatch || !proxyMatch.member.proxy) {
+    if (!proxyMatch.member) {
         return;
     }
     // If the message does match a proxy but is not in a guild server (ex: in the Bot's DMs

@@ -52,18 +52,20 @@ msgh.parseProxyTags = async function (authorId, content, attachmentUrl= null){
     }
 
     const proxyMessage = {}
-    members.filter(member => member.proxy).forEach(member => {
-        const splitProxy = member.proxy.split("text");
-        if(content.startsWith(splitProxy[0]) && content.endsWith(splitProxy[1])) {
-            proxyMessage.member = member;
-            if (attachmentUrl) return proxyMessage.message = enums.misc.ATTACHMENT_SENT_BY;
+    members.forEach(member => {
+        if (member.proxy) {
+            const splitProxy = member.proxy.split("text");
+            if(content.startsWith(splitProxy[0]) && content.endsWith(splitProxy[1])) {
+                proxyMessage.member = member;
+                if (attachmentUrl) return proxyMessage.message = enums.misc.ATTACHMENT_SENT_BY;
 
-            let escapedPrefix = splitProxy[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            let escapedSuffix = splitProxy[1].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            escapedPrefix = new RegExp("^" + escapedPrefix);
-            escapedSuffix = new RegExp(escapedSuffix + "$")
-            proxyMessage.message = content.replace(escapedPrefix, "").replace(escapedSuffix, "");
-            if (proxyMessage.message.length === 0) throw new Error(enums.err.NO_MESSAGE_SENT_WITH_PROXY);
+                let escapedPrefix = splitProxy[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                let escapedSuffix = splitProxy[1].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                escapedPrefix = new RegExp("^" + escapedPrefix);
+                escapedSuffix = new RegExp(escapedSuffix + "$")
+                proxyMessage.message = content.replace(escapedPrefix, "").replace(escapedSuffix, "");
+                if (proxyMessage.message.length === 0) throw new Error(enums.err.NO_MESSAGE_SENT_WITH_PROXY);
+            }
         }
     })
     return proxyMessage;
