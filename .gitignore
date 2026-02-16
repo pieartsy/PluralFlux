@@ -4,3 +4,4 @@ secrets/
 package-lock.json
 config.json
 coverage
+log.txt
