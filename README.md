@@ -28,7 +28,7 @@ You can optionally add a display name after the member name, for example: `pf;me
   - `proxy` Updates the proxy tag for a specific member based on their name. The proxy must be formatted with the tags surrounding the word 'text', for example: `pf;member jane proxy Jane:text` or `pf;member amal proxy [text]` This is so the bot can detect what the proxy tags are. Only one proxy can be set per member currently.
 
 ## Notes
-- Attaching files to messages with the proxy does not work, due to either the limitations of Fluxer.js or of Fluxer itself :(
+- Attaching files to messages with the proxy does not work, due to either the limitations of Fluxer itself :(
 
 ## Upcoming
 - [ ] React with x to delete message
