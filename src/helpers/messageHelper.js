@@ -55,24 +55,25 @@ msgh.parseProxyTags = async function (authorId, content, attachmentUrl= null){
     members.filter(member => member.proxy).forEach(member => {
         const splitProxy = member.proxy.split("text");
         if(content.startsWith(splitProxy[0]) && content.endsWith(splitProxy[1])) {
+            if (attachmentUrl) throw new Error(enums.err.ATTACHMENTS_NOT_ALLOWED);
             proxyMessage.proxy = member.proxy;
             const removePrefix = new RegExp("^" + splitProxy[0]);
             const removeSuffix = new RegExp(splitProxy[1] + "$");
-            proxyMessage.message = content.replace(removePrefix, "").replace(removeSuffix, "");
-
-            if (proxyMessage.message.length === 0 && !attachmentUrl) throw new Error(enums.err.NO_MESSAGE_SENT_WITH_PROXY);
+            proxyMessage.message = content.replace(removePrefix, "").replace(removeSuffix, "");;
+            if (proxyMessage.message.length === 0) throw new Error(enums.err.NO_MESSAGE_SENT_WITH_PROXY);
         }
     })
     return proxyMessage;
 }
 
 /**
- * Sends a message as an attachment if it's too long.
+ * Sends a message as an attachment if it's too long.NOT CURRENTLY IN USE
  *
  * @async
  * @param {string} text - The text of the message.
  * @param {Message} message - The message object.
  * @throws {Error} If a proxy message is sent with no message within it.
+ *
  */
 msgh.sendMessageAsAttachment = async function(text, message) {
     if (text.length > 2000) {

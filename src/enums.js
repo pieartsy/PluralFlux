@@ -19,7 +19,8 @@ helperEnums.err = {
     NO_PROXY_WRAPPER: "You need at least one proxy tag surrounding 'text', either before or after.\nCorrect usage examples: `pf;member jane proxy J:text`, `pf;member jane [text]`",
     NOT_JSON_FILE: "Please attach a valid JSON file.",
     NO_MEMBERS_IMPORTED: 'No members were imported.',
-    IMPORT_ERROR: "Please see attached file for logs on the member import process."
+    IMPORT_ERROR: "Please see attached file for logs on the member import process.",
+    ATTACHMENTS_NOT_ALLOWED: "Unfortunately proxied message attachments aren't possible at this time. If you want to send a file, you can use a file host instead of uploading directly."
 }
 
 helperEnums.help = {
