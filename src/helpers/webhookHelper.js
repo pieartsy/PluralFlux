@@ -43,13 +43,7 @@ async function replaceMessage(client, message, text, member) {
         const channel = client.channels.get(message.channelId);
         const webhook = await getOrCreateWebhook(client, channel).catch((e) =>{throw e});
         const username = member.displayname ?? member.name;
-        if (message.attachments.size > 0) {
-            const embeds = createAttachmentEmbedsForWebhook(webhook, message.attachments);
-            await webhook.send({username: username, avatar_url: member.propic, embeds: embeds});
-        }
-        else {
-            await webhook.send({content: text, username: username, avatar_url: member.propic});
-        }
+        await webhook.send({content: text, username: username, avatar_url: member.propic});
         await message.delete();
     }
     else {
