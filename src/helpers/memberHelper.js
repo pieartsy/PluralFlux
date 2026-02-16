@@ -245,10 +245,11 @@ mh.removeMember = async function(authorId, args) {
  * @param {string | null} displayName - The display name of the member.
  * @param {string | null} proxy - The proxy tag of the member.
  * @param {string | null} propic - The profile picture URL of the member.
+ * @param {string | null} isImport - Whether calling from the import function or not.
  * @returns {Promise<model>} A successful addition.
  * @throws {Error | RangeError}  When the member already exists, there are validation errors, or adding a member doesn't work.
  */
-mh.addFullMember = async function(authorId, memberName, displayName = null, proxy = null, propic= null) {
+mh.addFullMember = async function(authorId, memberName, displayName = null, proxy = null, propic= null, isImport = false) {
     await mh.getMemberByName(authorId, memberName).then((member) => {
         if (member) {
             throw new Error(`Can't add ${memberName}. ${enums.err.MEMBER_EXISTS}`);
@@ -263,16 +264,24 @@ mh.addFullMember = async function(authorId, memberName, displayName = null, prox
     if (proxy) {
         await mh.checkIfProxyExists(authorId, proxy).catch((e) =>{throw e});
     }
+    let validPropic;
     if (propic) {
-        await mh.checkImageFormatValidity(propic).catch((e) =>{throw e});
+        validPropic = await mh.checkImageFormatValidity(propic).then((valid) => {
+            return valid;
+        }).catch((e) =>{
+            if (!isImport) {
+                throw (e);
+            }
+            return false;
+        });
     }
 
-    return await db.members.create({
+     await db.members.create({
         name: memberName,
         userid: authorId,
         displayname: displayName,
         proxy: proxy,
-        propic: propic,
+        propic: validPropic ? propic : null,
     }).catch(e => {
         throw new Error(`Can't add ${memberName}. ${enums.err.ADD_ERROR}: ${e.message}`)
     })

@@ -1,5 +1,6 @@
 import {enums} from "./enums.js";
 import {memberHelper} from "./helpers/memberHelper.js";
+import {messageHelper} from "./helpers/messageHelper.js";
 
 const ih = {};
 
@@ -22,10 +23,13 @@ ih.pluralKitImport = async function (authorId, attachmentUrl) {
             const addedMembers = [];
             for (let pkMember of pkMembers) {
                 const proxy = pkMember.proxy_tags[0] ? `${pkMember.proxy_tags[0].prefix ?? ''}text${pkMember.proxy_tags[0].suffix ?? ''}` : null;
-                await memberHelper.addFullMember(authorId, pkMember.name, pkMember.display_name, proxy, pkMember.avatar_url).then((member) => {
+                await memberHelper.addFullMember(authorId, pkMember.name, pkMember.display_name, proxy, pkMember.avatar_url, true).then((member) => {
                     addedMembers.push(member.name);
                 }).catch(e => {
                     errors.push(`${pkMember.name}: ${e.message}`);
+                });
+                await messageHelper.checkImageFormatValidity(pkMember.avatar_url).catch(e => {
+                    errors.push(`${pkMember.name}: ${e.message}`)
                 });
             }
             const aggregatedText = addedMembers.length > 0 ? `Successfully added members: ${addedMembers.join(', ')}` : enums.err.NO_MEMBERS_IMPORTED;
