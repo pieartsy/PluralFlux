@@ -1,4 +1,7 @@
 services:
+  main:
+    build: .
+    container_name: pluralflux
   postgres:
     image: postgres:latest
     container_name: pluralflux-postgres
