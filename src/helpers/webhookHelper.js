@@ -17,17 +17,18 @@ wh.sendMessageAsMember = async function(client, message) {
     const attachmentUrl = message.attachments.size > 0 ? message.attachments.first().url : null;
     const proxyMatch = await messageHelper.parseProxyTags(message.author.id, message.content, attachmentUrl).catch(e =>{throw e});
     // If the message doesn't match a proxy, just return.
-    if (!proxyMatch || !proxyMatch.proxy) {
+    if (!proxyMatch || !proxyMatch.member.proxy) {
         return;
     }
-    // If the message does match a proxy but is in a guild server
+    // If the message does match a proxy but is not in a guild server (ex: in the Bot's DMs
     if (!message.guildId) {
         throw new Error(enums.err.NOT_IN_SERVER);
     }
-    const member = await memberHelper.getMemberByProxy(message.author.id, proxyMatch.proxy);
-    if (member) {
-        await replaceMessage(client, message, proxyMatch.message, member).catch(e =>{throw e});
+
+    if (proxyMatch.message === enums.misc.ATTACHMENT_SENT_BY) {
+        return await message.reply(`${enums.misc.ATTACHMENT_SENT_BY} ${proxyMatch.member.displayname}`)
     }
+    await replaceMessage(client, message, proxyMatch.message, proxyMatch.member).catch(e =>{throw e});
 }
 
 /**
