@@ -1,5 +1,5 @@
-import {DataTypes, Sequelize} from 'sequelize';
-import * as env from 'dotenv';
+const {DataTypes, sequelize, Sequelize} = require('sequelize');
+const {env} = require('dotenv');
 
 env.config();
 
@@ -10,75 +10,75 @@ if (!password) {
     process.exit(1);
 }
 
-const database = {};
+const database = {
 
-const sequelize = new Sequelize('postgres', 'postgres', password, {
-    host: 'localhost',
-    logging: false,
-    dialect: 'postgres'
-});
+    sequelize: new Sequelize('postgres', 'postgres', password, {
+        host: 'localhost',
+        logging: false,
+        dialect: 'postgres'
+    }),
 
-database.sequelize = sequelize;
-database.Sequelize = Sequelize;
+    Sequelize: Sequelize,
 
-database.members = sequelize.define('Member', {
-    userid: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    name: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    displayname: {
-        type: DataTypes.STRING,
-    },
-    propic: {
-        type: DataTypes.STRING,
-    },
-    proxy: {
-        type: DataTypes.STRING,
-    }
-});
+    members: sequelize.define('Member', {
+        userid: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        name: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        displayname: {
+            type: DataTypes.STRING,
+        },
+        propic: {
+            type: DataTypes.STRING,
+        },
+        proxy: {
+            type: DataTypes.STRING,
+        }
+    }),
 
-database.systems = sequelize.define('System', {
-    userid: {
-        type: DataTypes.STRING,
-    },
-    fronter: {
-        type: DataTypes.STRING
-    },
-    grouptag: {
-        type: DataTypes.STRING
-    },
-    autoproxy: {
-        type: DataTypes.BOOLEAN,
-    }
-})
+    systems: sequelize.define('System', {
+        userid: {
+            type: DataTypes.STRING,
+        },
+        fronter: {
+            type: DataTypes.STRING
+        },
+        grouptag: {
+            type: DataTypes.STRING
+        },
+        autoproxy: {
+            type: DataTypes.BOOLEAN,
+        }
+    }),
 
-/**
- * Checks Sequelize database connection.
- */
-database.check_connection = async function() {
-        await sequelize.authenticate().then(async (result) => {
+    /**
+     * Checks Sequelize database connection.
+     */
+    check_connection: async function () {
+        await sequelize.authenticate().then(async () => {
             console.log('Connection has been established successfully.');
-            await syncModels();
+            await this.syncModels();
         }).catch(err => {
             console.error('Unable to connect to the database:', err);
             process.exit(1);
         });
-}
+    },
 
-/**
- * Syncs Sequelize models.
- */
-async function syncModels() {
-    await sequelize.sync().then(() => {
-        console.log('Models synced successfully.');
-    }).catch((err) => {
-        console.error('Syncing models did not work', err);
-        process.exit(1);
-    });
-}
+    /**
+     * Syncs Sequelize models.
+     */
+    async syncModels() {
+        await this.sequelize.sync().then(() => {
+            console.log('Models synced successfully.');
+        }).catch((err) => {
+            console.error('Syncing models did not work', err);
+            process.exit(1);
+        });
+    }
+};
 
-export const db = database;
+module.exports = database;

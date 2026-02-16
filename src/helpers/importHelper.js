@@ -1,23 +1,22 @@
-import {enums} from "./enums.js";
-import {memberHelper} from "./helpers/memberHelper.js";
-import {messageHelper} from "./helpers/messageHelper.js";
+const {enums} = require("../enums.js");
+const {memberHelper} = require("memberHelper.js");
 
-const ih = {};
+const importHelper = {
 
-/**
- * Tries to import from Pluralkit.
- *
- * @async
- * @param {string} authorId - The author of the message
- * @param {string} attachmentUrl - The attached JSON url.
- * @returns {string} A successful addition of all members.
- * @throws {Error}  When the member exists, or creating a member doesn't work.
- */
-ih.pluralKitImport = async function (authorId, attachmentUrl) {
-    if (!attachmentUrl) {
-        throw new Error(enums.err.NOT_JSON_FILE);
-    }
-    return fetch(attachmentUrl).then((res) => res.json()).then(async(pkData) => {
+    /**
+     * Tries to import from Pluralkit.
+     *
+     * @async
+     * @param {string} authorId - The author of the message
+     * @param {string} attachmentUrl - The attached JSON url.
+     * @returns {string} A successful addition of all members.
+     * @throws {Error}  When the member exists, or creating a member doesn't work.
+     */
+    async pluralKitImport(authorId, attachmentUrl) {
+        if (!attachmentUrl) {
+            throw new Error(enums.err.NOT_JSON_FILE);
+        }
+        return fetch(attachmentUrl).then((res) => res.json()).then(async (pkData) => {
             const pkMembers = pkData.members;
             const errors = [];
             const addedMembers = [];
@@ -29,7 +28,8 @@ ih.pluralKitImport = async function (authorId, attachmentUrl) {
                     errors.push(`${pkMember.name}: ${e.message}`);
                 });
                 await memberHelper.checkImageFormatValidity(pkMember.avatar_url).catch(e => {
-                        errors.push(`${pkMember.name}: ${e.message}`)});
+                    errors.push(`${pkMember.name}: ${e.message}`)
+                });
             }
             const aggregatedText = addedMembers.length > 0 ? `Successfully added members: ${addedMembers.join(', ')}` : enums.err.NO_MEMBERS_IMPORTED;
             if (errors.length > 0) {
@@ -37,6 +37,7 @@ ih.pluralKitImport = async function (authorId, attachmentUrl) {
             }
             return aggregatedText;
         });
-}
+    }
+};
 
-export const importHelper = ih;
+module.exports = importHelper;
