@@ -28,9 +28,8 @@ ih.pluralKitImport = async function (authorId, attachmentUrl) {
                 }).catch(e => {
                     errors.push(`${pkMember.name}: ${e.message}`);
                 });
-                await messageHelper.checkImageFormatValidity(pkMember.avatar_url).catch(e => {
-                    errors.push(`${pkMember.name}: ${e.message}`)
-                });
+                await memberHelper.checkImageFormatValidity(pkMember.avatar_url).catch(e => {
+                        errors.push(`${pkMember.name}: ${e.message} Added anyway with no profile picture.`)});
             }
             const aggregatedText = addedMembers.length > 0 ? `Successfully added members: ${addedMembers.join(', ')}` : enums.err.NO_MEMBERS_IMPORTED;
             if (errors.length > 0) {

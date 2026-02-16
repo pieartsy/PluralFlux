@@ -32,7 +32,7 @@ helperEnums.help = {
     MEMBER: "Accesses the sub-commands related to editing proxy members. The available subcommands are `list`, `new`, `remove`, `displayname`, `proxy`, and `propic`. Add ` --help` to the end of a subcommand to find out more about it, or just send it without arguments.",
     NEW: "Creates a new member to proxy with, for example: `pf;member new jane`. The member name should ideally be short so you can write other commands with it easily. \n\nYou can optionally add a display name after the member name, for example: `pf;member new jane \"Jane Doe | ze/hir\"`. If it has spaces, put it in __double quotes__. The length limit is 32 characters.",
     REMOVE: "Removes a member based on their name, for example: `pf;member remove jane`.",
-    LIST: "Lists all members in the system.",
+    LIST: "Lists members in the system. Currently only lists the first 25.",
     NAME: "Updates the name for a specific member based on their current name, for ex: `pf;member john name jane`. The member name should ideally be short so you can write other commands with it easily.",
     DISPLAY_NAME: "Updates the display name for a specific member based on their name, for example: `pf;member jane \"Jane Doe | ze/hir\"`.This can be up to 32 characters long. If it has spaces, put it in __double quotes__.",
     PROXY: "Updates the proxy tag for a specific member based on their name. The proxy must be formatted with the tags surrounding the word 'text', for example: `pf;member jane proxy Jane:text` or `pf;member amal proxy [text]` This is so the bot can detect what the proxy tags are. Only one proxy can be set per member currently.",
