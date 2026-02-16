@@ -231,7 +231,7 @@ mh.removeMember = async function(authorId, args) {
         if (result) {
             return `Member "${memberName}" has been deleted.`;
         }
-            throw new EmptyResultError(`${enums.err.NO_MEMBER}: ${e.message}`);
+            throw new EmptyResultError(`${enums.err.NO_MEMBER}`);
     })
 }
 
