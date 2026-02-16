@@ -55,6 +55,7 @@ mh.parseMemberCommand = async function(authorId, authorFull, args, attachmentUrl
         case 'displayname':
             return await mh.updateDisplayName(authorId, args).catch((e) =>{throw e});
         case 'proxy':
+            if (!args[2]) return await mh.getProxyByMember(authorId, args[0]).catch((e) => {throw e});
             return await mh.updateProxy(authorId, args).catch((e) =>{throw e});
         case 'propic':
             return await mh.updatePropic(authorId, args, attachmentUrl, attachmentExpiration).catch((e) =>{throw e});
@@ -154,8 +155,7 @@ mh.updateDisplayName = async function(authorId, args) {
  * @throws {RangeError | Error} When an empty proxy was provided, or no proxy exists.
  */
 mh.updateProxy = async function(authorId, args) {
-    console.log(args)
-    if (args[2] && args[2] === "--help" || !args[2]) {
+    if (args[2] && args[2] === "--help") {
         return enums.help.PROXY;
     }
     const proxyExists = await mh.checkIfProxyExists(authorId, args[2]).then((proxyExists) => {
@@ -400,6 +400,24 @@ mh.getMemberByName = async function(authorId, memberName) {
  * Gets a member based on the author and proxy tag.
  *
  * @async
+ * @param {string} authorId - The author of the message.
+ * @param {string} memberName - The member's name.
+ * @returns {Promise<string>} The member object.
+ * @throws { EmptyResultError } When the member is not found.
+ */
+mh.getProxyByMember = async function(authorId, memberName) {
+    return await mh.getMemberByName(authorId, memberName).then((member) => {
+        if (member) {
+            return member.dataValues.proxy;
+        }
+        throw new EmptyResultError(enums.err.NO_MEMBER);
+    })
+}
+
+/**
+ * Gets a member based on the author and proxy tag.
+ *
+ * @async
  * @param {string} authorId - The author of the message
  * @param {string} proxy - The proxy tag
  * @returns {Promise<model>} The member object.
@@ -429,16 +447,19 @@ mh.getMembersByAuthor = async function(authorId) {
  * @throws {Error} When an empty proxy was provided, or no proxy exists.
  */
 mh.checkIfProxyExists = async function(authorId, proxy) {
-    const splitProxy = proxy.trim().split("text");
-    if(splitProxy.length < 2) throw new Error(enums.err.NO_TEXT_FOR_PROXY);
-    if(!splitProxy[0] && !splitProxy[1]) throw new Error(enums.err.NO_PROXY_WRAPPER);
+    if (proxy) {
+        const splitProxy = proxy.trim().split("text");
+        if(splitProxy.length < 2) throw new Error(enums.err.NO_TEXT_FOR_PROXY);
+        if(!splitProxy[0] && !splitProxy[1]) throw new Error(enums.err.NO_PROXY_WRAPPER);
 
-    await mh.getMembersByAuthor(authorId).then((memberList) => {
-        const proxyExists = memberList.some(member => member.proxy === proxy);
-        if (proxyExists) {
-            throw new Error(enums.err.PROXY_EXISTS);
-        }
-    }).catch(e =>{throw e});
+        await mh.getMembersByAuthor(authorId).then((memberList) => {
+            const proxyExists = memberList.some(member => member.proxy === proxy);
+            if (proxyExists) {
+                throw new Error(enums.err.PROXY_EXISTS);
+            }
+        }).catch(e =>{throw e});
+    }
+
 }
 
 
