@@ -84,7 +84,7 @@ mh.addNewMember = async function(authorId, args) {
         success += displayName ? `\nDisplay name: ${member.dataValues.displayname}` : "";
         return success;
     }).catch(e => {
-        throw new Error(`${enums.err.ADD_ERROR}: ${e.message}`)
+        throw e;
     })
 }
 
@@ -154,7 +154,8 @@ mh.updateDisplayName = async function(authorId, args) {
  * @throws {RangeError | Error} When an empty proxy was provided, or no proxy exists.
  */
 mh.updateProxy = async function(authorId, args) {
-    if (args[1] && args[1] === "--help" || !args[1]) {
+    console.log(args)
+    if (args[2] && args[2] === "--help" || !args[2]) {
         return enums.help.PROXY;
     }
     const proxyExists = await mh.checkIfProxyExists(authorId, args[2]).then((proxyExists) => {
@@ -249,7 +250,7 @@ mh.removeMember = async function(authorId, args) {
  * @param {string | null} displayName - The display name of the member.
  * @param {string | null} proxy - The proxy tag of the member.
  * @param {string | null} propic - The profile picture URL of the member.
- * @param {string | null} isImport - Whether calling from the import function or not.
+ * @param {boolean} isImport - Whether calling from the import function or not.
  * @returns {Promise<model>} A successful addition.
  * @throws {Error | RangeError}  When the member already exists, there are validation errors, or adding a member doesn't work.
  */
@@ -280,15 +281,16 @@ mh.addFullMember = async function(authorId, memberName, displayName = null, prox
         });
     }
 
-     await db.members.create({
+     const member = await db.members.create({
         name: memberName,
         userid: authorId,
         displayname: displayName,
         proxy: proxy,
         propic: validPropic ? propic : null,
-    }).catch(e => {
-        throw new Error(`Can't add ${memberName}. ${enums.err.ADD_ERROR}: ${e.message}`)
-    })
+    });
+    if (!member) {
+        new Error(`${enums.err.ADD_ERROR}: ${e.message}`);
+    }
 }
 
 /**

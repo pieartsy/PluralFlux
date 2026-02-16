@@ -29,7 +29,7 @@ ih.pluralKitImport = async function (authorId, attachmentUrl) {
                     errors.push(`${pkMember.name}: ${e.message}`);
                 });
                 await memberHelper.checkImageFormatValidity(pkMember.avatar_url).catch(e => {
-                        errors.push(`${pkMember.name}: ${e.message} Added anyway with no profile picture.`)});
+                        errors.push(`${pkMember.name}: ${e.message}`)});
             }
             const aggregatedText = addedMembers.length > 0 ? `Successfully added members: ${addedMembers.join(', ')}` : enums.err.NO_MEMBERS_IMPORTED;
             if (errors.length > 0) {
