@@ -38,11 +38,11 @@ msgh.parseCommandArgs = function(content, commandName) {
  *
  * @param {string} authorId - The author of the message.
  * @param {string} content - The full message content
- * @param {Object | null} attachment - An attachment for the message, if any exists.
+ * @param {string | null} attachmentUrl - The url for an attachment to the message, if any exists.
  * @returns {Object} The proxy message object.
  * @throws {Error} If a proxy message is sent with no message within it.
  */
-msgh.parseProxyTags = async function (authorId, content, attachment= null){
+msgh.parseProxyTags = async function (authorId, content, attachmentUrl= null){
     const members = await memberHelper.getMembersByAuthor(authorId);
     // If an author has no members, no sense in searching for proxy
     if (members.length === 0) {
@@ -58,7 +58,7 @@ msgh.parseProxyTags = async function (authorId, content, attachment= null){
             const removeSuffix = new RegExp(splitProxy[1] + "$");
             proxyMessage.message = content.replace(removePrefix, "").replace(removeSuffix, "");
 
-            if (proxyMessage.message.length === 0 && !attachment) throw new Error(enums.err.NO_MESSAGE_SENT_WITH_PROXY);
+            if (proxyMessage.message.length === 0 && !attachmentUrl) throw new Error(enums.err.NO_MESSAGE_SENT_WITH_PROXY);
         }
     })
     return proxyMessage;
@@ -67,6 +67,7 @@ msgh.parseProxyTags = async function (authorId, content, attachment= null){
 /**
  * Sends a message as an attachment if it's too long.
  *
+ * @async
  * @param {string} text - The text of the message.
  * @param {Message} message - The message object.
  * @throws {Error} If a proxy message is sent with no message within it.
