@@ -41,6 +41,21 @@ database.members = sequelize.define('Member', {
     }
 });
 
+database.systems = sequelize.define('System', {
+    userid: {
+        type: DataTypes.STRING,
+    },
+    fronter: {
+        type: DataTypes.STRING
+    },
+    grouptag: {
+        type: DataTypes.STRING
+    },
+    autoproxy: {
+        type: DataTypes.BOOLEAN,
+    }
+})
+
 /**
  * Checks Sequelize database connection.
  */
