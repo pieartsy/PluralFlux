@@ -21,6 +21,7 @@ describe('parseMemberCommand', () => {
         jest.spyOn(memberHelper, 'updateDisplayName').mockResolvedValue("update display name");
         jest.spyOn(memberHelper, 'updateProxy').mockResolvedValue("update proxy");
         jest.spyOn(memberHelper, 'updatePropic').mockResolvedValue("update propic");
+        jest.spyOn(memberHelper, 'getProxyByMember').mockResolvedValue("update proxy");
     });
 
 
