@@ -5,6 +5,8 @@ PluralFlux is a proxybot akin to PluralKit and Tupperbox, but for [Fluxer](https
 
 [Join the support server](https://fluxer.gg/WaO6qGdU)
 
+[Sponsor the project](https://github.com/sponsors/pieartsy)
+
 If it's not running at the moment, it's because my computer crashed or something. I'm looking to move running it to a somewhat more permanent solution.
 
 ## Commands
