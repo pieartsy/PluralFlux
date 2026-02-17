@@ -1,4 +1,4 @@
-const { db } = require('../db.js')
+const { database } = require('../db.js')
 const { enums} = require('../enums.js');
 const {EmptyResultError, Op} = require('sequelize');
 const {EmbedBuilder} = require('@fluxerjs/core');
@@ -232,7 +232,7 @@ const memberHelper = {
         }
 
         const memberName = args[1];
-        return await db.members.destroy({ where: { name: {[Op.iLike]: memberName}, userid: authorId } }).then((result) => {
+        return await database.members.destroy({ where: { name: {[Op.iLike]: memberName}, userid: authorId } }).then((result) => {
             if (result) {
                 return `Member "${memberName}" has been deleted.`;
             }
@@ -282,7 +282,7 @@ const memberHelper = {
             });
         }
 
-        const member = await db.members.create({
+        const member = await database.members.create({
             name: memberName,
             userid: authorId,
             displayname: displayName,
@@ -313,7 +313,7 @@ const memberHelper = {
         if (columnName === "propic" && args[3]) {
             fluxerPropicWarning = this.setExpirationWarning(args[3]);
         }
-        return await db.members.update({[columnName]: value}, { where: { name: {[Op.iLike]: memberName}, userid: authorId } }).then(() => {
+        return await database.members.update({[columnName]: value}, { where: { name: {[Op.iLike]: memberName}, userid: authorId } }).then(() => {
             return `Updated ${columnName} for ${memberName} to ${value}${fluxerPropicWarning ?? ''}.`;
         }).catch(e => {
             if (e === EmptyResultError) {
@@ -394,7 +394,7 @@ const memberHelper = {
      * @throws { EmptyResultError } When the member is not found.
      */
     async getMemberByName (authorId, memberName) {
-        return await db.members.findOne({ where: { userid: authorId, name: {[Op.iLike]: memberName}}});
+        return await database.members.findOne({ where: { userid: authorId, name: {[Op.iLike]: memberName}}});
     },
 
     /**
@@ -423,7 +423,7 @@ const memberHelper = {
      * @returns {Promise<model[] | null>} The member object array.
      */
     async getMembersByAuthor (authorId) {
-        return await db.members.findAll({ where: { userid: authorId } });
+        return await database.members.findAll({ where: { userid: authorId } });
     },
 
 
