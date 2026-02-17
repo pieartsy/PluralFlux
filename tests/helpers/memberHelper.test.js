@@ -1,12 +1,14 @@
-jest.mock('@fluxerjs/core', () => jest.fn());
-jest.mock('../../src/db.js', () => jest.fn());
-jest.mock('sequelize', () => jest.fn());
-jest.mock('../../src/enums.js', () => ({
-    enums: jest.requireActual('../../src/enums.js')
-}));
+import {jest} from "@jest/globals";
 
-const {enums} = require("../../src/enums.js");
-const memberHelper = require("../../src/helpers/memberHelper.js");
+jest.unstable_mockModule('@fluxerjs/core', () => jest.fn());
+jest.unstable_mockModule('../../src/db.js', () => jest.fn());
+jest.unstable_mockModule('sequelize', () => jest.fn());
+
+const { EmbedBuilder } = await import ("@fluxerjs/core");
+const { database } = await import('../../src/db.js');
+const { EmptyResultError, Op } = await import ('sequelize');
+import { enums } from "../../src/enums.js";
+import { memberHelper } from "../../src/helpers/memberHelper.js";
 
 describe('parseMemberCommand', () => {
 
