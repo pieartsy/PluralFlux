@@ -121,7 +121,7 @@ mh.updateName = async function (authorId, args) {
 
     const name = args[2];
     if (!name) {
-        return `The name for ${name} is ${name}, but you probably knew that!`;
+        return `The name for ${args[0]} is ${args[0]}, but you probably knew that!`;
     }
     const trimmedName = name.trim();
     if (trimmedName === '') {

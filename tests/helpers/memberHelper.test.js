@@ -186,12 +186,12 @@ describe('MemberHelper', () => {
 
         test('Sends string when no name', async () => {
             // Arrange
-            const args = ['somePerson', 'name']
+            const args = ['somePerson', 'name'];
+            const expected = `The name for ${args[0]} is ${args[0]}, but you probably knew that!`;
 
             // Act
-            memberHelper.updateName(authorId, args).catch((result) => {
-                // Assert
-                expect(result).toEqual(new RangeError("Name " + enums.err.NO_VALUE));
+            memberHelper.updateName(authorId, args).then((result) => {
+                expect(result).toEqual(expected);
             })
         })
 
