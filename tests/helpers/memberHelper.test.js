@@ -1,14 +1,12 @@
-import {jest} from "@jest/globals";
-
 jest.mock('@fluxerjs/core', () => jest.fn());
 jest.mock('../../src/db.js', () => jest.fn());
 jest.mock('sequelize', () => jest.fn());
 
-const {EmbedBuilder} = await import ("@fluxerjs/core");
-const {database} = await import('../../src/db.js');
-const {EmptyResultError, Op} = await import ('sequelize');
-import {enums} from "../../src/enums.js";
-import {memberHelper} from "../../src/helpers/memberHelper.js";
+const {EmbedBuilder} = require("@fluxerjs/core");
+const {database} = require('../../src/db.js');
+const {enums} = require('../../src/enums.js');
+const {EmptyResultError, Op} = require('sequelize');
+const {memberHelper} = require("../../src/helpers/memberHelper.js");
 
 describe('MemberHelper', () => {
     const authorId = "0001";
