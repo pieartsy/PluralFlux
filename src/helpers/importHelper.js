@@ -1,5 +1,5 @@
-import {enums} from "./enums.js";
-import {memberHelper} from "./helpers/memberHelper.js";
+import {enums} from "../enums.js";
+import {memberHelper} from "./memberHelper.js";
 
 const ih = {};
 
