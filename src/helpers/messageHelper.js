@@ -72,23 +72,17 @@ msgh.parseProxyTags = async function (authorId, content, attachmentUrl= null){
 }
 
 /**
- * Sends a message as an attachment if it's too long.NOT CURRENTLY IN USE
+ * Sends a message as an attachment if it's too long.
  *
  * @async
  * @param {string} text - The text of the message.
  * @param {Message} message - The message object.
- * @throws {Error} If a proxy message is sent with no message within it.
  *
  */
-msgh.sendMessageAsAttachment = async function(text, message) {
+msgh.sendMessageAsAttachment = async function (text, message) {
     if (text.length > 2000) {
-        tmp.file(async (err, path, fd, cleanupCallback) => {
-            fs.writeFile(path, text, (err) => {
-                if (err) throw err;
-            })
-            if (err) throw err;
-            await message.reply({content: enums.err.IMPORT_ERROR, attachments: [path]});
-        });
+        const data = Buffer.from(text, 'utf-8');
+        await message.reply({content: enums.err.IMPORT_ERROR, files: [{name: 'import-logs.txt', data}]});
     }
 }
 
