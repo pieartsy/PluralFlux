@@ -2,7 +2,7 @@ import {messageHelper} from "./helpers/messageHelper.js";
 import {enums} from "./enums.js";
 import {memberHelper} from "./helpers/memberHelper.js";
 import {EmbedBuilder} from "@fluxerjs/core";
-import {importHelper} from "./import.js";
+import {importHelper} from "./helpers/importHelper.js";
 
 const cmds = new Map();
 
