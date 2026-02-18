@@ -9,7 +9,6 @@ const {database} = await import('../../src/db.js');
 const {EmptyResultError, Op} = await import ('sequelize');
 import {enums} from "../../src/enums.js";
 import {memberHelper} from "../../src/helpers/memberHelper.js";
-import * as test from "node:test";
 
 describe('MemberHelper', () => {
     const authorId = "0001";
@@ -35,7 +34,7 @@ describe('MemberHelper', () => {
 
 
         test.each([
-            // [['--help'], enums.help.MEMBER],
+            [['--help'], enums.help.MEMBER],
             [['new'], 'new member', memberHelper.addNewMember, [authorId, ['new']]],
             [['remove'], 'remove member', memberHelper.removeMember, [authorId, ['remove']]],
             [['list'], 'all member info', memberHelper.getAllMembersInfo, [authorId, ['list']]],
@@ -65,7 +64,7 @@ describe('MemberHelper', () => {
             [['propic'], enums.help.PROPIC],
             [['list', '--help'], enums.help.LIST],
             [[''], enums.help.MEMBER],
-        ])('%s returns correct values', async (args, expectedResult, method, passedIn) => {
+        ])('%s returns correct enums', async (args, expectedResult) => {
             // Arrange
             const authorId = '1';
             const authorFull = 'somePerson#0001';
