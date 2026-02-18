@@ -23,7 +23,10 @@ wh.sendMessageAsMember = async function(client, message) {
     if (!message.guildId) {
         throw new Error(enums.err.NOT_IN_SERVER);
     }
-    await wh.replaceMessage(client, message, proxyMatch.message, proxyMatch.member).catch(e =>{throw e});
+    if (proxyMatch.message === enums.misc.ATTACHMENT_SENT_BY) {
+        return await message.reply(`${enums.misc.ATTACHMENT_SENT_BY} ${proxyMatch.member.displayname ?? proxyMatch.member.name}`)
+    }
+        await wh.replaceMessage(client, message, proxyMatch.message, proxyMatch.member).catch(e =>{throw e});
 }
 
 /**
