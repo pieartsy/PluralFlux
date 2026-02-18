@@ -59,7 +59,9 @@ cmds.set('import', {
                 let errorsText = `${error.message}.\nThese errors occurred:\n${error.errors.join('\n')}`;
 
                 await message.reply(errorsText).catch(async () => {
-                    await messageHelper.sendMessageAsAttachment(errorsText, message);
+                    const returnedBuffer = await messageHelper.returnBufferFromText(errorsText);
+                    await message.reply({content: returnedBuffer.text, files: [{ name: 'text.pdf', data: returnedBuffer.file }]
+                    })
                 });
             }
             // If just one error was returned.

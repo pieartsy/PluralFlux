@@ -44,7 +44,7 @@ msgh.parseCommandArgs = function(content, commandName) {
  * @returns {Object} The proxy message object.
  * @throws {Error} If a proxy message is sent with no message within it.
  */
-msgh.parseProxyTags = async function (authorId, content, attachmentUrl= null){
+msgh.parseProxyTags = async function (authorId, content, attachmentUrl = null){
     const members = await memberHelper.getMembersByAuthor(authorId);
     // If an author has no members, no sense in searching for proxy
     if (members.length === 0) {
@@ -72,17 +72,19 @@ msgh.parseProxyTags = async function (authorId, content, attachmentUrl= null){
 }
 
 /**
- * Sends a message as an attachment if it's too long.
+ * Returns a text message that's too long as its text plus a file with the remaining text.
  *
  * @async
  * @param {string} text - The text of the message.
- * @param {Message} message - The message object.
+ * @returns {Object<string, Buffer>} The text and buffer object
  *
  */
-msgh.sendMessageAsAttachment = async function (text, message) {
+msgh.returnBufferFromText = async function (text) {
     if (text.length > 2000) {
-        const data = Buffer.from(text, 'utf-8');
-        await message.reply({content: enums.err.IMPORT_ERROR, files: [{name: 'import-logs.txt', data}]});
+        const truncated = text.substring(0, 2000);
+        const restOfText = text.substring(2001);
+        const file = Buffer.from(restOfText, 'utf-8');
+        return {text: truncated, file: file}
     }
 }
 

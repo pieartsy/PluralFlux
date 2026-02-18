@@ -42,7 +42,12 @@ wh.replaceMessage = async function(client, message, text, member) {
         const channel = client.channels.get(message.channelId);
         const webhook = await wh.getOrCreateWebhook(client, channel).catch((e) =>{throw e});
         const username = member.displayname ?? member.name;
-        await webhook.send({content: text, username: username, avatar_url: member.propic});
+        await webhook.send({content: text, username: username, avatar_url: member.propic}).catch(async(e) => {
+            const returnedBuffer = await messageHelper.returnBufferFromText(text);
+            await webhook.send({content: returnedBuffer.text, username: username, avatar_url: member.propic, files: [{ name: 'text.pdf', data: returnedBuffer.file }]
+            })
+            console.error(e);
+        });
         await message.delete();
     }
     else {
