@@ -219,6 +219,18 @@ describe('MemberHelper', () => {
                 expect(result).toEqual(new Error(expected));
             })
         });
+
+        test('sends string when updateMemberField returns successfully', async () => {
+            // Arrange
+            const args = ['somePerson', 'name', 'someNewPerson'];
+            jest.spyOn(memberHelper, 'updateMemberField').mockResolvedValue("Updated");
+
+            // Act
+            memberHelper.updateName(authorId, args).then((result) => {
+                // Assert
+                expect(result).toEqual("Updated");
+            })
+        })
     })
 
     describe('updateDisplayName', () => {
