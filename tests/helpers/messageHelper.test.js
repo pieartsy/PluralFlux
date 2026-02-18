@@ -44,7 +44,10 @@ describe('messageHelper', () => {
     describe(`parseProxyTags`, () => {
         const membersFor1 = [
             {name: "somePerson", proxy: "--text"},
-            {name: "someSecondPerson", proxy: undefined}
+            {name: "someSecondPerson", proxy: undefined},
+,           {name: "someOtherPerson", proxy: "?text}"},
+            {name: "someLastPerson", proxy: "{text}"},
+            {name: "someEmojiPerson", proxy: "⭐text"},
         ]
 
         const membersFor2 = []
@@ -69,6 +72,9 @@ describe('messageHelper', () => {
             ['1', 'hello', attachmentUrl, {}],
             ['1', '--hello', attachmentUrl, {member: membersFor1[0], message: 'hello', hasAttachment: true}],
             ['1', '--', attachmentUrl, {member: membersFor1[0], message: '', hasAttachment: true}],
+            ['1', '?hello}', null, {member: membersFor1[3], message: 'hello'}],
+            ['1', '{hello}', null, {member: membersFor1[4], message: 'hello'}],
+            ['1', '⭐hello', null, {member: membersFor1[5], message: 'hello'}],
             ['2', 'hello', null, undefined],
             ['2', '--hello', null, undefined],
             ['2', 'hello', attachmentUrl, undefined],
@@ -77,7 +83,7 @@ describe('messageHelper', () => {
             ['3', '--hello', null, {}],
             ['3', 'hello', attachmentUrl, {}],
             ['3', '--hello', attachmentUrl,{}],
-        ])('Member %s returns correct proxy', (specificAuthorId, content, attachmentUrl, expected) => {
+        ])('ID %s with string %s returns correct proxy', async(specificAuthorId, content, attachmentUrl, expected) => {
             // Act
             return messageHelper.parseProxyTags(specificAuthorId, content, attachmentUrl).then((res) => {
                 // Assert
