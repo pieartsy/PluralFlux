@@ -77,7 +77,7 @@ describe('MemberHelper', () => {
             const authorId = '1';
             const authorFull = 'somePerson#0001';
             // Act
-            memberHelper.parseMemberCommand(authorId, authorFull, args).then((result) => {
+            return memberHelper.parseMemberCommand(authorId, authorFull, args).then((result) => {
 
                 expect(result).toEqual(expectedResult);
             });
@@ -108,7 +108,7 @@ describe('MemberHelper', () => {
                 [['somePerson'], 'member info error', 'getMemberInfo', 'somePerson'],
             ])('%s calls methods and throws correct values', async (args, expectedError, method, passedIn) => {
                 // Act
-                memberHelper.parseMemberCommand(authorId, authorFull, args).catch((result) => {
+            return memberHelper.parseMemberCommand(authorId, authorFull, args).catch((result) => {
                     // Assert
                     expect(result).toEqual(new Error(expectedError));
                     expect(memberHelper[method]).toHaveBeenCalledTimes(1);
@@ -125,7 +125,7 @@ describe('MemberHelper', () => {
             const args = ['new', '--help'];
             const expected = enums.help.NEW;
             //Act
-            memberHelper.addNewMember(authorId, args).then((result) => {
+            return memberHelper.addNewMember(authorId, args).then((result) => {
                 // Assert
                 expect(result).toEqual(expected);
             })
@@ -138,7 +138,7 @@ describe('MemberHelper', () => {
             const expected = "Member was successfully added.\nName: " + args[1];
             jest.spyOn(memberHelper, 'addFullMember').mockResolvedValue(memberObject);
             //Act
-            memberHelper.addNewMember(authorId, args).then((result) => {
+            return memberHelper.addNewMember(authorId, args).then((result) => {
                 // Assert
                 expect(result).toEqual(expected);
             })
@@ -151,7 +151,7 @@ describe('MemberHelper', () => {
             const expected = "Member was successfully added.\nName: " + args[1] + "\nDisplay name: " + args[2];
             jest.spyOn(memberHelper, 'addFullMember').mockResolvedValue(memberObject);
             //Act
-            memberHelper.addNewMember(authorId, args).then((result) => {
+            return memberHelper.addNewMember(authorId, args).then((result) => {
                 // Assert
                 expect(result).toEqual(expected);
             })
@@ -164,7 +164,7 @@ describe('MemberHelper', () => {
             jest.spyOn(memberHelper, 'addFullMember').mockImplementation(() => { throw new Error(expected)});
 
             //Act
-            memberHelper.addNewMember(authorId, args).catch((result) => {
+            return memberHelper.addNewMember(authorId, args).catch((result) => {
                 // Assert
                 expect(result).toEqual(new Error(expected));
             })
@@ -178,7 +178,7 @@ describe('MemberHelper', () => {
             const args = ['somePerson', 'name', '--help'];
 
             // Act
-            memberHelper.updateName(authorId, args).then((result) => {
+            return memberHelper.updateName(authorId, args).then((result) => {
                 // Assert
                 expect(result).toEqual(enums.help.NAME);
             })
@@ -190,7 +190,7 @@ describe('MemberHelper', () => {
             const expected = `The name for ${args[0]} is ${args[0]}, but you probably knew that!`;
 
             // Act
-            memberHelper.updateName(authorId, args).then((result) => {
+            return memberHelper.updateName(authorId, args).then((result) => {
                 expect(result).toEqual(expected);
             })
         })
@@ -200,7 +200,7 @@ describe('MemberHelper', () => {
             const args = ['somePerson', 'name', "     "];
 
             // Act
-            memberHelper.updateName(authorId, args).catch((result) => {
+            return memberHelper.updateName(authorId, args).catch((result) => {
                 // Assert
                 expect(result).toEqual(new RangeError("Name " + enums.err.NO_VALUE));
             })
@@ -214,7 +214,7 @@ describe('MemberHelper', () => {
                 throw new Error(expected)
             });
             // Act
-            memberHelper.updateName(authorId, args).catch((result) => {
+            return memberHelper.updateName(authorId, args).catch((result) => {
                 // Assert
                 expect(result).toEqual(new Error(expected));
             })
@@ -226,7 +226,7 @@ describe('MemberHelper', () => {
             jest.spyOn(memberHelper, 'updateMemberField').mockResolvedValue("Updated");
 
             // Act
-            memberHelper.updateName(authorId, args).then((result) => {
+            return memberHelper.updateName(authorId, args).then((result) => {
                 // Assert
                 expect(result).toEqual("Updated");
             })
@@ -240,7 +240,7 @@ describe('MemberHelper', () => {
             const args = ['somePerson', 'displayname', '--help'];
 
             // Act
-            memberHelper.updateDisplayName(authorId, args).then((result) => {
+            return memberHelper.updateDisplayName(authorId, args).then((result) => {
                 // Assert
                 expect(result).toEqual(enums.help.DISPLAY_NAME);
             })
@@ -256,7 +256,7 @@ describe('MemberHelper', () => {
             jest.spyOn(memberHelper, 'getMemberByName').mockResolvedValue(member);
 
             // Act
-            memberHelper.updateDisplayName(authorId, args).then((result) => {
+            return memberHelper.updateDisplayName(authorId, args).then((result) => {
                 // Assert
                 expect(result).toEqual(`Display name for ${args[0]} is: "${member.displayname}".`);
             })

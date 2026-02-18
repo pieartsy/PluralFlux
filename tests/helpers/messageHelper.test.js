@@ -68,10 +68,17 @@ describe('messageHelper', () => {
             ['3', 'hello', attachmentUrl, {}],
             ['3', '--hello', attachmentUrl,{}],
         ])('Member %s returns correct proxy', (specificAuthorId, content, attachmentUrl, expected) => {
-            messageHelper.parseProxyTags(specificAuthorId, content, attachmentUrl).then((res) => {
+            return messageHelper.parseProxyTags(specificAuthorId, content, attachmentUrl).then((res) => {
                 expect(res).toEqual(expected);
             })
         });
+
+        test('expect error to be thrown when no message is present', () => {
+            // Arrange
+            return messageHelper.parseProxyTags('1', '', null).catch((res) => {
+                expect(res).toEqual(new Error(enums.err.NO_MESSAGE_SENT_WITH_PROXY));
+            })
+        })
 
 
     })
