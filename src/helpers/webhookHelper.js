@@ -1,5 +1,5 @@
 import {messageHelper} from "./messageHelper.js";
-import {Webhook, Channel, Message} from '@fluxerjs/core';
+import {Webhook, Channel, Message, Client} from '@fluxerjs/core';
 import {enums} from "../enums.js";
 
 const wh = {};
@@ -19,14 +19,14 @@ wh.sendMessageAsMember = async function(client, message) {
     if (!proxyMatch || !proxyMatch.member) {
         return;
     }
-    // If the message does match a proxy but is not in a guild server (ex: in the Bot's DMs
+    // If the message does match a proxy but is not in a guild server (ex: in the Bot's DMs)
     if (!message.guildId) {
         throw new Error(enums.err.NOT_IN_SERVER);
     }
-    if (proxyMatch.message === enums.misc.ATTACHMENT_SENT_BY) {
+    if (proxyMatch.hasAttachment) {
         return await message.reply(`${enums.misc.ATTACHMENT_SENT_BY} ${proxyMatch.member.displayname ?? proxyMatch.member.name}`)
     }
-        await wh.replaceMessage(client, message, proxyMatch.message, proxyMatch.member).catch(e =>{throw e});
+    await wh.replaceMessage(client, message, proxyMatch.message, proxyMatch.member).catch(e =>{throw e});
 }
 
 /**
@@ -43,7 +43,7 @@ wh.replaceMessage = async function(client, message, text, member) {
         const webhook = await wh.getOrCreateWebhook(client, channel).catch((e) =>{throw e});
         const username = member.displayname ?? member.name;
         await webhook.send({content: text, username: username, avatar_url: member.propic}).catch(async(e) => {
-            const returnedBuffer = await messageHelper.returnBufferFromText(text);
+            const returnedBuffer = messageHelper.returnBufferFromText(text);
             await webhook.send({content: returnedBuffer.text, username: username, avatar_url: member.propic, files: [{ name: 'text.pdf', data: returnedBuffer.file }]
             })
             console.error(e);
