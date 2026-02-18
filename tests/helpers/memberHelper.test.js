@@ -33,25 +33,21 @@ describe('MemberHelper', () => {
             jest.spyOn(memberHelper, 'getProxyByMember').mockResolvedValue("get proxy");
         });
 
-
-        test.skip.each([
-            [['new'], 'new member', memberHelper.addNewMember, [authorId, ['new']]],
-            [['remove'], 'remove member', memberHelper.removeMember, [authorId, ['remove']]],
-            [['list'], 'all member info', memberHelper.getAllMembersInfo, [authorId, ['list']]],
-            [['somePerson', 'name'], 'update name', memberHelper.updateName, [authorId, ['somePerson', 'name']]],
-            [['somePerson', 'displayname'], 'update display name', memberHelper.updateDisplayName, [authorId, ['somePerson', 'displayname']]],
-            [['somePerson', 'proxy'], 'get proxy', memberHelper.getProxyByMember, [authorId, 'somePerson']],
-            [['somePerson', 'proxy', 'test'], 'update proxy', memberHelper.updateProxy, [authorId, ['somePerson', 'proxy', 'test']]],
-            [['somePerson', 'propic'], 'update propic', memberHelper.updatePropic, [authorId, ['somePerson', 'propic']]],
-            [['somePerson'], 'member info', getMemberInfoMock, [authorId, 'somePerson']],
-        ])('%s returns correct values', async (args, expectedResult, method, passedIn) => {
-            // Arrange
-            console.log(method)
-            // Act
+        test.each([
+            [['new'], 'new member', 'addNewMember', ['new']],
+            [['remove'], 'remove member', 'removeMember', ['remove']],
+            [['list'], 'all member info', 'getAllMembersInfo', ['list']],
+            [['somePerson', 'name'], 'update name', 'updateName', ['somePerson', 'name']],
+            [['somePerson', 'displayname'], 'update display name', 'updateDisplayName', ['somePerson', 'displayname']],
+            [['somePerson', 'proxy'], 'get proxy', 'getProxyByMember', ['somePerson']],
+            [['somePerson', 'proxy', 'test'], 'update proxy', 'updateProxy', ['somePerson', 'proxy', 'test']],
+            [['somePerson', 'propic'], 'update propic', 'updatePropic', ['somePerson', 'propic']],
+            [['somePerson'], 'member info', 'getMemberInfo', 'somePerson'],
+        ])('%s returns correct values and calls methods', async (args, expectedResult, method, passedIn) => {
             return memberHelper.parseMemberCommand(authorId, authorFull, args).then((result) => {
                 expect(result).toEqual(expectedResult);
-                expect(method).toHaveBeenCalledTimes(1);
-                expect(method).toHaveBeenCalledWith(passedIn)
+                expect(memberHelper[method]).toHaveBeenCalledTimes(1);
+                expect(memberHelper[method]).toHaveBeenCalledWith(authorId, passedIn)
             });
         });
 
