@@ -57,14 +57,14 @@ msgh.parseProxyTags = async function (authorId, content, attachmentUrl = null){
             const splitProxy = member.proxy.split("text");
             if(content.startsWith(splitProxy[0]) && content.endsWith(splitProxy[1])) {
                 proxyMessage.member = member;
-                if (attachmentUrl) return proxyMessage.message = enums.misc.ATTACHMENT_SENT_BY;
+                if (attachmentUrl) proxyMessage.hasAttachment = true;
 
                 let escapedPrefix = splitProxy[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 let escapedSuffix = splitProxy[1].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 escapedPrefix = new RegExp("^" + escapedPrefix);
                 escapedSuffix = new RegExp(escapedSuffix + "$")
                 proxyMessage.message = content.replace(escapedPrefix, "").replace(escapedSuffix, "");
-                if (proxyMessage.message.length === 0) throw new Error(enums.err.NO_MESSAGE_SENT_WITH_PROXY);
+                if (proxyMessage.message.length === 0 && !attachmentUrl) throw new Error(enums.err.NO_MESSAGE_SENT_WITH_PROXY);
             }
         }
     })
