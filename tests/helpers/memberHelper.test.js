@@ -223,6 +223,32 @@ describe('MemberHelper', () => {
 
     describe('updateDisplayName', () => {
 
+        test('sends help message when --help parameter passed in', async () => {
+            // Arrange
+            const args = ['somePerson', 'displayname', '--help'];
+
+            // Act
+            memberHelper.updateDisplayName(authorId, args).then((result) => {
+                // Assert
+                expect(result).toEqual(enums.help.DISPLAY_NAME);
+            })
+        })
+
+        test('Sends string of current displayname when no displayname passed in', async () => {
+            // Arrange
+            const args = ['somePerson', 'displayname'];
+            const displayname = "Some Person";
+            const member = {
+                displayname: displayname,
+            }
+            jest.spyOn(memberHelper, 'getMemberByName').mockResolvedValue(member);
+
+            // Act
+            memberHelper.updateDisplayName(authorId, args).then((result) => {
+                // Assert
+                expect(result).toEqual(`Display name for ${args[0]} is: "${member.displayname}".`);
+            })
+        })
     })
 
     afterEach(() => {
