@@ -23,7 +23,7 @@ const commandList = ['--help', 'new', 'remove', 'name', 'list', 'displayName', '
 mh.parseMemberCommand = async function (authorId, authorFull, args, attachmentUrl = null, attachmentExpiration = null) {
     let member;
     // checks whether command is in list, otherwise assumes it's a name
-    if (!commandList.includes(args[0])) {
+    if (!commandList.includes(args[0]) && !args[1]) {
         member = await mh.getMemberInfo(authorId, args[0]);
     }
     switch (args[0]) {
