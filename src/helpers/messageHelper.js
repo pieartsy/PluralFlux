@@ -21,7 +21,7 @@ msgh.parseCommandArgs = function(content, commandName) {
     const message = content.slice(msgh.prefix.length + commandName.length).trim();
 
     return message.match(/\\?.|^$/g).reduce((accumulator, chara) => {
-        if (chara === '"') {
+        if (chara === '\"' || chara === '\'') {
             // checks whether string is within quotes or not
             accumulator.quote ^= 1;
         } else if (!accumulator.quote && chara === ' '){
@@ -74,18 +74,18 @@ msgh.parseProxyTags = async function (authorId, content, attachmentUrl = null){
 /**
  * Returns a text message that's too long as its text plus a file with the remaining text.
  *
- * @async
  * @param {string} text - The text of the message.
- * @returns {Object<string, Buffer>} The text and buffer object
+ * @returns {{text: string, file: Buffer<ArrayBuffer> | undefined}} The text and buffer object
  *
  */
-msgh.returnBufferFromText = async function (text) {
+msgh.returnBufferFromText = function (text) {
     if (text.length > 2000) {
         const truncated = text.substring(0, 2000);
-        const restOfText = text.substring(2001);
+        const restOfText = text.substring(2000);
         const file = Buffer.from(restOfText, 'utf-8');
         return {text: truncated, file: file}
     }
+    return {text: text, file: undefined}
 }
 
 export const messageHelper = msgh;

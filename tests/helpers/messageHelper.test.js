@@ -20,15 +20,25 @@ jest.mock('@fluxerjs/core');
 const {messageHelper} = require("../../src/helpers/messageHelper.js");
 
 describe('messageHelper', () => {
-    // let memberHelper = {}
-    const authorId = "0001";
-    const authorFull = "author#0001";
-    const attachmentUrl = "../oya.png";
-    const attachmentExpiration = new Date('2026-01-01T00.00.00.0000Z')
 
     beforeEach(() => {
         jest.resetModules();
         jest.clearAllMocks();
+    })
+
+    describe('parseCommandArgs', () => {
+        test.each([
+            ['pk;member', ['']],
+            ['pk;member add somePerson "Some Person"', ['add', 'somePerson', 'Some Person']],
+            ['pk;member add \"Some Person\"', ['add', 'Some Person']],
+            ['pk;member add somePerson \'Some Person\'', ['add', 'somePerson', 'Some Person']],
+            ['pk;member add somePerson \"\'Some\' Person\"', ['add', 'somePerson', 'Some Person']],
+        ])('%s returns correct arguments', (content, expected) => {
+            // Arrange
+            const command = "member";
+            const result = messageHelper.parseCommandArgs(content, command);
+            expect(result).toEqual(expected);
+        })
     })
 
     describe(`parseProxyTags`, () => {
@@ -68,23 +78,47 @@ describe('messageHelper', () => {
             ['3', 'hello', attachmentUrl, {}],
             ['3', '--hello', attachmentUrl,{}],
         ])('Member %s returns correct proxy', (specificAuthorId, content, attachmentUrl, expected) => {
+            // Act
             return messageHelper.parseProxyTags(specificAuthorId, content, attachmentUrl).then((res) => {
+                // Assert
                 expect(res).toEqual(expected);
             })
         });
 
         test('expect error to be thrown when no message is present', () => {
-            // Arrange
+            // Act
             return messageHelper.parseProxyTags('1', '', null).catch((res) => {
+                // Assert
                 expect(res).toEqual(new Error(enums.err.NO_MESSAGE_SENT_WITH_PROXY));
             })
         })
-
-
     })
 
-    describe('parseCommandArgs', () => {
+    describe('returnBufferFromText', () => {
+        const charas2000 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
+        test('returns truncated text and buffer file when text is more than 2000 characters', () => {
+            // Arrange
+
+            const charasOver2000 = "bbbbb"
+            const expectedBuffer = Buffer.from(charasOver2000, 'utf-8');
+            const expected = {text: charas2000, file: expectedBuffer};
+
+            // Act
+            const result = messageHelper.returnBufferFromText(`${charas2000}${charasOver2000}`);
+
+            // Assert
+            expect(result).toEqual(expected);
+        })
+
+        test('returns text when text is 2000 characters or less', () => {
+            // Arrange
+            const expected = {text: charas2000, file: undefined};
+            // Act
+            const result = messageHelper.returnBufferFromText(`${charas2000}`);
+            // Assert
+            expect(result).toEqual(expected);
+        })
     })
 
     afterEach(() => {
