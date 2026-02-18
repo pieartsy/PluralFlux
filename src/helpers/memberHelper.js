@@ -1,4 +1,4 @@
-import {database} from '../db.js';
+import {database} from '../database.js';
 import {enums} from "../enums.js";
 import {EmptyResultError, Op} from "sequelize";
 import {EmbedBuilder} from "@fluxerjs/core";
@@ -97,8 +97,8 @@ mh.addNewMember = async function (authorId, args) {
     const displayName = args[2];
 
     return await mh.addFullMember(authorId, memberName, displayName).then((member) => {
-        let success = `Member was successfully added.\nName: ${member.dataValues.name}`
-        success += displayName ? `\nDisplay name: ${member.dataValues.displayname}` : "";
+        let success = `Member was successfully added.\nName: ${member.name}`
+        success += displayName ? `\nDisplay name: ${member.displayname}` : "";
         return success;
     }).catch(e => {
         throw e;
@@ -115,14 +115,17 @@ mh.addNewMember = async function (authorId, args) {
  * @throws {RangeError} When the name doesn't exist.
  */
 mh.updateName = async function (authorId, args) {
-    if (args[1] && args[1] === "--help" || !args[1]) {
-        return enums.help.DISPLAY_NAME;
+    if (args[2] && args[2] === "--help") {
+        return enums.help.NAME;
     }
 
     const name = args[2];
-    const trimmedName = name ? name.trim() : null;
-    if (!name || trimmedName === null) {
-        throw new RangeError(`Display name ${enums.err.NO_VALUE}`);
+    if (!name) {
+        return `The name for ${name} is ${name}, but you probably knew that!`;
+    }
+    const trimmedName = name.trim();
+    if (trimmedName === '') {
+        throw new RangeError(`Name ${enums.err.NO_VALUE}`);
     }
     return await mh.updateMemberField(authorId, args).catch((e) => {
         throw e
@@ -147,16 +150,19 @@ mh.updateDisplayName = async function (authorId, args) {
     const displayName = args[2];
     const trimmedName = displayName ? displayName.trim() : null;
 
-    if (!displayName || trimmedName === null) {
+    if (!displayName) {
         return await mh.getMemberByName(authorId, memberName).then((member) => {
             if (member && member.displayname) {
                 return `Display name for ${memberName} is: \"${member.displayname}\".`;
             } else if (member) {
-                throw new RangeError(`Display name ${enums.err.NO_VALUE}`);
+                throw new EmptyResultError(`Display name ${enums.err.NO_VALUE}`);
             }
         });
     } else if (displayName.length > 32) {
-        throw new RangeError(enums.err.DISPLAY_NAME_TOO_LONG);
+        throw new RangeError(enums.err.NO_VALUE);
+    }
+    else if (trimmedName === '') {
+        throw new RangeError(`Display name ${enums.err.NO_VALUE}`);
     }
     return await mh.updateMemberField(authorId, args).catch((e) => {
         throw e
@@ -346,15 +352,13 @@ mh.updateMemberField = async function (authorId, args) {
             name: {[Op.iLike]: memberName},
             userid: authorId
         }
-    }).then(() => {
-        return `Updated ${columnName} for ${memberName} to ${value}${fluxerPropicWarning ?? ''}.`;
-    }).catch(e => {
-        if (e === EmptyResultError) {
-            throw new EmptyResultError(`Can't update ${memberName}. ${enums.err.NO_MEMBER}: ${e.message}`);
-        } else {
-            throw new Error(`Can't update ${memberName}. ${e.message}`);
-        }
-    });
+    }).then((res) => {
+            if (res[0] === 0) {
+                throw new EmptyResultError(`Can't update ${memberName}. ${enums.err.NO_MEMBER}.`);
+            } else {
+                return `Updated ${columnName} for ${memberName} to ${value}${fluxerPropicWarning ?? ''}.`;
+            }
+    })
 }
 
 /**
@@ -440,7 +444,7 @@ mh.getMemberByName = async function (authorId, memberName) {
 mh.getProxyByMember = async function (authorId, memberName) {
     return await mh.getMemberByName(authorId, memberName).then((member) => {
         if (member) {
-            return member.dataValues.proxy;
+            return member.proxy;
         }
         throw new EmptyResultError(enums.err.NO_MEMBER);
     })

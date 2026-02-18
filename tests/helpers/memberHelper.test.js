@@ -1,9 +1,9 @@
 jest.mock('@fluxerjs/core', () => jest.fn());
-jest.mock('../../src/db.js', () => jest.fn());
+jest.mock('../../src/database.js', () => jest.fn());
 jest.mock('sequelize', () => jest.fn());
 
 const {EmbedBuilder} = require("@fluxerjs/core");
-const {database} = require('../../src/db.js');
+const {database} = require('../../src/database.js');
 const {enums} = require('../../src/enums.js');
 const {EmptyResultError, Op} = require('sequelize');
 const {memberHelper} = require("../../src/helpers/memberHelper.js");
@@ -14,12 +14,14 @@ describe('MemberHelper', () => {
     const attachmentUrl = "../oya.png";
     const attachmentExpiration = new Date('2026-01-01T00.00.00.0000Z')
 
+    beforeEach(() => {
+        jest.resetModules();
+        jest.clearAllMocks();
+    })
 
     describe('parseMemberCommand', () => {
 
         beforeEach(() => {
-            jest.resetModules();
-            jest.clearAllMocks();
             jest.spyOn(memberHelper, 'getMemberInfo').mockResolvedValue("member info");
             jest.spyOn(memberHelper, 'addNewMember').mockResolvedValue("new member");
             jest.spyOn(memberHelper, 'removeMember').mockResolvedValue("remove member");
@@ -40,8 +42,10 @@ describe('MemberHelper', () => {
             [['somePerson', 'proxy'], 'get proxy', 'getProxyByMember', 'somePerson'],
             [['somePerson', 'proxy', 'test'], 'update proxy', 'updateProxy', ['somePerson', 'proxy', 'test']],
             [['somePerson'], 'member info', 'getMemberInfo', 'somePerson'],
-        ])('%s returns correct values and calls methods', async (args, expectedResult, method, passedIn) => {
+        ])('%s calls methods and returns correct values', async (args, expectedResult, method, passedIn) => {
+            // Act
             return memberHelper.parseMemberCommand(authorId, authorFull, args).then((result) => {
+                // Assert
                 expect(result).toEqual(expectedResult);
                 expect(memberHelper[method]).toHaveBeenCalledTimes(1);
                 expect(memberHelper[method]).toHaveBeenCalledWith(authorId, passedIn)
@@ -49,10 +53,11 @@ describe('MemberHelper', () => {
         });
 
         test('["somePerson", "propic"] returns correct values and calls methods', () => {
-            // arrange
+            // Arrange
             const args = ['somePerson', 'propic'];
-            // act & assert
+            // Act
             return memberHelper.parseMemberCommand(authorId, authorFull, args, attachmentUrl, attachmentExpiration).then((result) => {
+                // Assert
                 expect(result).toEqual("update propic");
                 expect(memberHelper['updatePropic']).toHaveBeenCalledTimes(1);
                 expect(memberHelper['updatePropic']).toHaveBeenCalledWith(authorId, args, attachmentUrl, attachmentExpiration)
@@ -73,6 +78,7 @@ describe('MemberHelper', () => {
             const authorFull = 'somePerson#0001';
             // Act
             memberHelper.parseMemberCommand(authorId, authorFull, args).then((result) => {
+
                 expect(result).toEqual(expectedResult);
             });
         });
@@ -100,21 +106,128 @@ describe('MemberHelper', () => {
                 [['somePerson', 'proxy'], 'get proxy error', 'getProxyByMember', 'somePerson'],
                 [['somePerson', 'proxy', 'test'], 'update proxy error', 'updateProxy', ['somePerson', 'proxy', 'test']],
                 [['somePerson'], 'member info error', 'getMemberInfo', 'somePerson'],
-            ])('%s returns correct values and calls methods', async (args, expectedError, method, passedIn) => {
+            ])('%s calls methods and throws correct values', async (args, expectedError, method, passedIn) => {
+                // Act
                 memberHelper.parseMemberCommand(authorId, authorFull, args).catch((result) => {
+                    // Assert
                     expect(result).toEqual(new Error(expectedError));
                     expect(memberHelper[method]).toHaveBeenCalledTimes(1);
                     expect(memberHelper[method]).toHaveBeenCalledWith(authorId, passedIn)
                 });
             });
         })
+    })
 
+    describe('addNewMember', () => {
 
+        test('returns help if --help passed in', async() => {
+            // Arrange
+            const args = ['new', '--help'];
+            const expected = enums.help.NEW;
+            //Act
+            memberHelper.addNewMember(authorId, args).then((result) => {
+                // Assert
+                expect(result).toEqual(expected);
+            })
+        })
 
-        afterEach(() => {
-            // restore the spy created with spyOn
-            jest.restoreAllMocks();
+        test('returns member without display name when name passed in',  async () => {
+            // Arrange
+            const args = ['new', 'some person'];
+            const memberObject = { name: args[1] }
+            const expected = "Member was successfully added.\nName: " + args[1];
+            jest.spyOn(memberHelper, 'addFullMember').mockResolvedValue(memberObject);
+            //Act
+            memberHelper.addNewMember(authorId, args).then((result) => {
+                // Assert
+                expect(result).toEqual(expected);
+            })
+        })
+
+        test('returns member with display name when name and display name passed in',  async () => {
+            // Arrange
+            const args = ['new', 'some person', 'Some person Full Name'];
+            const memberObject = { name: args[1], displayname: args[2] }
+            const expected = "Member was successfully added.\nName: " + args[1] + "\nDisplay name: " + args[2];
+            jest.spyOn(memberHelper, 'addFullMember').mockResolvedValue(memberObject);
+            //Act
+            memberHelper.addNewMember(authorId, args).then((result) => {
+                // Assert
+                expect(result).toEqual(expected);
+            })
+        })
+
+        test('throws expected error when addFullMember throws error',  async () => {
+            // Arrange
+            const args = ['new', 'somePerson'];
+            const expected = 'add full member error';
+            jest.spyOn(memberHelper, 'addFullMember').mockImplementation(() => { throw new Error(expected)});
+
+            //Act
+            memberHelper.addNewMember(authorId, args).catch((result) => {
+                // Assert
+                expect(result).toEqual(new Error(expected));
+            })
+        })
+    })
+
+    describe('updateName', () => {
+
+        test('sends help message when --help parameter passed in', async () => {
+            // Arrange
+            const args = ['somePerson', 'name', '--help'];
+
+            // Act
+            memberHelper.updateName(authorId, args).then((result) => {
+                // Assert
+                expect(result).toEqual(enums.help.NAME);
+            })
+        })
+
+        test('Sends string when no name', async () => {
+            // Arrange
+            const args = ['somePerson', 'name']
+
+            // Act
+            memberHelper.updateName(authorId, args).catch((result) => {
+                // Assert
+                expect(result).toEqual(new RangeError("Name " + enums.err.NO_VALUE));
+            })
+        })
+
+        test('throws error when name is empty', async () => {
+            // Arrange
+            const args = ['somePerson', 'name', "     "];
+
+            // Act
+            memberHelper.updateName(authorId, args).catch((result) => {
+                // Assert
+                expect(result).toEqual(new RangeError("Name " + enums.err.NO_VALUE));
+            })
+        })
+
+        test('throws error when updateMemberField returns error', async () => {
+            // Arrange
+            const expected = 'update error';
+            const args = ['somePerson', "name", "someNewPerson"];
+            jest.spyOn(memberHelper, 'updateMemberField').mockImplementation(() => {
+                throw new Error(expected)
+            });
+            // Act
+            memberHelper.updateName(authorId, args).catch((result) => {
+                // Assert
+                expect(result).toEqual(new Error(expected));
+            })
         });
     })
+
+    describe('updateDisplayName', () => {
+
+    })
+
+    afterEach(() => {
+        // restore the spy created with spyOn
+        jest.restoreAllMocks();
+    });
 })
 
