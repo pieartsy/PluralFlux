@@ -326,6 +326,7 @@ mh.addFullMember = async function (authorId, memberName, displayName = null, pro
     if (!member) {
         new Error(`${enums.err.ADD_ERROR}`);
     }
+    return member;
 }
 
 /**
