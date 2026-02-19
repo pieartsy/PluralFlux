@@ -206,7 +206,7 @@ mh.updateProxy = async function (authorId, args) {
  * @throws {Error} When loading the profile picture from a URL doesn't work.
  */
 mh.updatePropic = async function (authorId, args, attachmentUrl, attachmentExpiry = null) {
-    if (args[1] && args[1] === "--help") {
+    if (args[2] && args[2] === "--help") {
         return enums.help.PROPIC;
     }
     let img;
