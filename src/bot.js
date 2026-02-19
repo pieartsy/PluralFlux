@@ -26,7 +26,7 @@ client.on(Events.MessageCreate, async (message) => {
 
         // If message doesn't start with the bot prefix, it could still be a message with a proxy tag. If it's not, return.
         if (!content.startsWith(messageHelper.prefix)) {
-            await webhookHelper.sendMessageAsMember(client, message).catch((e) => {
+            await webhookHelper.sendMessageAsMember(client, message, content).catch((e) => {
                 throw e
             });
             return;
@@ -53,8 +53,27 @@ client.on(Events.MessageCreate, async (message) => {
 
 client.on(Events.Ready, () => {
     console.log(`Logged in as ${client.user?.username}`);
-    console.log(`Serving ${client.guilds.size} guild(s)`);
 });
+
+let guildCount = 0;
+client.on(Events.GuildCreate, () => {
+    guildCount++;
+    callback();
+});
+
+function printGuilds() {
+    console.log(`Serving ${client.guilds.size} guild(s)`);
+}
+
+const callback  = Debounce(printGuilds, 2000);
+
+function Debounce(func, delay) {
+    let timeout = null;
+    return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func(...args), delay);
+    };
+}
 
 try {
     await client.login(token);
