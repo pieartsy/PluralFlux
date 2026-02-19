@@ -11,6 +11,7 @@
   "dependencies": {
     "@fluxerjs/core": "^1.1.5",
     "dotenv": "^17.3.1",
+    "node-fetch": "^3.3.2",
     "pg": "^8.18.0",
     "pg-hstore": "^2.3.4",
     "pm2": "^6.0.14",

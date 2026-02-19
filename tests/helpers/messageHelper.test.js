@@ -2,10 +2,8 @@ const env = require('dotenv');
 env.config();
 
 const {memberHelper} = require("../../src/helpers/memberHelper.js");
-const {Message} = require("@fluxerjs/core");
-const {fs} = require('fs');
 const {enums} = require('../../src/enums');
-const {tmp, setGracefulCleanup} = require('tmp');
+const fetch = require('node-fetch');
 
 jest.mock('../../src/helpers/memberHelper.js', () => {
     return {memberHelper: {
@@ -13,7 +11,7 @@ jest.mock('../../src/helpers/memberHelper.js', () => {
     }}
 })
 
-jest.mock('tmp');
+jest.mock('node-fetch');
 jest.mock('fs');
 jest.mock('@fluxerjs/core');
 
@@ -48,6 +46,7 @@ describe('messageHelper', () => {
 ,           {name: "someOtherPerson", proxy: "?text}"},
             {name: "someLastPerson", proxy: "{text}"},
             {name: "someEmojiPerson", proxy: "⭐text"},
+            {name: "someSpacePerson", proxy: "-- text"},
         ]
 
         const membersFor2 = []
@@ -75,6 +74,7 @@ describe('messageHelper', () => {
             ['1', '?hello}', null, {member: membersFor1[3], message: 'hello', hasAttachment: false}],
             ['1', '{hello}', null, {member: membersFor1[4], message: 'hello', hasAttachment: false}],
             ['1', '⭐hello', null, {member: membersFor1[5], message: 'hello', hasAttachment: false}],
+            ['1', '-- hello', null, {member: membersFor1[5], message: 'hello', hasAttachment: false}]
             ['2', 'hello', null, undefined],
             ['2', '--hello', null, undefined],
             ['2', 'hello', attachmentUrl, undefined],

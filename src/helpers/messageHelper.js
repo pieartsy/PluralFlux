@@ -1,8 +1,6 @@
 import {memberHelper} from "./memberHelper.js";
-import {enums} from "../enums.js";
 import tmp, {setGracefulCleanup} from "tmp";
-import fs from 'fs';
-import {Message} from "@fluxerjs/core";
+import fetch from 'node-fetch';
 
 const msgh = {};
 
@@ -84,6 +82,58 @@ msgh.returnBufferFromText = function (text) {
         return {text: truncated, file: file}
     }
     return {text: text, file: undefined}
+}
+
+/**
+ * Returns an ArrayBuffer from an attachment URL.
+ *
+ * @param {string} attachmentUrl
+ * @returns {ArrayBuffer} The buffer from the image.
+ *
+ */
+msgh.returnBufferFromUrl = async function (attachmentUrl) {
+    retryPromise(() => fetch(attachmentUrl),{
+        retryIf: (response) => !response.ok,
+        retries: 5
+    }).then(async(res) => {
+        return await res.arrayBuffer().catch((err) => {
+            throw new Error(`Error loading attachment into buffer: ${err.message}`);
+        })
+    })
+
+}
+
+// Source - https://stackoverflow.com/a/70687149 - Arturo Hernandez
+function retryPromise(promise, options) {
+    const { retryIf, retryCatchIf, retries } = { retryIf: () => false, retryCatchIf: () => true, retries: 5, ...options};
+    let _promise = promise();
+
+    for (let i = 1; i < retries; i++)
+        _promise = _promise.catch((value) => retryCatchIf(value) ? promise() : Promise.reject(value))
+            .then((value) => retryIf(value) ? promise() : Promise.reject(value));
+
+    return _promise;
+}
+
+
+/**
+ * Returns an ArrayBuffer from an attachment URL.
+ *
+ * @param {Map} attachments - A collection of attachments from the message object
+ * @returns {[{string, ArrayBuffer}]} An array of file objects
+ *
+ */
+msgh.createFileObjectFromAttachments = async function (attachments) {
+    if (attachments.size === 0) {
+        return [];
+    }
+    const attachmentsObj = [];
+    attachments.forEach(async (attachment) => {
+        await msgh.returnBufferFromUrl(attachment.url).then((res) => {
+            attachmentsObj.push({name: attachment.filename, data: res});
+        });
+    });
+    return attachmentsObj;
 }
 
 export const messageHelper = msgh;
