@@ -26,7 +26,7 @@ client.on(Events.MessageCreate, async (message) => {
 
         // If message doesn't start with the bot prefix, it could still be a message with a proxy tag. If it's not, return.
         if (!content.startsWith(messageHelper.prefix)) {
-            await webhookHelper.sendMessageAsMember(client, message, content).catch((e) => {
+            await webhookHelper.sendMessageAsMember(client, message).catch((e) => {
                 throw e
             });
             return;
