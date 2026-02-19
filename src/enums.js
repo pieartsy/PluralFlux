@@ -36,7 +36,7 @@ helperEnums.help = {
     DISPLAY_NAME: "Updates the display name for a specific member based on their name, for example: `pf;member jane \"Jane Doe | ze/hir\"`.This can be up to 32 characters long. If it has spaces, put it in __double quotes__.",
     PROXY: "Updates the proxy tag for a specific member based on their name. The proxy must be formatted with the tags surrounding the word 'text', for example: `pf;member jane proxy Jane:text` or `pf;member amal proxy [text]` This is so the bot can detect what the proxy tags are. Only one proxy can be set per member currently.",
     PROPIC: "Updates the profile picture for the member. Must be in JPG, PNG, or WEBP format and less than 10MB. The two options are:\n1. Pass in a direct remote image URL, for example: `pf;member jane propic https://cdn.pixabay.com/photo/2020/05/02/02/54/animal-5119676_1280.jpg`. You can upload images on sites like https://imgbb.com/.\n2. Upload an attachment directly.\n\n**NOTE:** Fluxer does not save your attachments forever, so option #1 is recommended.",
-    IMPORT: "Imports from PluralKit using the JSON file provided by their export command. Importing from other proxy bots is TBD. `pf;import` and attach your JSON file to the message. This will only save the fields that are present in the bot currently (the stuff above), not anything else like birthdays or system handles (yet?)."
+    IMPORT: "Imports from PluralKit using the JSON file provided by their export command. Importing from other proxy bots is TBD. `pf;import` and attach your JSON file to the message. This will only save the fields that are present in the bot currently, not anything else like birthdays or system handles (yet?)."
 }
 
 helperEnums.misc = {
