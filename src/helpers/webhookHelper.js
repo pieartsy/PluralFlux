@@ -8,6 +8,7 @@ const name = 'PluralFlux Proxy Webhook';
 
 /**
  * Replaces a proxied message with a webhook using the member information.
+ * @async
  * @param {Client} client - The fluxer.js client.
  * @param {Message} message - The full message object.
  * @throws {Error} When the proxy message is not in a server.
@@ -16,7 +17,7 @@ wh.sendMessageAsMember = async function(client, message) {
     const attachmentUrl = message.attachments.size > 0 ? message.attachments.first().url : null;
     const proxyMatch = await messageHelper.parseProxyTags(message.author.id, message.content, attachmentUrl).catch(e =>{throw e});
     // If the message doesn't match a proxy, just return.
-    if (!proxyMatch || !proxyMatch.member) {
+    if (!proxyMatch || !proxyMatch.member || (proxyMatch.message.length === 0 && !proxyMatch.hasAttachment) ) {
         return;
     }
     // If the message does match a proxy but is not in a guild server (ex: in the Bot's DMs)
@@ -31,6 +32,7 @@ wh.sendMessageAsMember = async function(client, message) {
 
 /**
  * Replaces a proxied message with a webhook using the member information.
+ * @async
  * @param {Client} client - The fluxer.js client.
  * @param {Message} message - The message to be deleted.
  * @param {string} text - The text to send via the webhook.
@@ -38,26 +40,30 @@ wh.sendMessageAsMember = async function(client, message) {
  * @throws {Error} When there's no message to send.
  */
 wh.replaceMessage = async function(client, message, text, member) {
+    // attachment logic is not relevant yet, text length will always be over 0 right now
     if (text.length > 0 || message.attachments.size > 0) {
         const channel = client.channels.get(message.channelId);
         const webhook = await wh.getOrCreateWebhook(client, channel).catch((e) =>{throw e});
         const username = member.displayname ?? member.name;
-        await webhook.send({content: text, username: username, avatar_url: member.propic}).catch(async(e) => {
-            const returnedBuffer = messageHelper.returnBufferFromText(text);
-            await webhook.send({content: returnedBuffer.text, username: username, avatar_url: member.propic, files: [{ name: 'text.pdf', data: returnedBuffer.file }]
-            })
-            console.error(e);
-        });
+        if (text.length > 0) {
+            await webhook.send({content: text, username: username, avatar_url: member.propic}).catch(async(e) => {
+                const returnedBuffer = messageHelper.returnBufferFromText(text);
+                await webhook.send({content: returnedBuffer.text, username: username, avatar_url: member.propic, files: [{ name: 'text.txt', data: returnedBuffer.file }]
+                })
+                console.error(e);
+            });
+        }
+        if (message.attachments.size > 0) {
+            // Not implemented yet
+        }
+
         await message.delete();
-    }
-    else {
-        throw new Error(enums.err.NO_MESSAGE_SENT_WITH_PROXY);
     }
 }
 
 /**
  * Gets or creates a webhook.
- *
+ * @async
  * @param {Client} client - The fluxer.js client.
  * @param {Channel} channel - The channel the message was sent in.
  * @returns {Webhook} A webhook object.
@@ -75,7 +81,7 @@ wh.getOrCreateWebhook = async function(client, channel) {
 
 /**
  * Gets an existing webhook.
- *
+ * @async
  * @param {Client} client - The fluxer.js client.
  * @param {Channel} channel - The channel the message was sent in.
  * @returns {Webhook} A webhook object.
