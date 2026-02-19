@@ -216,6 +216,7 @@ describe('webhookHelper', () => {
             })
         })
 
+        // TODO: flaky for some reason
         test('calls getOrCreateWebhook and message.delete with correct arguments if attachments exist', async() => {
             // Arrange
             const emptyText = ''
