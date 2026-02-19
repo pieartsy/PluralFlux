@@ -25,7 +25,8 @@ describe('webhookHelper', () => {
         const content = "hi"
         const attachments = {
             size: 0,
-            first: () => {}
+            first: () => {},
+            foreach: jest.fn()
         }
         const message = {
             client,

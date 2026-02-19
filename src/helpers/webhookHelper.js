@@ -24,10 +24,8 @@ wh.sendMessageAsMember = async function(client, message) {
     if (!message.guildId) {
         throw new Error(enums.err.NOT_IN_SERVER);
     }
-    if (proxyMatch.hasAttachment) {
-        return await message.reply(`${enums.misc.ATTACHMENT_SENT_BY} ${proxyMatch.member.displayname ?? proxyMatch.member.name}`)
-    }
-    await wh.replaceMessage(client, message, proxyMatch.message, proxyMatch.member).catch(e =>{throw e});
+    const attachments = await messageHelper.createFileObjectFromAttachments(message.attachments);
+    await wh.replaceMessage(client, message, proxyMatch.message, proxyMatch.member, attachments).catch(e =>{throw e});
 }
 
 /**
@@ -37,28 +35,35 @@ wh.sendMessageAsMember = async function(client, message) {
  * @param {Message} message - The message to be deleted.
  * @param {string} text - The text to send via the webhook.
  * @param {model} member - A member object from the database.
+ * @param {[{string, ArrayBuffer}]} attachments - Attachments file objects, if any.
  * @throws {Error} When there's no message to send.
  */
-wh.replaceMessage = async function(client, message, text, member) {
-    // attachment logic is not relevant yet, text length will always be over 0 right now
-    if (text.length > 0 || message.attachments.size > 0) {
-        const channel = client.channels.get(message.channelId);
-        const webhook = await wh.getOrCreateWebhook(client, channel).catch((e) =>{throw e});
-        const username = member.displayname ?? member.name;
-        if (text.length > 0) {
-            await webhook.send({content: text, username: username, avatar_url: member.propic}).catch(async(e) => {
-                const returnedBuffer = messageHelper.returnBufferFromText(text);
-                await webhook.send({content: returnedBuffer.text, username: username, avatar_url: member.propic, files: [{ name: 'text.txt', data: returnedBuffer.file }]
-                })
-                console.error(e);
-            });
-        }
-        if (message.attachments.size > 0) {
-            // Not implemented yet
-        }
-
-        await message.delete();
+wh.replaceMessage = async function (client, message, text, member, attachments) {
+    if (text.length === 0 && attachments.length === 0) {
+        return;
     }
+    const channel = client.channels.get(message.channelId);
+    const webhook = await wh.getOrCreateWebhook(client, channel).catch((e) => {
+        throw e
+    });
+    const username = member.displayname ?? member.name;
+    if (text.length > 0) {
+        if (text.length > 2000) {
+            const returnedBuffer = messageHelper.returnBufferFromText(text);
+            await webhook.send({content: returnedBuffer.text, username: username, avatar_url: member.propic, files: [{ name: 'text.txt', data: returnedBuffer.file }]
+            })
+            attachments.push(returnedBuffer);
+        }
+        await webhook.send({content: text, username: username, avatar_url: member.propic, files: attachments}).catch(async (e) => {
+            console.error(e);
+        });
+    }
+    else {
+        await webhook.send({username: username, avatar_url: member.propic, files: attachments}).catch(async (e) => {
+            console.error(e);
+        });
+    }
+    await message.delete();
 }
 
 /**
