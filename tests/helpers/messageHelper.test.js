@@ -68,13 +68,13 @@ describe('messageHelper', () => {
 
         test.each([
             ['1', 'hello', null, {}],
-            ['1', '--hello', null, {member: membersFor1[0], message: 'hello'}],
+            ['1', '--hello', null, {member: membersFor1[0], message: 'hello', hasAttachment: false}],
             ['1', 'hello', attachmentUrl, {}],
             ['1', '--hello', attachmentUrl, {member: membersFor1[0], message: 'hello', hasAttachment: true}],
             ['1', '--', attachmentUrl, {member: membersFor1[0], message: '', hasAttachment: true}],
-            ['1', '?hello}', null, {member: membersFor1[3], message: 'hello'}],
-            ['1', '{hello}', null, {member: membersFor1[4], message: 'hello'}],
-            ['1', '⭐hello', null, {member: membersFor1[5], message: 'hello'}],
+            ['1', '?hello}', null, {member: membersFor1[3], message: 'hello', hasAttachment: false}],
+            ['1', '{hello}', null, {member: membersFor1[4], message: 'hello', hasAttachment: false}],
+            ['1', '⭐hello', null, {member: membersFor1[5], message: 'hello', hasAttachment: false}],
             ['2', 'hello', null, undefined],
             ['2', '--hello', null, undefined],
             ['2', 'hello', attachmentUrl, undefined],

@@ -57,8 +57,7 @@ msgh.parseProxyTags = async function (authorId, content, attachmentUrl = null){
             const splitProxy = member.proxy.split("text");
             if(content.startsWith(splitProxy[0]) && content.endsWith(splitProxy[1])) {
                 proxyMessage.member = member;
-                if (attachmentUrl) proxyMessage.hasAttachment = true;
-
+                proxyMessage.hasAttachment = !!attachmentUrl;
                 let escapedPrefix = splitProxy[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 let escapedSuffix = splitProxy[1].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 escapedPrefix = new RegExp("^" + escapedPrefix);
