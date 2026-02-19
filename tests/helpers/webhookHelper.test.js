@@ -1,7 +1,6 @@
 jest.mock('../../src/helpers/messageHelper.js')
 
 const {messageHelper} = require("../../src/helpers/messageHelper.js");
-const {Message, Webhook, Channel, Client} = require("@fluxerjs/core");
 
 jest.mock('../../src/helpers/messageHelper.js', () => {
     return {messageHelper: {
@@ -10,14 +9,12 @@ jest.mock('../../src/helpers/messageHelper.js', () => {
         }}
 })
 
-// jest.mock("@fluxerjs/core");
-
 const {webhookHelper} = require("../../src/helpers/webhookHelper.js");
 const {enums} = require("../../src/enums");
 
 describe('webhookHelper', () => {
 
-    const client = new Client();
+    const client = {};
 
     beforeEach(() => {
         jest.resetModules();
