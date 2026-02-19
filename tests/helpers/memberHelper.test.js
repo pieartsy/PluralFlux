@@ -238,15 +238,16 @@ describe('MemberHelper', () => {
         test('sends help message when --help parameter passed in', async () => {
             // Arrange
             const args = ['somePerson', 'displayname', '--help'];
-
+            jest.spyOn(memberHelper, 'updateMemberField').mockResolvedValue();
             // Act
             return memberHelper.updateDisplayName(authorId, args).then((result) => {
                 // Assert
                 expect(result).toEqual(enums.help.DISPLAY_NAME);
+                expect(memberHelper.updateMemberField).not.toHaveBeenCalled();
             })
         })
 
-        test('Sends string of current displayname when no displayname passed in', async () => {
+        test('Sends string of current displayname when it exists and no displayname passed in', async () => {
             // Arrange
             const args = ['somePerson', 'displayname'];
             const displayname = "Some Person";
@@ -254,11 +255,69 @@ describe('MemberHelper', () => {
                 displayname: displayname,
             }
             jest.spyOn(memberHelper, 'getMemberByName').mockResolvedValue(member);
-
+            jest.spyOn(memberHelper, 'updateMemberField').mockResolvedValue();
             // Act
             return memberHelper.updateDisplayName(authorId, args).then((result) => {
                 // Assert
                 expect(result).toEqual(`Display name for ${args[0]} is: "${member.displayname}".`);
+                expect(memberHelper.updateMemberField).not.toHaveBeenCalled();
+            })
+        })
+
+        test('Sends error when no displayname passed in', async () => {
+            // Arrange
+            const args = ['somePerson', 'displayname'];
+            const member = {}
+            jest.spyOn(memberHelper, 'getMemberByName').mockResolvedValue(member);
+            jest.spyOn(memberHelper, 'updateMemberField').mockResolvedValue();
+            // Act
+            return memberHelper.updateDisplayName(authorId, args).catch((result) => {
+                // Assert
+                expect(result).toEqual(new Error(`Display name ${enums.err.NO_VALUE}`));
+                expect(memberHelper.updateMemberField).not.toHaveBeenCalled();
+            })
+        })
+
+        test('Sends error when display name is too long', async () => {
+            // Arrange
+            const displayname = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+            const args = ['somePerson', 'displayname', displayname];
+            const member = {};
+            jest.spyOn(memberHelper, 'getMemberByName').mockResolvedValue(member);
+            jest.spyOn(memberHelper, 'updateMemberField').mockResolvedValue();
+            // Act
+            return memberHelper.updateDisplayName(authorId, args).catch((result) => {
+                // Assert
+                expect(result).toEqual(new RangeError(enums.err.DISPLAY_NAME_TOO_LONG));
+                expect(memberHelper.updateMemberField).not.toHaveBeenCalled();
+            })
+        })
+
+        test('Sends error when display name is blank', async () => {
+            // Arrange
+            const displayname = "                  ";
+            const args = ['somePerson', 'displayname', displayname];
+            const member = {};
+            jest.spyOn(memberHelper, 'getMemberByName').mockResolvedValue(member);
+            jest.spyOn(memberHelper, 'updateMemberField').mockResolvedValue();
+            // Act
+            return memberHelper.updateDisplayName(authorId, args).catch((result) => {
+                // Assert
+                expect(result).toEqual(new Error(`Display name ${enums.err.NO_VALUE}`));
+                expect(memberHelper.updateMemberField).not.toHaveBeenCalled();
+            })
+        })
+
+        test('call updateMemberField with correct arguments when displayname passed in correctly', async() => {
+            // Arrange
+            const args = ['somePerson', 'displayname', "Some Person"];
+            const member = {};
+            jest.spyOn(memberHelper, 'updateMemberField').mockResolvedValue(member);
+            // Act
+            return memberHelper.updateDisplayName(authorId, args).then((result) => {
+                // Assert
+                expect(memberHelper.updateMemberField).toHaveBeenCalledWith(authorId, args);
+                expect(memberHelper.updateMemberField).toHaveBeenCalledTimes(1);
             })
         })
     })

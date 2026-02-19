@@ -142,7 +142,7 @@ mh.updateName = async function (authorId, args) {
  * @throws {RangeError} When the display name is too long or doesn't exist.
  */
 mh.updateDisplayName = async function (authorId, args) {
-    if (args[1] && args[1] === "--help" || !args[1]) {
+    if (args[2] && args[2] === "--help") {
         return enums.help.DISPLAY_NAME;
     }
 
@@ -155,11 +155,11 @@ mh.updateDisplayName = async function (authorId, args) {
             if (member && member.displayname) {
                 return `Display name for ${memberName} is: \"${member.displayname}\".`;
             } else if (member) {
-                throw new EmptyResultError(`Display name ${enums.err.NO_VALUE}`);
+                throw new Error(`Display name ${enums.err.NO_VALUE}`);
             }
         });
     } else if (displayName.length > 32) {
-        throw new RangeError(enums.err.NO_VALUE);
+        throw new RangeError(enums.err.DISPLAY_NAME_TOO_LONG);
     }
     else if (trimmedName === '') {
         throw new RangeError(`Display name ${enums.err.NO_VALUE}`);
