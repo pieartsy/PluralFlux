@@ -90,14 +90,6 @@ describe('messageHelper', () => {
                 expect(res).toEqual(expected);
             })
         });
-
-        test('expect error to be thrown when no message is present', () => {
-            // Act
-            return messageHelper.parseProxyTags('1', '', null).catch((res) => {
-                // Assert
-                expect(res).toEqual(new Error(enums.err.NO_MESSAGE_SENT_WITH_PROXY));
-            })
-        })
     })
 
     describe('returnBufferFromText', () => {

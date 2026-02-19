@@ -63,7 +63,6 @@ msgh.parseProxyTags = async function (authorId, content, attachmentUrl = null){
                 escapedPrefix = new RegExp("^" + escapedPrefix);
                 escapedSuffix = new RegExp(escapedSuffix + "$")
                 proxyMessage.message = content.replace(escapedPrefix, "").replace(escapedSuffix, "");
-                if (proxyMessage.message.length === 0 && !attachmentUrl) throw new Error(enums.err.NO_MESSAGE_SENT_WITH_PROXY);
             }
         }
     })
