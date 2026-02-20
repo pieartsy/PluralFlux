@@ -30,7 +30,7 @@ mh.parseMemberCommand = async function (authorId, authorFull, args, attachmentUr
         case '--help':
             return enums.help.MEMBER;
         case 'new':
-            return await mh.addNewMember(authorId, args).catch((e) => {
+            return await mh.addNewMember(authorId, args, attachmentUrl).catch((e) => {
                 throw e
             });
         case 'remove':
@@ -86,20 +86,21 @@ mh.parseMemberCommand = async function (authorId, authorFull, args, attachmentUr
  * @async
  * @param {string} authorId - The author of the message
  * @param {string[]} args - The message arguments
+ * @param {string | null} attachmentURL - The attachment URL, if any exists
  * @returns {Promise<string>} A successful addition.
  * @throws {Error}  When the member exists, or creating a member doesn't work.
  */
-mh.addNewMember = async function (authorId, args) {
+mh.addNewMember = async function (authorId, args, attachmentURL = null) {
     if (args[1] && args[1] === "--help" || !args[1]) {
         return enums.help.NEW;
     }
     const memberName = args[1];
     const displayName = args[2];
+    const proxy = args[3];
+    const propic = args[4] ?? attachmentURL;
 
-    return await mh.addFullMember(authorId, memberName, displayName).then((member) => {
-        let success = `Member was successfully added.\nName: ${member.name}`
-        success += displayName ? `\nDisplay name: ${member.displayname}` : "";
-        return success;
+    return await mh.addFullMember(authorId, memberName, displayName, proxy, propic).then(() => {
+        return mh.getMemberInfo(authorId, memberName).catch((e) => {throw e})
     }).catch(e => {
         throw e;
     })
@@ -287,47 +288,156 @@ mh.removeMember = async function (authorId, args) {
  * @param {string | null} displayName - The display name of the member.
  * @param {string | null} proxy - The proxy tag of the member.
  * @param {string | null} propic - The profile picture URL of the member.
- * @param {boolean} isImport - Whether calling from the import function or not.
- * @returns {Promise<model>} A successful addition.
- * @throws {Error | RangeError}  When the member already exists, there are validation errors, or adding a member doesn't work.
+ * @returns {Promise<{model, []}>} A successful addition object, including errors if there are any.
+ * @throws {Error}  When the member already exists, there are validation errors, or adding a member doesn't work.
  */
-mh.addFullMember = async function (authorId, memberName, displayName = null, proxy = null, propic = null, isImport = false) {
+mh.addFullMember = async function (authorId, memberName, displayName = null, proxy = null, propic = null) {
     await mh.getMemberByName(authorId, memberName).then((member) => {
         if (member) {
             throw new Error(`Can't add ${memberName}. ${enums.err.MEMBER_EXISTS}`);
         }
     });
-    if (displayName) {
+    const errors = [];
+
+    let isValidDisplayName;
+    if (displayName && displayName.length > 0) {
         const trimmedName = displayName ? displayName.trim() : null;
         if (trimmedName && trimmedName.length > 32) {
-            throw new RangeError(`Can't add ${memberName}. ${enums.err.DISPLAY_NAME_TOO_LONG}`);
+            errors.push(`Tried to set displayname to \"${displayName}\". ${enums.err.DISPLAY_NAME_TOO_LONG}. ${enums.err.SET_TO_NULL}`);
+            isValidDisplayName = false;
+        }
+        else {
+            isValidDisplayName = true;
         }
     }
-    if (proxy) {
-        await mh.checkIfProxyExists(authorId, proxy).catch((e) => {
-            throw e
-        });
-    }
-    let validPropic;
-    if (propic) {
-        validPropic = await mh.checkImageFormatValidity(propic).then((valid) => {
-            return valid;
+
+    let isValidProxy;
+    if (proxy && proxy.length > 0) {
+        await mh.checkIfProxyExists(authorId, proxy).then(() => {
+            isValidProxy = true;
         }).catch((e) => {
-            if (!isImport) {
-                throw (e);
-            }
-            return false;
+            errors.push(`Tried to set proxy to \"${proxy}\". ${e.message}. ${enums.err.SET_TO_NULL}`);
+            isValidProxy = false;
         });
     }
 
-    const member = await database.members.create({
-        name: memberName, userid: authorId, displayname: displayName, proxy: proxy, propic: validPropic ? propic : null,
-    });
-    if (!member) {
-        new Error(`${enums.err.ADD_ERROR}`);
+    let isValidPropic;
+    if (propic && propic.length > 0) {
+        await mh.checkImageFormatValidity(propic).then(() => {
+            isValidPropic = true;
+        }).catch((e) => {
+            errors.push(`Tried to set profile picture to \"${propic}\". ${e.message}. ${enums.err.SET_TO_NULL}`);
+            isValidPropic = false;
+        });
     }
-    return member;
+    const member = await database.members.create({
+        name: memberName, userid: authorId, displayname: isValidDisplayName ? displayName : null, proxy: isValidProxy ? proxy : null, propic: isValidPropic ? propic : null
+    });
+
+    return {member: member, errors: errors};
 }
+
+// mh.mergeFullMember = async function (authorId, memberName, displayName = null, proxy = null, propic = null) {
+//     await mh.getMemberByName(authorId, memberName).then((member) => {
+//         if (member) {
+//             throw new Error(`Can't add ${memberName}. ${enums.err.MEMBER_EXISTS}`);
+//         }
+//     });
+//
+//     let isValidDisplayName;
+//     if (displayName) {
+//         const trimmedName = displayName ? displayName.trim() : null;
+//         if (trimmedName && trimmedName.length > 32) {
+//             if (!isImport) {
+//                 throw new RangeError(`Can't add ${memberName}. ${enums.err.DISPLAY_NAME_TOO_LONG}`);
+//             }
+//             isValidDisplayName = false;
+//         }
+//     }
+//
+//     let isValidProxy;
+//     if (proxy) {
+//         isValidProxy = await mh.checkIfProxyExists(authorId, proxy).then((res) => {
+//             return res;
+//         }).catch((e) => {
+//             if (!isImport) {
+//                 throw e
+//             }
+//             return false;
+//         });
+//     }
+//
+//     let isValidPropic;
+//     if (propic) {
+//         isValidPropic = await mh.checkImageFormatValidity(propic).then((valid) => {
+//             return valid;
+//         }).catch((e) => {
+//             if (!isImport) {
+//                 throw (e);
+//             }
+//             return false;
+//         });
+//     }
+//
+//     const member = await database.members.create({
+//         name: memberName, userid: authorId, displayname: isValidDisplayName ? displayName: null, proxy: isValidProxy ? proxy : null, propic: isValidPropic ? propic : null,
+//     });
+//     if (!member) {
+//         new Error(`${enums.err.ADD_ERROR}`);
+//     }
+//     return member;
+// }
+//
+// mh.overwriteFullMemberFromImport = async function (authorId, memberName, displayName = null, proxy = null, propic = null) {
+//     await mh.getMemberByName(authorId, memberName).then((member) => {
+//         if (member) {
+//             throw new Error(`Can't add ${memberName}. ${enums.err.MEMBER_EXISTS}`);
+//         }
+//     });
+//
+//     let isValidDisplayName;
+//     if (displayName) {
+//         const trimmedName = displayName ? displayName.trim() : null;
+//         if (trimmedName && trimmedName.length > 32) {
+//             if (!isImport) {
+//                 throw new RangeError(`Can't add ${memberName}. ${enums.err.DISPLAY_NAME_TOO_LONG}`);
+//             }
+//             isValidDisplayName = false;
+//         }
+//     }
+//
+//     let isValidProxy;
+//     if (proxy) {
+//         isValidProxy = await mh.checkIfProxyExists(authorId, proxy).then((res) => {
+//             return res;
+//         }).catch((e) => {
+//             if (!isImport) {
+//                 throw e
+//             }
+//             return false;
+//         });
+//     }
+//
+//     let isValidPropic;
+//     if (propic) {
+//         isValidPropic = await mh.checkImageFormatValidity(propic).then((valid) => {
+//             return valid;
+//         }).catch((e) => {
+//             if (!isImport) {
+//                 throw (e);
+//             }
+//             return false;
+//         });
+//     }
+//
+//     const member = await database.members.create({
+//         name: memberName, userid: authorId, displayname: isValidDisplayName ? displayName: null, proxy: isValidProxy ? proxy : null, propic: isValidPropic ? propic : null,
+//     });
+//     if (!member) {
+//         new Error(`${enums.err.ADD_ERROR}`);
+//     }
+//     return member;
+// }
 
 /**
  * Updates one fields for a member in the database.
