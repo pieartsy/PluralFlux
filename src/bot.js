@@ -34,7 +34,7 @@ client.on(Events.MessageCreate, async (message) => {
 
         const commandName = content.slice(messageHelper.prefix.length).split(" ")[0];
         // If there's no command name (ie just the prefix)
-        if (!commandName) await message.reply(enums.help.SHORT_DESC_PLURALFLUX);
+        if (!commandName) return await message.reply(enums.help.SHORT_DESC_PLURALFLUX);
 
         const args = messageHelper.parseCommandArgs(content, commandName);
 
