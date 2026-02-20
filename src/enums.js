@@ -20,6 +20,7 @@ helperEnums.err = {
     NOT_JSON_FILE: "Please attach a valid JSON file.",
     NO_MEMBERS_IMPORTED: 'No members were imported.',
     IMPORT_ERROR: "Please see attached file for logs on the member import process.",
+    COMMAND_NOT_RECOGNIZED: "Command not recognized. Try typing `pf;help` for command list."
 }
 
 helperEnums.help = {

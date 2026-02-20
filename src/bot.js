@@ -45,7 +45,7 @@ client.on(Events.MessageCreate, async (message) => {
             });
         }
         else {
-            await message.reply("Command not recognized. Try typing `pf;help` for command list.");
+            await message.reply(enums.err.COMMAND_NOT_RECOGNIZED);
         }
     }
     catch(error) {
