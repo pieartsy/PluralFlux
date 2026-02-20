@@ -19,6 +19,10 @@ cmds.set('member', {
         else if (reply instanceof EmbedBuilder) {
             await message.reply({embeds: [reply.toJSON()]})
         }
+        else if (typeof reply === 'object') {
+            const errorsText = reply.errors.length > 0 ? reply.errors.join('\n- ') : null;
+            return await message.reply({content: `${reply.success} ${errorsText ? "\nThese errors occurred:\n" + errorsText : ""}`, embeds: [reply.embed.toJSON()]})
+        }
 
     }
 })

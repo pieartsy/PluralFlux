@@ -17,7 +17,9 @@ const commandList = ['--help', 'new', 'remove', 'name', 'list', 'displayName', '
  * @param {string[]} args - The message arguments
  * @param {string | null} attachmentUrl - The message attachment url.
  * @param {string | null} attachmentExpiration - The message attachment expiration (if uploaded via Fluxer)
- * @returns {Promise<string> | Promise <EmbedBuilder>} A message, or an informational embed.
+ * @returns {Promise<string>} A success message.
+ * @returns {Promise <EmbedBuilder>} A list of 25 members as an embed.
+ * @returns {Promise<{EmbedBuilder, [], string}>} A member info embed + info/errors.
  * @throws {Error}
  */
 mh.parseMemberCommand = async function (authorId, authorFull, args, attachmentUrl = null, attachmentExpiration = null) {
@@ -99,8 +101,9 @@ mh.addNewMember = async function (authorId, args, attachmentURL = null) {
     const proxy = args[3];
     const propic = args[4] ?? attachmentURL;
 
-    return await mh.addFullMember(authorId, memberName, displayName, proxy, propic).then(() => {
-        return mh.getMemberInfo(authorId, memberName).catch((e) => {throw e})
+    return await mh.addFullMember(authorId, memberName, displayName, proxy, propic).then(async(response) => {
+        const memberInfoEmbed = await mh.getMemberInfo(authorId, memberName).catch((e) => {throw e})
+        return {embed: memberInfoEmbed, errors: response.errors, success: `${memberName} has been added successfully.`};
     }).catch(e => {
         throw e;
     })
