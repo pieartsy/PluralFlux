@@ -33,6 +33,7 @@ describe('MemberHelper', () => {
     describe('parseMemberCommand', () => {
 
         beforeEach(() => {
+            jest.spyOn(memberHelper, 'getMemberCommandInfo').mockResolvedValue("member command info");
             jest.spyOn(memberHelper, 'getMemberInfo').mockResolvedValue("member info");
             jest.spyOn(memberHelper, 'addNewMember').mockResolvedValue("new member");
             jest.spyOn(memberHelper, 'removeMember').mockResolvedValue("remove member");
@@ -76,6 +77,19 @@ describe('MemberHelper', () => {
             });
         })
 
+        test.each([
+            [['']],
+            [['--help'], null,]
+        ])('%s returns correct values and calls getMemberEmbedInfo', (args) => {
+            // Act
+            return memberHelper.parseMemberCommand(authorId, authorFull, args, attachmentUrl).then((result) => {
+                // Assert
+                expect(result).toEqual("member command info");
+                expect(memberHelper.getMemberCommandInfo).toHaveBeenCalledTimes(1);
+                expect(memberHelper.getMemberCommandInfo).toHaveBeenCalledWith();
+            });
+        })
+
         test('["somePerson", "propic"] returns correct values and updatePropic', () => {
             // Arrange
             const args = ['somePerson', 'propic'];
@@ -89,7 +103,6 @@ describe('MemberHelper', () => {
         })
 
         test.each([
-            [['--help'], enums.help.MEMBER],
             [['name'], enums.help.NAME],
             [['displayname'], enums.help.DISPLAY_NAME],
             [['proxy'], enums.help.PROXY],
