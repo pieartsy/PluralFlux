@@ -18,17 +18,19 @@ ih.pluralKitImport = async function (authorId, attachmentUrl) {
     }
     return fetch(attachmentUrl).then((res) => res.json()).then(async(pkData) => {
             const pkMembers = pkData.members;
-            const errors = [];
+            let errors = [];
             const addedMembers = [];
             for (let pkMember of pkMembers) {
                 const proxy = pkMember.proxy_tags[0] ? `${pkMember.proxy_tags[0].prefix ?? ''}text${pkMember.proxy_tags[0].suffix ?? ''}` : null;
-                await memberHelper.addFullMember(authorId, pkMember.name, pkMember.display_name, proxy, pkMember.avatar_url, true).then((member) => {
-                    addedMembers.push(member.name);
+                await memberHelper.addFullMember(authorId, pkMember.name, pkMember.display_name, proxy, pkMember.avatar_url).then((memberObj) => {
+                    addedMembers.push(memberObj.member.name);
+                    if (memberObj.errors.length > 0) {
+                        errors.push(`\n**${pkMember.name}:** `)
+                        errors = errors.concat(memberObj.errors);
+                    }
                 }).catch(e => {
-                    errors.push(`${pkMember.name}: ${e.message}`);
+                    errors.push(e.message);
                 });
-                await memberHelper.checkImageFormatValidity(pkMember.avatar_url).catch(e => {
-                        errors.push(`${pkMember.name}: ${e.message}`)});
             }
             const aggregatedText = addedMembers.length > 0 ? `Successfully added members: ${addedMembers.join(', ')}` : enums.err.NO_MEMBERS_IMPORTED;
             if (errors.length > 0) {
