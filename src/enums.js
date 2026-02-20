@@ -20,7 +20,8 @@ helperEnums.err = {
     NOT_JSON_FILE: "Please attach a valid JSON file.",
     NO_MEMBERS_IMPORTED: 'No members were imported.',
     IMPORT_ERROR: "Please see attached file for logs on the member import process.",
-    COMMAND_NOT_RECOGNIZED: "Command not recognized. Try typing `pf;help` for command list."
+    COMMAND_NOT_RECOGNIZED: "Command not recognized. Try typing `pf;help` for command list.",
+    SET_TO_NULL: "It has been set to null instead."
 }
 
 helperEnums.help = {
@@ -30,15 +31,14 @@ helperEnums.help = {
     SHORT_DESC_PLURALFLUX: "PluralFlux is a proxybot akin to PluralKit and Tupperbot, but for Fluxer. All commands are prefixed by `pf;`. Type `pf;help` for info on the bot itself.",
     PLURALFLUX: "PluralFlux is a proxybot akin to PluralKit and Tupperbot, but for Fluxer. All commands are prefixed by `pf;`. Add ` --help` to the end of a command to find out more about it, or just send it without arguments.",
     MEMBER: "Accesses the sub-commands related to editing proxy members. The available subcommands are `list`, `new`, `remove`, `displayname`, `proxy`, and `propic`. Add ` --help` to the end of a subcommand to find out more about it, or just send it without arguments.",
-    NEW: "Creates a new member to proxy with, for example: `pf;member new jane`. The member name should ideally be short so you can write other commands with it easily. \n\nYou can optionally add a display name after the member name, for example: `pf;member new jane \"Jane Doe | ze/hir\"`. If it has spaces, put it in __double quotes__. The length limit is 32 characters.",
+    NEW: "Creates a new member to proxy with, for example: `pf;member new jane`. The member name should ideally be short so you can write other commands with it easily. \n\nThe order of values is `pf;member new [name] [displayname] [proxy] [propic]`, _without brackets_. The name is **required**, but the rest are optional.\nUsage notes:\n- If anything has spaces, put it in quotes.\n- If anything is unset and you want to set something after it (for ex: you haven't set a display name but you want to add a proxy), put the unset value in empty quotes in the same position: \"\" If you leave it out, the bot will set things wrong.\n- The maximum length of a display name is 32 characters.\n- You can't use the same proxy for two different members.\n- You can also upload an image directly instead of using a url.\nExamples:\n- Everything filled out: `pf;member new jane \"Jane Doe\" J:text https://cdn.pixabay.com/photo/2023/10/20/19/07/aster-8330078_1280.jpg`\n- Example with gaps: `pf;member new bob \"Bob he/him\" \"\" https://cdn.pixabay.com/photo/2016/05/09/11/09/tennis-1381230_1280.jpg`",
     REMOVE: "Removes a member based on their name, for example: `pf;member remove jane`.",
     LIST: "Lists members in the system. Currently only lists the first 25.",
     NAME: "Updates the name for a specific member based on their current name, for ex: `pf;member john name jane`. The member name should ideally be short so you can write other commands with it easily.",
     DISPLAY_NAME: "Updates the display name for a specific member based on their name, for example: `pf;member jane \"Jane Doe | ze/hir\"`.This can be up to 32 characters long. If it has spaces, put it in __double quotes__.",
     PROXY: "Updates the proxy tag for a specific member based on their name. The proxy must be formatted with the tags surrounding the word 'text', for example: `pf;member jane proxy Jane:text` or `pf;member amal proxy [text]` This is so the bot can detect what the proxy tags are. **Only one proxy can be set per member currently.**",
     PROPIC: "Updates the profile picture for the member. Must be in JPG, PNG, or WEBP format and less than 10MB. The two options are:\n1. Pass in a direct remote image URL, for example: `pf;member jane propic https://cdn.pixabay.com/photo/2020/05/02/02/54/animal-5119676_1280.jpg`. You can upload images on sites like https://imgbb.com/.\n2. Upload an attachment directly.\n\n**NOTE:** Fluxer does not save your attachments forever, so option #1 is recommended.",
-    IMPORT: "Imports from PluralKit using the JSON file provided by their export command. Importing from other proxy bots is TBD. `pf;import` and attach your JSON file to the message. This will only save the fields that are present in the bot currently, not anything else like birthdays or system handles (yet?). **Only one proxy can be set per member currently.**",
-    SET_TO_NULL: "It has been set to null instead."
+    IMPORT: "Imports from PluralKit using the JSON file provided by their export command. Importing from other proxy bots is TBD. `pf;import` and attach your JSON file to the message. This will only save the fields that are present in the bot currently, not anything else like birthdays or system handles (yet?). **Only one proxy can be set per member currently.**"
 }
 
 helperEnums.misc = {
