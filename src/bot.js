@@ -47,7 +47,7 @@ client.on(Events.MessageCreate, async (message) => {
     }
     catch(error) {
         console.error(error);
-        return await message.reply(error.message);
+        // return await message.reply(error.message);
     }
 });
 
