@@ -12,7 +12,7 @@ cmds.set('member', {
         const authorFull = `${message.author.username}#${message.author.discriminator}`
         const attachmentUrl = message.attachments.size > 0 ? message.attachments.first().url : null;
         const attachmentExpires = message.attachments.size > 0 ? message.attachments.first().expires_at : null;
-        const reply = await memberHelper.parseMemberCommand(message.author.id, authorFull, args, attachmentUrl, attachmentExpires).catch(e =>{throw e});
+        const reply = await memberHelper.parseMemberCommand(message.author.id, authorFull, args, attachmentUrl, attachmentExpires).catch(async (e) =>{await message.reply(e.message);});
         if (typeof reply === 'string') {
             return await message.reply(reply);
         }
@@ -47,11 +47,11 @@ cmds.set('import', {
     description: enums.help.SHORT_DESC_IMPORT,
     async execute(message, client, args) {
         console.log(args);
-        if (message.content.includes('--help') || (args[0] === '' && args.length === 1)) {
+
+        const attachmentUrl = message.attachments.size > 0 ? message.attachments.first().url : null;
+        if ((message.content.includes('--help') || (args[0] === '' && args.length === 1)) && !attachmentUrl ) {
             return await message.reply(enums.help.IMPORT);
         }
-        const attachmentUrl = message.attachments.size > 0 ? message.attachments.first().url : null;
-
         return await importHelper.pluralKitImport(message.author.id, attachmentUrl).then(async (successfullyAdded) => {
             await message.reply(successfullyAdded);
         }).catch(async (error) => {
