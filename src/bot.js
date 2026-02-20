@@ -44,6 +44,9 @@ client.on(Events.MessageCreate, async (message) => {
                 throw e
             });
         }
+        else {
+            await message.reply("Command not recognized. Try typing `pf;help` for command list.");
+        }
     }
     catch(error) {
         console.error(error);
