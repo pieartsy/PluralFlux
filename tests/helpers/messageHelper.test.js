@@ -2,6 +2,8 @@ const env = require('dotenv');
 env.config();
 
 const {memberHelper} = require("../../src/helpers/memberHelper.js");
+const {Message} = require("@fluxerjs/core");
+const {fs} = require('fs');
 const {enums} = require('../../src/enums');
 const fetch = require('node-fetch');
 
@@ -43,10 +45,10 @@ describe('messageHelper', () => {
         const membersFor1 = [
             {name: "somePerson", proxy: "--text"},
             {name: "someSecondPerson", proxy: undefined},
-,           {name: "someOtherPerson", proxy: "?text}"},
+            {name: "someOtherPerson", proxy: "?text}"},
             {name: "someLastPerson", proxy: "{text}"},
             {name: "someEmojiPerson", proxy: "⭐text"},
-            {name: "someSpacePerson", proxy: "-- text"},
+            {name: "someSpacePerson", proxy: "! text"},
         ]
 
         const membersFor2 = []
@@ -71,10 +73,10 @@ describe('messageHelper', () => {
             ['1', 'hello', attachmentUrl, {}],
             ['1', '--hello', attachmentUrl, {member: membersFor1[0], message: 'hello', hasAttachment: true}],
             ['1', '--', attachmentUrl, {member: membersFor1[0], message: '', hasAttachment: true}],
-            ['1', '?hello}', null, {member: membersFor1[3], message: 'hello', hasAttachment: false}],
-            ['1', '{hello}', null, {member: membersFor1[4], message: 'hello', hasAttachment: false}],
-            ['1', '⭐hello', null, {member: membersFor1[5], message: 'hello', hasAttachment: false}],
-            ['1', '-- hello', null, {member: membersFor1[5], message: 'hello', hasAttachment: false}]
+            ['1', '?hello}', null, {member: membersFor1[2], message: 'hello', hasAttachment: false}],
+            ['1', '{hello}', null, {member: membersFor1[3], message: 'hello', hasAttachment: false}],
+            ['1', '⭐hello', null, {member: membersFor1[4], message: 'hello', hasAttachment: false}],
+            ['1', '! hello', null, {member: membersFor1[5], message: 'hello', hasAttachment: false}],
             ['2', 'hello', null, undefined],
             ['2', '--hello', null, undefined],
             ['2', 'hello', attachmentUrl, undefined],

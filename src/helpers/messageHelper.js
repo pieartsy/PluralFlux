@@ -119,7 +119,7 @@ function retryPromise(promise, options) {
 /**
  * Returns an ArrayBuffer from an attachment URL.
  *
- * @param {Map} attachments - A collection of attachments from the message object
+ * @param {Collection<string, APIMessageAttachment>} attachments - A collection of attachments from the message object
  * @returns {[{string, ArrayBuffer}]} An array of file objects
  *
  */

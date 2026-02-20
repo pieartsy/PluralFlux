@@ -24,7 +24,8 @@ wh.sendMessageAsMember = async function(client, message) {
     if (!message.guildId) {
         throw new Error(enums.err.NOT_IN_SERVER);
     }
-    const attachments = await messageHelper.createFileObjectFromAttachments(message.attachments);
+    const attachments = messageHelper.createFileObjectFromAttachments(message.attachments);
+
     await wh.replaceMessage(client, message, proxyMatch.message, proxyMatch.member, attachments).catch(e =>{throw e});
 }
 
