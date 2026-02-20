@@ -1,4 +1,4 @@
-import { Client, Events, GatewayOpcodes } from '@fluxerjs/core';
+import { Client, Events } from '@fluxerjs/core';
 import { messageHelper } from "./helpers/messageHelper.js";
 import {enums} from "./enums.js";
 import {commands} from "./commands.js";
@@ -34,7 +34,7 @@ client.on(Events.MessageCreate, async (message) => {
 
         const commandName = content.slice(messageHelper.prefix.length).split(" ")[0];
         // If there's no command name (ie just the prefix)
-        if (!commandName) await message.reply(enums.help.SHORT_DESC_PLURALFLUX);
+        if (!commandName) return await message.reply(enums.help.SHORT_DESC_PLURALFLUX);
 
         const args = messageHelper.parseCommandArgs(content, commandName);
 
@@ -44,17 +44,39 @@ client.on(Events.MessageCreate, async (message) => {
                 throw e
             });
         }
+        else {
+            await message.reply(enums.err.COMMAND_NOT_RECOGNIZED);
+        }
     }
     catch(error) {
         console.error(error);
-        return await message.reply(error.message);
+        // return await message.reply(error.message);
     }
 });
 
 client.on(Events.Ready, () => {
     console.log(`Logged in as ${client.user?.username}`);
-    console.log(`Serving ${client.guilds.size} guild(s)`);
 });
+
+let guildCount = 0;
+client.on(Events.GuildCreate, () => {
+    guildCount++;
+    callback();
+});
+
+function printGuilds() {
+    console.log(`Serving ${client.guilds.size} guild(s)`);
+}
+
+const callback  = Debounce(printGuilds, 2000);
+
+function Debounce(func, delay) {
+    let timeout = null;
+    return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func(...args), delay);
+    };
+}
 
 try {
     await client.login(token);

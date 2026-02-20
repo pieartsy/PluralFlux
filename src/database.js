@@ -10,7 +10,7 @@ if (!password) {
     process.exit(1);
 }
 
-const database = {};
+const db = {};
 
 const sequelize = new Sequelize('postgres', 'postgres', password, {
     host: 'localhost',
@@ -18,10 +18,10 @@ const sequelize = new Sequelize('postgres', 'postgres', password, {
     dialect: 'postgres'
 });
 
-database.sequelize = sequelize;
-database.Sequelize = Sequelize;
+db.sequelize = sequelize;
+db.Sequelize = Sequelize;
 
-database.members = sequelize.define('Member', {
+db.members = sequelize.define('Member', {
     userid: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -41,7 +41,7 @@ database.members = sequelize.define('Member', {
     }
 });
 
-database.systems = sequelize.define('System', {
+db.systems = sequelize.define('System', {
     userid: {
         type: DataTypes.STRING,
     },
@@ -59,8 +59,8 @@ database.systems = sequelize.define('System', {
 /**
  * Checks Sequelize database connection.
  */
-database.check_connection = async function() {
-        await sequelize.authenticate().then(async (result) => {
+db.check_connection = async function() {
+        await sequelize.authenticate().then(async () => {
             console.log('Connection has been established successfully.');
             await syncModels();
         }).catch(err => {
@@ -81,4 +81,4 @@ async function syncModels() {
     });
 }
 
-export const db = database;
+export const database = db;

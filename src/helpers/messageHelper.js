@@ -21,7 +21,7 @@ msgh.parseCommandArgs = function(content, commandName) {
     const message = content.slice(msgh.prefix.length + commandName.length).trim();
 
     return message.match(/\\?.|^$/g).reduce((accumulator, chara) => {
-        if (chara === '"') {
+        if (chara === '\"' || chara === '\'') {
             // checks whether string is within quotes or not
             accumulator.quote ^= 1;
         } else if (!accumulator.quote && chara === ' '){
@@ -41,10 +41,10 @@ msgh.parseCommandArgs = function(content, commandName) {
  * @param {string} authorId - The author of the message.
  * @param {string} content - The full message content
  * @param {string | null} attachmentUrl - The url for an attachment to the message, if any exists.
- * @returns {Object} The proxy message object.
+ * @returns {{model, string, bool}} The proxy message object.
  * @throws {Error} If a proxy message is sent with no message within it.
  */
-msgh.parseProxyTags = async function (authorId, content, attachmentUrl= null){
+msgh.parseProxyTags = async function (authorId, content, attachmentUrl = null){
     const members = await memberHelper.getMembersByAuthor(authorId);
     // If an author has no members, no sense in searching for proxy
     if (members.length === 0) {
@@ -57,14 +57,12 @@ msgh.parseProxyTags = async function (authorId, content, attachmentUrl= null){
             const splitProxy = member.proxy.split("text");
             if(content.startsWith(splitProxy[0]) && content.endsWith(splitProxy[1])) {
                 proxyMessage.member = member;
-                if (attachmentUrl) return proxyMessage.message = enums.misc.ATTACHMENT_SENT_BY;
-
+                proxyMessage.hasAttachment = !!attachmentUrl;
                 let escapedPrefix = splitProxy[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 let escapedSuffix = splitProxy[1].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 escapedPrefix = new RegExp("^" + escapedPrefix);
                 escapedSuffix = new RegExp(escapedSuffix + "$")
                 proxyMessage.message = content.replace(escapedPrefix, "").replace(escapedSuffix, "");
-                if (proxyMessage.message.length === 0) throw new Error(enums.err.NO_MESSAGE_SENT_WITH_PROXY);
             }
         }
     })
@@ -72,24 +70,20 @@ msgh.parseProxyTags = async function (authorId, content, attachmentUrl= null){
 }
 
 /**
- * Sends a message as an attachment if it's too long.NOT CURRENTLY IN USE
+ * Returns a text message that's too long as its text plus a file with the remaining text.
  *
- * @async
  * @param {string} text - The text of the message.
- * @param {Message} message - The message object.
- * @throws {Error} If a proxy message is sent with no message within it.
+ * @returns {{text: string, file: Buffer<ArrayBuffer> | undefined}} The text and buffer object
  *
  */
-msgh.sendMessageAsAttachment = async function(text, message) {
+msgh.returnBufferFromText = function (text) {
     if (text.length > 2000) {
-        tmp.file(async (err, path, fd, cleanupCallback) => {
-            fs.writeFile(path, text, (err) => {
-                if (err) throw err;
-            })
-            if (err) throw err;
-            await message.reply({content: enums.err.IMPORT_ERROR, attachments: [path]});
-        });
+        const truncated = text.substring(0, 2000);
+        const restOfText = text.substring(2000);
+        const file = Buffer.from(restOfText, 'utf-8');
+        return {text: truncated, file: file}
     }
+    return {text: text, file: undefined}
 }
 
 export const messageHelper = msgh;

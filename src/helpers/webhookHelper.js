@@ -1,6 +1,5 @@
 import {messageHelper} from "./messageHelper.js";
-import {memberHelper} from "./memberHelper.js";
-import {Webhook, Channel, Message, EmbedBuilder} from '@fluxerjs/core';
+import {Webhook, Channel, Message, Client} from '@fluxerjs/core';
 import {enums} from "../enums.js";
 
 const wh = {};
@@ -9,6 +8,7 @@ const name = 'PluralFlux Proxy Webhook';
 
 /**
  * Replaces a proxied message with a webhook using the member information.
+ * @async
  * @param {Client} client - The fluxer.js client.
  * @param {Message} message - The full message object.
  * @throws {Error} When the proxy message is not in a server.
@@ -17,71 +17,62 @@ wh.sendMessageAsMember = async function(client, message) {
     const attachmentUrl = message.attachments.size > 0 ? message.attachments.first().url : null;
     const proxyMatch = await messageHelper.parseProxyTags(message.author.id, message.content, attachmentUrl).catch(e =>{throw e});
     // If the message doesn't match a proxy, just return.
-    if (!proxyMatch.member) {
+    if (!proxyMatch || !proxyMatch.member || (proxyMatch.message.length === 0 && !proxyMatch.hasAttachment) ) {
         return;
     }
-    // If the message does match a proxy but is not in a guild server (ex: in the Bot's DMs
+    // If the message does match a proxy but is not in a guild server (ex: in the Bot's DMs)
     if (!message.guildId) {
         throw new Error(enums.err.NOT_IN_SERVER);
     }
-
-    if (proxyMatch.message === enums.misc.ATTACHMENT_SENT_BY) {
-        return await message.reply(`${enums.misc.ATTACHMENT_SENT_BY} ${proxyMatch.member.displayname}`)
+    if (proxyMatch.hasAttachment) {
+        return await message.reply(`${enums.misc.ATTACHMENT_SENT_BY} ${proxyMatch.member.displayname ?? proxyMatch.member.name}`)
     }
-    await replaceMessage(client, message, proxyMatch.message, proxyMatch.member).catch(e =>{throw e});
+    await wh.replaceMessage(client, message, proxyMatch.message, proxyMatch.member).catch(e =>{throw e});
 }
 
 /**
  * Replaces a proxied message with a webhook using the member information.
+ * @async
  * @param {Client} client - The fluxer.js client.
  * @param {Message} message - The message to be deleted.
  * @param {string} text - The text to send via the webhook.
  * @param {model} member - A member object from the database.
  * @throws {Error} When there's no message to send.
  */
-async function replaceMessage(client, message, text, member) {
+wh.replaceMessage = async function(client, message, text, member) {
+    // attachment logic is not relevant yet, text length will always be over 0 right now
     if (text.length > 0 || message.attachments.size > 0) {
         const channel = client.channels.get(message.channelId);
-        const webhook = await getOrCreateWebhook(client, channel).catch((e) =>{throw e});
+        const webhook = await wh.getOrCreateWebhook(client, channel).catch((e) =>{throw e});
         const username = member.displayname ?? member.name;
-        await webhook.send({content: text, username: username, avatar_url: member.propic});
+        if (text.length > 0) {
+            await webhook.send({content: text, username: username, avatar_url: member.propic}).catch(async(e) => {
+                const returnedBuffer = messageHelper.returnBufferFromText(text);
+                await webhook.send({content: returnedBuffer.text, username: username, avatar_url: member.propic, files: [{ name: 'text.txt', data: returnedBuffer.file }]
+                })
+                console.error(e);
+            });
+        }
+        if (message.attachments.size > 0) {
+            // Not implemented yet
+        }
+
         await message.delete();
     }
-    else {
-        throw new Error(enums.err.NO_MESSAGE_SENT_WITH_PROXY);
-    }
 }
-
-/**
- * Creates attachment embeds for the webhook since right now sending images is not supported.
- *
- * @param {Object[]} attachments - The attachments.
- * @returns {Object[]} A series of embeds.
- */
-function createAttachmentEmbedsForWebhook(attachments) {
-    let embeds = [];
-    attachments.forEach(attachment => {
-        const embed = new EmbedBuilder()
-            .setTitle(attachment.filename)
-            .setImage(attachment.url).toJSON()
-        embeds.push(embed);
-    });
-    return embeds;
-}
-
 
 /**
  * Gets or creates a webhook.
- *
+ * @async
  * @param {Client} client - The fluxer.js client.
  * @param {Channel} channel - The channel the message was sent in.
  * @returns {Webhook} A webhook object.
  * @throws {Error} When no webhooks are allowed in the channel.
  */
-async function getOrCreateWebhook(client, channel) {
+wh.getOrCreateWebhook = async function(client, channel) {
     // If channel doesn't allow webhooks
     if (!channel?.createWebhook) throw new Error(enums.err.NO_WEBHOOKS_ALLOWED);
-    let webhook = await getWebhook(client, channel).catch((e) =>{throw e});
+    let webhook = await wh.getWebhook(client, channel).catch((e) =>{throw e});
     if (!webhook) {
         webhook = await channel.createWebhook({name: name});
     }
@@ -90,12 +81,12 @@ async function getOrCreateWebhook(client, channel) {
 
 /**
  * Gets an existing webhook.
- *
+ * @async
  * @param {Client} client - The fluxer.js client.
  * @param {Channel} channel - The channel the message was sent in.
  * @returns {Webhook} A webhook object.
  */
-async function getWebhook(client, channel) {
+wh.getWebhook = async function(client, channel) {
     const channelWebhooks = await channel?.fetchWebhooks() ?? [];
     if (channelWebhooks.length === 0) {
         return;
