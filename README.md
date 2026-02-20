@@ -38,10 +38,9 @@ All commands are prefixed by `pf;`. Currently only a few are implemented.
     **NOTE:** Fluxer does not save your attachments forever, so option #1 is recommended.
   - `proxy` Updates the proxy tag for a specific member based on their name. The proxy must be formatted with the tags surrounding the word 'text', for example: `pf;member jane proxy Jane:text` or `pf;member amal proxy [text]` This is so the bot can detect what the proxy tags are. **Only one proxy can be set per member currently.**
 
-## Notes
-- Attaching files to messages with the proxy does not work, due to either the limitations of Fluxer itself :(
-
 ## Upcoming
+- [ ] More than one proxy possible per member (including on import)
+- [ ] File attachments
 - [ ] React with x to delete message
 - [ ] System tag at the end of messages
 - [ ] Optionally keep proxy tag in message
