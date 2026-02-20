@@ -24,18 +24,17 @@ const commandList = ['--help', 'new', 'remove', 'name', 'list', 'displayName', '
  * @throws {Error}
  */
 mh.parseMemberCommand = async function (authorId, authorFull, args, attachmentUrl = null, attachmentExpiration = null) {
-    let member;
+    const memberName = !commandList.includes(args[0]) ? args[0] : args[1];
+
     // checks whether command is in list, otherwise assumes it's a name
-    if (!commandList.includes(args[0])) {
-        member = await mh.getMemberByName(authorId, args[1]).then((m) => {
-            if (!m) {
-                return enums.err.NO_MEMBER;
-            }
-        })
-    }
+    const member = await mh.getMemberByName(authorId, memberName).then((m) => {
+        if (!m) {
+            return enums.err.NO_MEMBER;
+        }
+    })
+
+
     switch (args[0]) {
-        case '--help':
-            return mh.getMemberCommandInfo();
         case 'new':
             return await mh.addNewMember(authorId, args, attachmentUrl).catch((e) => {
                 throw e
@@ -59,31 +58,33 @@ mh.parseMemberCommand = async function (authorId, authorFull, args, attachmentUr
             return await mh.getAllMembersInfo(authorId, authorFull).catch((e) => {
                 throw e
             });
+        case '--help':
         case '':
-            return enums.help.MEMBER;
+            return mh.getMemberCommandInfo();
     }
     switch (args[1]) {
         case 'name':
-            return await mh.updateName(authorId, member.name, args[2]).catch((e) => {
+            if (!args[2]) return member.name ?? `Name ${enums.err.NO_VALUE}`;
+            return await mh.updateName(authorId, args[1], args[2]).catch((e) => {
                 throw e
             });
         case 'displayname':
             if (!args[2]) return member.displayname ?? `Display name ${enums.err.NO_VALUE}`;
-            return await mh.updateDisplayName(authorId, member.name, args[2]).catch((e) => {
+            return await mh.updateDisplayName(authorId, args[1], args[2]).catch((e) => {
                 throw e
             });
         case 'proxy':
             if (!args[2]) return member.proxy ?? `Proxy ${enums.err.NO_VALUE}`;
-            return await mh.updateProxy(authorId, member.name, args[2]).catch((e) => {
+            return await mh.updateProxy(authorId, args[1], args[2]).catch((e) => {
                 throw e
             });
         case 'propic':
             if (!args[2]) return member.propic ?? `Profile picture ${enums.err.NO_VALUE}`;
-            return await mh.updatePropic(authorId, member.name, args[2], attachmentUrl, attachmentExpiration).catch((e) => {
+            return await mh.updatePropic(authorId, args[1], args[2], attachmentUrl, attachmentExpiration).catch((e) => {
                 throw e
             });
         default:
-            return await mh.getMemberInfo(authorId, member.name);
+            return await mh.getMemberInfo(authorId, args[1]);
     }
 }
 

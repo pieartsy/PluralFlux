@@ -12,6 +12,8 @@ jest.mock('../../src/database.js', () => {
                 create: jest.fn().mockResolvedValue(),
                 update: jest.fn().mockResolvedValue(),
                 destroy: jest.fn().mockResolvedValue(),
+                findOne: jest.fn().mockResolvedValue(),
+                findAll: jest.fn().mockResolvedValue(),
             }
         }
     }
@@ -24,15 +26,24 @@ describe('MemberHelper', () => {
     const authorFull = "author#0001";
     const attachmentUrl = "../oya.png";
     const attachmentExpiration = new Date('2026-01-01T00.00.00.0000Z')
-
+    const member = {
+        name: "somePerson",
+        displayname: "Some Person",
+        proxy: "--text",
+        propic: "oya.png"
+    }
     beforeEach(() => {
         jest.resetModules();
         jest.clearAllMocks();
+        jest.spyOn(memberHelper, 'getMemberByName').mockResolvedValue(member);
     })
 
     describe('parseMemberCommand', () => {
 
+
+
         beforeEach(() => {
+
             jest.spyOn(memberHelper, 'getMemberInfo').mockResolvedValue("member info");
             jest.spyOn(memberHelper, 'addNewMember').mockResolvedValue("new member");
             jest.spyOn(memberHelper, 'removeMember').mockResolvedValue("remove member");
@@ -41,7 +52,8 @@ describe('MemberHelper', () => {
             jest.spyOn(memberHelper, 'updateDisplayName').mockResolvedValue("update display name");
             jest.spyOn(memberHelper, 'updateProxy').mockResolvedValue("update proxy");
             jest.spyOn(memberHelper, 'updatePropic').mockResolvedValue("update propic");
-            jest.spyOn(memberHelper, 'getProxyByMember').mockResolvedValue("get proxy");
+
+            jest.spyOn(memberHelper, 'getMemberCommandInfo').mockResolvedValue("member command info");
         });
 
         test.each([
