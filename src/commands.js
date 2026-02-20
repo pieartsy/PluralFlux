@@ -46,8 +46,6 @@ cmds.set('help', {
 cmds.set('import', {
     description: enums.help.SHORT_DESC_IMPORT,
     async execute(message, client, args) {
-        console.log(args);
-
         const attachmentUrl = message.attachments.size > 0 ? message.attachments.first().url : null;
         if ((message.content.includes('--help') || (args[0] === '' && args.length === 1)) && !attachmentUrl ) {
             return await message.reply(enums.help.IMPORT);
@@ -60,7 +58,7 @@ cmds.set('import', {
                 let errorsText = `${error.message}.\nThese errors occurred:\n${error.errors.join('\n')}`;
 
                 await message.reply(errorsText).catch(async () => {
-                    const returnedBuffer = await messageHelper.returnBufferFromText(errorsText);
+                    const returnedBuffer = messageHelper.returnBufferFromText(errorsText);
                     await message.reply({content: returnedBuffer.text, files: [{ name: 'text.pdf', data: returnedBuffer.file }]
                     })
                 });
