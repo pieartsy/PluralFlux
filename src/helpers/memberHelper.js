@@ -614,5 +614,26 @@ mh.checkIfProxyExists = async function (authorId, proxy) {
 
 }
 
+/**
+ * Creates an embed with all member commands
+ *
+ * @returns {EmbedBuilder } An embed of member commands.
+ */
+mh.getMemberCommandInfo = function() {
+    const fields = [
+        {name: `**new**`, value: enums.help.NEW, inline: false},
+        {name: `**remove**`, value: enums.help.REMOVE, inline: false},
+        {name: `**name**`, value: enums.help.NAME, inline: false},
+        {name: `**displayname**`, value: enums.help.DISPLAY_NAME, inline: false},
+        {name: `**proxy**`, value: enums.help.PROXY, inline: false},
+        {name: `**propic**`, value: enums.help.PROPIC, inline: false},
+        {name: `**list**`, value: enums.help.LIST, inline: false},
+    ];
+    return new EmbedBuilder()
+        .setTitle("Member subcommands")
+        .setDescription(enums.help.MEMBER)
+        .addFields(...fields);
+}
+
 
 export const memberHelper = mh;
