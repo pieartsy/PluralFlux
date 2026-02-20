@@ -30,7 +30,8 @@ mh.parseMemberCommand = async function (authorId, authorFull, args, attachmentUr
     }
     switch (args[0]) {
         case '--help':
-            return enums.help.MEMBER;
+        case '':
+            return mh.getMemberCommandInfo();
         case 'new':
             return await mh.addNewMember(authorId, args, attachmentUrl).catch((e) => {
                 throw e
@@ -54,8 +55,6 @@ mh.parseMemberCommand = async function (authorId, authorFull, args, attachmentUr
             return await mh.getAllMembersInfo(authorId, authorFull).catch((e) => {
                 throw e
             });
-        case '':
-            return enums.help.MEMBER;
     }
     switch (args[1]) {
         case 'name':
