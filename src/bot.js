@@ -4,7 +4,7 @@ import {enums} from "./enums.js";
 import {commands} from "./commands.js";
 import {webhookHelper} from "./helpers/webhookHelper.js";
 import * as env from 'dotenv';
-import {utils} from "./helpers/utils";
+import {utils} from "./helpers/utils.js";
 
 env.config();
 

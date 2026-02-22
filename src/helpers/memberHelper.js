@@ -2,7 +2,7 @@ import {database} from '../database.js';
 import {enums} from "../enums.js";
 import {EmptyResultError, Op} from "sequelize";
 import {EmbedBuilder} from "@fluxerjs/core";
-import {utils} from "./utils";
+import {utils} from "./utils.js";
 
 const mh = {};
 
