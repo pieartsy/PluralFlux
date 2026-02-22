@@ -248,7 +248,7 @@ describe('MemberHelper', () => {
                 // Assert
                 expect(result).toEqual(expected);
                 expect(memberHelper.getMemberInfo).toHaveBeenCalledTimes(1);
-                expect(memberHelper.getMemberInfo).toHaveBeenCalledWith(authorId, mockMember);
+                expect(memberHelper.getMemberInfo).toHaveBeenCalledWith(mockMember);
             })
         })
 

@@ -95,9 +95,10 @@ mh.addNewMember = async function (authorId, args, attachmentURL = null) {
     const propic = args[4] ?? attachmentURL;
 
     return await mh.addFullMember(authorId, memberName, displayName, proxy, propic).then(async(response) => {
-        const memberInfoEmbed = await mh.getMemberInfo(authorId, response.member).catch((e) => {throw e})
+        const memberInfoEmbed = await mh.getMemberInfo(response.member).catch((e) => {throw e})
         return {embed: memberInfoEmbed, errors: response.errors, success: `${memberName} has been added successfully.`};
     }).catch(e => {
+        console.error(e);
         throw e;
     })
 }
@@ -189,7 +190,7 @@ mh.updatePropic = async function (authorId, memberName, imgUrl = null, attachmen
  * @param {string} authorId - The author of the message
  * @param {string} memberName - The name of the member to remove
  * @returns {Promise<string>} A successful removal.
- * @throws {EmptyResultError} When there is no member to remove.
+ * @throws {Error} When there is no member to remove.
  */
 mh.removeMember = async function (authorId, memberName) {
     return await database.members.destroy({
@@ -201,7 +202,7 @@ mh.removeMember = async function (authorId, memberName) {
         if (result) {
             return `Member "${memberName}" has been deleted.`;
         }
-        throw new EmptyResultError(`${enums.err.NO_MEMBER}`);
+        throw new Error(`${enums.err.NO_MEMBER}`);
     })
 }
 
@@ -338,7 +339,7 @@ mh.getMemberInfo = async function (member) {
             value: member.displayname ?? 'unset',
             inline: true
         }, {name: 'Proxy tag: ', value: member.proxy ?? 'unset', inline: true},)
-        .setImage(member.propic);
+        .setImage(member.propic ?? null);
 }
 
 /**
