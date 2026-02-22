@@ -25,6 +25,9 @@ const commandList = ['--help', 'new', 'remove', 'name', 'list', 'displayName', '
  * @throws {Error}
  */
 mh.parseMemberCommand = async function (authorId, authorFull, args, attachmentUrl = null, attachmentExpiration = null) {
+    if (!args[0]) {
+        return mh.getMemberCommandInfo();
+    }
     const memberName = !commandList.includes(args[0]) ? args[0] : args[1];
 
     // checks whether command is in list, otherwise assumes it's a name

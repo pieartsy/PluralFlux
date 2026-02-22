@@ -98,6 +98,7 @@ describe('MemberHelper', () => {
         test.each([
             [['--help']],
             [['']],
+            [[]]
         ])('%s calls getMemberCommandInfo and returns expected result', async (args) => {
             // Act
             return memberHelper.parseMemberCommand(authorId, authorFull, args).then((result) => {
