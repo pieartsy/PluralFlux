@@ -1,7 +1,6 @@
 const {EmbedBuilder} = require("@fluxerjs/core");
 const {database} = require('../../src/database.js');
 const {enums} = require('../../src/enums.js');
-const {EmptyResultError, Op} = require('sequelize');
 const {memberHelper} = require("../../src/helpers/memberHelper.js");
 
 jest.mock('@fluxerjs/core', () => jest.fn());
@@ -26,24 +25,22 @@ describe('MemberHelper', () => {
     const authorFull = "author#0001";
     const attachmentUrl = "../oya.png";
     const attachmentExpiration = new Date('2026-01-01T00.00.00.0000Z')
-    const member = {
+    const mockMember = {
         name: "somePerson",
         displayname: "Some Person",
         proxy: "--text",
         propic: "oya.png"
     }
+
     beforeEach(() => {
-        jest.resetModules();
+        // jest.resetModules();
         jest.clearAllMocks();
-        jest.spyOn(memberHelper, 'getMemberByName').mockResolvedValue(member);
     })
 
     describe('parseMemberCommand', () => {
 
-
-
         beforeEach(() => {
-
+            jest.spyOn(memberHelper, 'getMemberByName').mockResolvedValue(mockMember);
             jest.spyOn(memberHelper, 'getMemberInfo').mockResolvedValue("member info");
             jest.spyOn(memberHelper, 'addNewMember').mockResolvedValue("new member");
             jest.spyOn(memberHelper, 'removeMember').mockResolvedValue("remove member");

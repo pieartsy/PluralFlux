@@ -31,6 +31,7 @@ mh.parseMemberCommand = async function (authorId, authorFull, args, attachmentUr
         if (!m) {
             return enums.err.NO_MEMBER;
         }
+        return m;
     })
 
 
