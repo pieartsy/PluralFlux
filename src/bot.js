@@ -4,6 +4,7 @@ import {enums} from "./enums.js";
 import {commands} from "./commands.js";
 import {webhookHelper} from "./helpers/webhookHelper.js";
 import * as env from 'dotenv';
+import {utils} from "./helpers/utils";
 
 env.config();
 
@@ -61,22 +62,14 @@ client.on(Events.Ready, () => {
 let guildCount = 0;
 client.on(Events.GuildCreate, () => {
     guildCount++;
-    callback();
+    debouncePrintGuilds();
 });
 
 function printGuilds() {
     console.log(`Serving ${client.guilds.size} guild(s)`);
 }
 
-const callback  = Debounce(printGuilds, 2000);
-
-function Debounce(func, delay) {
-    let timeout = null;
-    return function (...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func(...args), delay);
-    };
-}
+const debouncePrintGuilds  = utils.debounce(printGuilds, 2000);
 
 try {
     await client.login(token);
