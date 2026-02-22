@@ -7,6 +7,7 @@ helperEnums.err = {
     ADD_ERROR: "Error adding member.",
     MEMBER_EXISTS: "A member with that name already exists. Please pick a unique name.",
     USER_NO_MEMBERS: "You have no members created.",
+    NAME_REQUIRED: "You must set a unique name for the member for them to save.",
     DISPLAY_NAME_TOO_LONG: "The maximum length of a display name is 32 characters.",
     PROXY_EXISTS: "A duplicate proxy already exists for one of your members. Please pick a new one, or change the old one first.",
     NO_SUCH_COMMAND: "No such command exists.",
