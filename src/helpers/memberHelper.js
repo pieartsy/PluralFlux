@@ -28,6 +28,11 @@ mh.parseMemberCommand = async function (authorId, authorFull, args, attachmentUr
     if (!args[0]) {
         return mh.getMemberCommandInfo();
     }
+    if (args[0] === "new") {
+        if (!args[1] || args[1] === "--help") return enums.help.NEW;
+        return await mh.addNewMember(authorId, args, attachmentUrl).catch((e) => { throw e });
+    }
+
     const memberName = !commandList.includes(args[0]) ? args[0] : args[1];
 
     // checks whether command is in list, otherwise assumes it's a name
@@ -37,9 +42,6 @@ mh.parseMemberCommand = async function (authorId, authorFull, args, attachmentUr
     })
 
     switch (args[0]) {
-        case 'new':
-            if (!args[1] || args[1] === "--help") return enums.help.NEW;
-            return await mh.addNewMember(authorId, args, attachmentUrl).catch((e) => { throw e });
         case 'remove':
             if (!args[1] || args[1] === "--help") return enums.help.REMOVE;
             return await mh.removeMember(authorId, memberName).catch((e) => { throw e });

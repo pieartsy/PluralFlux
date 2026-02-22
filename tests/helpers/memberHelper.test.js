@@ -64,7 +64,7 @@ describe('MemberHelper', () => {
 
         test.each([
             [['new', 'somePerson'], attachmentUrl],
-            [['new', 'somePerson'], null,]
+            [['new', 'somePerson'], null],
         ])('%s calls addNewMember and returns correct values', async(args, attachmentUrl) => {
             // Act
             return memberHelper.parseMemberCommand(authorId, authorFull, args, attachmentUrl).then((result) => {
@@ -190,6 +190,35 @@ describe('MemberHelper', () => {
                 // Assert
                 expect(result).toEqual(`${expectedResult} ${enums.err.NO_VALUE}`);
                 expect(memberHelper[method]).not.toHaveBeenCalled();
+            });
+        });
+
+        test('["new", "someNewPerson"] shall call addNewMember and return correct results', async () => {
+            // Act
+            return memberHelper.parseMemberCommand(authorId, authorFull, ['new', 'someNewPerson']).then((result) => {
+                // Assert
+                expect(result).toEqual("new member");
+                expect(memberHelper.getMemberByName).not.toHaveBeenCalled();
+            });
+        });
+
+        test('["new", "--help"] shall return help enum', async () => {
+            // Act
+            return memberHelper.parseMemberCommand(authorId, authorFull, ['new', '--help']).then((result) => {
+                // Assert
+                expect(result).toEqual(enums.help.NEW);
+                expect(memberHelper.addNewMember).not.toHaveBeenCalled();
+                expect(memberHelper.getMemberByName).not.toHaveBeenCalled();
+            });
+        });
+
+        test('["new"] shall return help enum', async () => {
+            // Act
+            return memberHelper.parseMemberCommand(authorId, authorFull, ['new']).then((result) => {
+                // Assert
+                expect(result).toEqual(enums.help.NEW);
+                expect(memberHelper.addNewMember).not.toHaveBeenCalled();
+                expect(memberHelper.getMemberByName).not.toHaveBeenCalled();
             });
         });
     })
