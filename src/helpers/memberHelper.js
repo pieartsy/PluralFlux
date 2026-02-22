@@ -2,6 +2,7 @@ import {database} from '../database.js';
 import {enums} from "../enums.js";
 import {EmptyResultError, Op} from "sequelize";
 import {EmbedBuilder} from "@fluxerjs/core";
+import {utils} from "./utils";
 
 const mh = {};
 
@@ -68,7 +69,7 @@ mh.parseMemberCommand = async function (authorId, authorFull, args, attachmentUr
             if (!args[2] && !attachmentUrl) return member.propic ?? `Profile picture ${enums.err.NO_VALUE}`;
             return await mh.updatePropic(authorId, args[0], args[2], attachmentUrl, attachmentExpiration).catch((e) => {throw e});
         default:
-            return await mh.getMemberInfo(authorId, member);
+            return await mh.getMemberInfo(member);
     }
 }
 
@@ -107,9 +108,6 @@ mh.addNewMember = async function (authorId, args, attachmentURL = null) {
  * @throws {RangeError} When the name doesn't exist.
  */
 mh.updateName = async function (authorId, memberName, name) {
-    if (name === "--help") {
-        return enums.help.NAME;
-    }
     const trimmedName = name.trim();
     if (trimmedName === '') {
         throw new RangeError(`Name ${enums.err.NO_VALUE}`);
@@ -130,9 +128,6 @@ mh.updateName = async function (authorId, memberName, name) {
  * @throws {RangeError} When the display name is too long or doesn't exist.
  */
 mh.updateDisplayName = async function (authorId, membername, displayname) {
-    if (displayname === "--help") {
-        return enums.help.DISPLAY_NAME;
-    }
     const trimmedName = displayname.trim();
 
     if (trimmedName.length > 32) {
@@ -157,19 +152,10 @@ mh.updateDisplayName = async function (authorId, membername, displayname) {
  * @throws {RangeError | Error} When an empty proxy was provided, or no proxy exists.
  */
 mh.updateProxy = async function (authorId, memberName, proxy) {
-    if (proxy === "--help") {
-        return enums.help.PROXY;
-    }
-    const proxyExists = await mh.checkIfProxyExists(authorId, proxy).then((proxyExists) => {
-        return proxyExists;
-    }).catch((e) => {
-        throw e
-    });
-    if (!proxyExists) {
-        return await mh.updateMemberField(authorId, memberName, "proxy", proxy).catch((e) => {
-            throw e
-        });
-    }
+    // Throws error if exists
+    await mh.checkIfProxyExists(authorId, proxy).catch((e) => { throw e; });
+
+    return await mh.updateMemberField(authorId, memberName, "proxy", proxy).catch((e) => { throw e;});
 }
 
 /**
@@ -185,35 +171,10 @@ mh.updateProxy = async function (authorId, memberName, proxy) {
  * @throws {Error} When loading the profile picture from a URL doesn't work.
  */
 mh.updatePropic = async function (authorId, memberName, imgUrl = null, attachmentUrl = null, attachmentExpiry = null) {
-    if (imgUrl === "--help") {
-        return enums.help.PROPIC;
-    }
-    const isValidImage = await mh.checkImageFormatValidity(attachmentUrl ?? imgUrl).catch((e) => {
-        throw e
-    });
-    if (isValidImage) {
-        return await mh.updateMemberField(authorId, memberName, "propic", attachmentUrl ?? imgUrl, attachmentExpiry).catch((e) => {
-            throw e
-        });
-    }
-}
+    // Throws error if invalid
+    await utils.checkImageFormatValidity(attachmentUrl ?? imgUrl).catch((e) => { throw e });
 
-/**
- * Checks if an uploaded picture is in the right format.
- *
- * @async
- * @param {string} imageUrl - The url of the image
- * @returns {Promise<boolean>} - If the image is a valid format.
- * @throws {Error} When loading the profile picture from a URL doesn't work, or it fails requirements.
- */
-mh.checkImageFormatValidity = async function (imageUrl) {
-    const acceptableImages = ['image/png', 'image/jpg', 'image/jpeg', 'image/webp'];
-    return await fetch(imageUrl).then(r => r.blob()).then(blobFile => {
-        if (blobFile.size > 1000000 || !acceptableImages.includes(blobFile.type)) throw new Error(enums.err.PROPIC_FAILS_REQUIREMENTS);
-        return true;
-    }).catch((error) => {
-        throw new Error(`${enums.err.PROPIC_CANNOT_LOAD}: ${error.message}`);
-    });
+    return await mh.updateMemberField(authorId, memberName, "propic", attachmentUrl ?? imgUrl, attachmentExpiry).catch((e) => { throw e });
 }
 
 /**
@@ -261,10 +222,19 @@ mh.addFullMember = async function (authorId, memberName, displayName = null, pro
     });
     const errors = [];
 
+    const trimmedName = memberName.trim();
+    if (trimmedName.length === 0) {
+        throw new Error(`Name ${enums.err.NO_VALUE}. ${enums.err.NAME_REQUIRED}`);
+    }
+
     let isValidDisplayName;
-    if (displayName && displayName.length > 0) {
-        const trimmedName = displayName ? displayName.trim() : null;
-        if (trimmedName && trimmedName.length > 32) {
+    if (displayName) {
+        const trimmedDisplayName= displayName ? displayName.trim() : null;
+        if (!trimmedDisplayName || trimmedDisplayName.length === 0) {
+            errors.push(`Display name ${enums.err.NO_VALUE}. ${enums.err.SET_TO_NULL}`);
+            isValidDisplayName = false;
+        }
+        else if (trimmedDisplayName.length > 32) {
             errors.push(`Tried to set displayname to \"${displayName}\". ${enums.err.DISPLAY_NAME_TOO_LONG}. ${enums.err.SET_TO_NULL}`);
             isValidDisplayName = false;
         }
@@ -272,6 +242,7 @@ mh.addFullMember = async function (authorId, memberName, displayName = null, pro
             isValidDisplayName = true;
         }
     }
+
 
     let isValidProxy;
     if (proxy && proxy.length > 0) {
@@ -285,7 +256,7 @@ mh.addFullMember = async function (authorId, memberName, displayName = null, pro
 
     let isValidPropic;
     if (propic && propic.length > 0) {
-        await mh.checkImageFormatValidity(propic).then(() => {
+        await utils.checkImageFormatValidity(propic).then(() => {
             isValidPropic = true;
         }).catch((e) => {
             errors.push(`Tried to set profile picture to \"${propic}\". ${e.message}. ${enums.err.SET_TO_NULL}`);
@@ -350,11 +321,10 @@ mh.setExpirationWarning = function (expirationString) {
  * Gets the details for a member.
  *
  * @async
- * @param {string} authorId - The author of the message
  * @param {model} member - The member object
  * @returns {Promise<EmbedBuilder>} The member's info.
  */
-mh.getMemberInfo = async function (authorId, member) {
+mh.getMemberInfo = async function (member) {
     return new EmbedBuilder()
         .setTitle(member.name)
         .setDescription(`Details for ${member.name}`)
