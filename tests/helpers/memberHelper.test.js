@@ -1,7 +1,4 @@
-const {EmbedBuilder} = require("@fluxerjs/core");
-const {database} = require('../../src/database.js');
 const {enums} = require('../../src/enums.js');
-const {memberHelper} = require("../../src/helpers/memberHelper.js");
 const {utils} = require("../../src/helpers/utils.js");
 
 jest.mock('@fluxerjs/core', () => jest.fn());
@@ -28,7 +25,10 @@ jest.mock("../../src/helpers/utils.js", () => {
     }
 });
 
-jest.mock('sequelize', () => jest.fn());
+const {Op} = require('sequelize');
+
+const {memberHelper} = require("../../src/helpers/memberHelper.js");
+const {database} = require("../../src/database");
 
 describe('MemberHelper', () => {
     const authorId = "0001";
@@ -355,8 +355,8 @@ describe('MemberHelper', () => {
     })
 
     describe('addFullMember', () => {
+        const { database} = require('../../src/database.js');
         beforeEach(() => {
-            database.members.create = jest.fn().mockResolvedValue();
             jest.spyOn(memberHelper, 'getMemberByName').mockResolvedValue();
         })
 
@@ -533,6 +533,99 @@ describe('MemberHelper', () => {
                 expect(database.members.create).toHaveBeenCalledTimes(1);
             })
         })
+
+    })
+
+    describe('updateMemberField', () => {
+        const {database} = require('../../src/database.js');
+        beforeEach(() => {
+            jest.spyOn(memberHelper, "setExpirationWarning").mockReturnValue(' warning');
+            database.members = {
+                update: jest.fn().mockResolvedValue([1])
+            };
+        })
+
+        test('calls setExpirationWarning if attachmentExpiration', async () => {
+            return memberHelper.updateMemberField(authorId, mockMember.name, "propic", mockMember.propic, attachmentExpiry).then((res) => {
+                expect(memberHelper.setExpirationWarning).toHaveBeenCalledTimes(1);
+                expect(memberHelper.setExpirationWarning).toHaveBeenCalledWith(mockMember.propic);
+            })
+        })
+
+        test.each([
+            ['name', mockMember.name, null, `Updated name for ${mockMember.name} to ${mockMember.name}`],
+            ['displayname', mockMember.displayname, null, `Updated name for ${mockMember.name} to ${mockMember.displayname}`],
+            ['proxy', mockMember.proxy, null, `Updated name for ${mockMember.name} to ${mockMember.proxy}`],
+            ['propic', mockMember.propic, null, `Updated name for ${mockMember.name} to ${mockMember.propic}`],
+            ['propic', mockMember.propic, attachmentExpiry, `Updated name for ${mockMember.name} to ${mockMember.propic} warning}`]
+        ])('calls database.members.update with correct column and value and return string', async (columnName, value, attachmentExpiration) => {
+            // Arrange
+            return memberHelper.updateMemberField(authorId, mockMember.name, columnName, value, attachmentExpiration).then((res) => {
+                // Act
+                expect(database.members.update).toHaveBeenCalledTimes(1);
+                expect(database.members.update).toHaveBeenCalledWith({[columnName]: value}, {
+                    where: {
+                        name: {[Op.iLike]: mockMember.name},
+                        userid: authorId
+                    }
+                })
+            })
+        })
+
+        test('if database.members.update returns 0 rows changed, throw error', () => {
+            // Arrange
+            database.members = {
+                update: jest.fn().mockResolvedValue([0])
+            };
+            // Act
+            return memberHelper.updateMemberField(authorId, mockMember.name, "displayname", mockMember.displayname).catch((res) => {
+                expect(res).toEqual(new Error(`Can't update ${mockMember.name}. ${enums.err.NO_MEMBER}.`))
+            })
+        })
+    })
+
+    describe('checkIfProxyExists', () => {
+
+        beforeEach(() => {
+            jest.spyOn(memberHelper, "getMembersByAuthor").mockResolvedValue([mockMember]);
+        })
+
+        test.each([
+            ['!text'],
+            ['! text'],
+            ['⭐text'],
+            ['⭐ text'],
+            ['⭐ text ⭐'],
+            ['--text--'],
+            ['!text ?'],
+            ['SP: text'],
+            ['text --SP'],
+        ])('%s should call getMembersByAuthor and return false', async (proxy) => {
+            return memberHelper.checkIfProxyExists(authorId, proxy).then((res) => {
+                expect(res).toEqual(false)
+                expect(memberHelper.getMembersByAuthor).toHaveBeenCalledTimes(1);
+                expect(memberHelper.getMembersByAuthor).toHaveBeenCalledWith(authorId);
+            })
+        })
+
+        test.each([
+            ['--', enums.err.NO_TEXT_FOR_PROXY, false],
+            ['      ', enums.err.NO_TEXT_FOR_PROXY, false],
+            ['text', enums.err.NO_PROXY_WRAPPER, false],
+            ['--text', enums.err.PROXY_EXISTS, true]
+        ])('%s returns correct error and calls getMembersByAuthor if appropriate', async (proxy, error, shouldCall) => {
+            return memberHelper.checkIfProxyExists(authorId, proxy).catch((res) => {
+                expect(res).toEqual(new Error(error))
+                if (shouldCall) {
+                    expect(memberHelper.getMembersByAuthor).toHaveBeenCalledTimes(1);
+                    expect(memberHelper.getMembersByAuthor).toHaveBeenCalledWith(authorId);
+                }
+                else {
+                    expect(memberHelper.getMembersByAuthor).not.toHaveBeenCalled();
+                }
+            })
+        })
+
 
     })
 

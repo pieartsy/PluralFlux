@@ -1,6 +1,6 @@
 import {database} from '../database.js';
 import {enums} from "../enums.js";
-import {EmptyResultError, Op} from "sequelize";
+import {Op} from "sequelize";
 import {EmbedBuilder} from "@fluxerjs/core";
 import {utils} from "./utils.js";
 
@@ -388,21 +388,19 @@ mh.getMembersByAuthor = async function (authorId) {
  * @throws {Error} When an empty proxy was provided, or no proxy exists.
  */
 mh.checkIfProxyExists = async function (authorId, proxy) {
-    if (proxy) {
-        const splitProxy = proxy.trim().split("text");
-        if (splitProxy.length < 2) throw new Error(enums.err.NO_TEXT_FOR_PROXY);
-        if (!splitProxy[0] && !splitProxy[1]) throw new Error(enums.err.NO_PROXY_WRAPPER);
+    const splitProxy = proxy.trim().split("text");
+    if (splitProxy.length < 2) throw new Error(enums.err.NO_TEXT_FOR_PROXY);
+    if (!splitProxy[0] && !splitProxy[1]) throw new Error(enums.err.NO_PROXY_WRAPPER);
 
-        await mh.getMembersByAuthor(authorId).then((memberList) => {
-            const proxyExists = memberList.some(member => member.proxy === proxy);
-            if (proxyExists) {
-                throw new Error(enums.err.PROXY_EXISTS);
-            }
-        }).catch(e => {
-            throw e
-        });
-    }
-
+    await mh.getMembersByAuthor(authorId).then((memberList) => {
+        const proxyExists = memberList.some(member => member.proxy === proxy);
+        if (proxyExists) {
+            throw new Error(enums.err.PROXY_EXISTS);
+        }
+    }).catch(e => {
+        throw e
+    });
+    return false;
 }
 
 /**
