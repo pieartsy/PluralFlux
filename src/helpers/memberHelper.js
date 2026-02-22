@@ -28,22 +28,17 @@ mh.parseMemberCommand = async function (authorId, authorFull, args, attachmentUr
 
     // checks whether command is in list, otherwise assumes it's a name
     const member = await mh.getMemberByName(authorId, memberName).then((m) => {
-        if (!m) {
-            return enums.err.NO_MEMBER;
-        }
+        if (!m) throw new Error(enums.err.NO_MEMBER);
         return m;
     })
 
-
     switch (args[0]) {
         case 'new':
-            return await mh.addNewMember(authorId, args, attachmentUrl).catch((e) => {
-                throw e
-            });
+            if (!args[1] || args[1] === "--help") return enums.help.NEW;
+            return await mh.addNewMember(authorId, args, attachmentUrl).catch((e) => { throw e });
         case 'remove':
-            return await mh.removeMember(authorId, args).catch((e) => {
-                throw e
-            });
+            if (!args[1] || args[1] === "--help") return enums.help.REMOVE;
+            return await mh.removeMember(authorId, memberName).catch((e) => { throw e });
         case 'name':
             return enums.help.NAME;
         case 'displayname':
@@ -53,39 +48,27 @@ mh.parseMemberCommand = async function (authorId, authorFull, args, attachmentUr
         case 'propic':
             return enums.help.PROPIC;
         case 'list':
-            if (args[1] && args[1] === "--help") {
-                return enums.help.LIST;
-            }
-            return await mh.getAllMembersInfo(authorId, authorFull).catch((e) => {
-                throw e
-            });
+            if (args[1] && args[1] === "--help") return enums.help.LIST;
+            return await mh.getAllMembersInfo(authorId, authorFull).catch((e) => { throw e });
         case '--help':
         case '':
             return mh.getMemberCommandInfo();
     }
     switch (args[1]) {
         case 'name':
-            if (!args[2]) return member.name ?? `Name ${enums.err.NO_VALUE}`;
-            return await mh.updateName(authorId, args[1], args[2]).catch((e) => {
-                throw e
-            });
+            if (!args[2]) return member.name;
+            return await mh.updateName(authorId, args[0], args[2]).catch((e) => { throw e});
         case 'displayname':
             if (!args[2]) return member.displayname ?? `Display name ${enums.err.NO_VALUE}`;
-            return await mh.updateDisplayName(authorId, args[1], args[2]).catch((e) => {
-                throw e
-            });
+            return await mh.updateDisplayName(authorId, args[0], args[2]).catch((e) => {throw e});
         case 'proxy':
             if (!args[2]) return member.proxy ?? `Proxy ${enums.err.NO_VALUE}`;
-            return await mh.updateProxy(authorId, args[1], args[2]).catch((e) => {
-                throw e
-            });
+            return await mh.updateProxy(authorId, args[0], args[2]).catch((e) => {throw e});
         case 'propic':
-            if (!args[2]) return member.propic ?? `Profile picture ${enums.err.NO_VALUE}`;
-            return await mh.updatePropic(authorId, args[1], args[2], attachmentUrl, attachmentExpiration).catch((e) => {
-                throw e
-            });
+            if (!args[2] && !attachmentUrl) return member.propic ?? `Profile picture ${enums.err.NO_VALUE}`;
+            return await mh.updatePropic(authorId, args[0], args[2], attachmentUrl, attachmentExpiration).catch((e) => {throw e});
         default:
-            return await mh.getMemberInfo(authorId, args[1]);
+            return await mh.getMemberInfo(authorId, member);
     }
 }
 
@@ -100,9 +83,6 @@ mh.parseMemberCommand = async function (authorId, authorFull, args, attachmentUr
  * @throws {Error}  When the member exists, or creating a member doesn't work.
  */
 mh.addNewMember = async function (authorId, args, attachmentURL = null) {
-    if (args[1] && args[1] === "--help" || !args[1]) {
-        return enums.help.NEW;
-    }
     const memberName = args[1];
     const displayName = args[2];
     const proxy = args[3];
@@ -198,13 +178,13 @@ mh.updateProxy = async function (authorId, memberName, proxy) {
  * @async
  * @param {string} authorId - The author of the message
  * @param {string} memberName - The member to update
- * @param {string} imgUrl - The message arguments
+ * @param {string | null} imgUrl - The message arguments
  * @param {string | null} attachmentUrl - The url of the first attachment in the message
  * @param {string | null} attachmentExpiry - The expiration date of the first attachment in the message (if uploaded to Fluxer)
  * @returns {Promise<string>} A successful update.
  * @throws {Error} When loading the profile picture from a URL doesn't work.
  */
-mh.updatePropic = async function (authorId, memberName, imgUrl, attachmentUrl = null, attachmentExpiry = null) {
+mh.updatePropic = async function (authorId, memberName, imgUrl = null, attachmentUrl = null, attachmentExpiry = null) {
     if (imgUrl === "--help") {
         return enums.help.PROPIC;
     }
@@ -241,16 +221,11 @@ mh.checkImageFormatValidity = async function (imageUrl) {
  *
  * @async
  * @param {string} authorId - The author of the message
- * @param {string[]} args - The message arguments
+ * @param {string} memberName - The name of the member to remove
  * @returns {Promise<string>} A successful removal.
  * @throws {EmptyResultError} When there is no member to remove.
  */
-mh.removeMember = async function (authorId, args) {
-    if (args[1] && args[1] === "--help" || !args[1]) {
-        return enums.help.REMOVE;
-    }
-
-    const memberName = args[1];
+mh.removeMember = async function (authorId, memberName) {
     return await database.members.destroy({
         where: {
             name: {[Op.iLike]: memberName},
@@ -323,108 +298,6 @@ mh.addFullMember = async function (authorId, memberName, displayName = null, pro
 
     return {member: member, errors: errors};
 }
-
-// mh.mergeFullMember = async function (authorId, memberName, displayName = null, proxy = null, propic = null) {
-//     await mh.getMemberByName(authorId, memberName).then((member) => {
-//         if (member) {
-//             throw new Error(`Can't add ${memberName}. ${enums.err.MEMBER_EXISTS}`);
-//         }
-//     });
-//
-//     let isValidDisplayName;
-//     if (displayName) {
-//         const trimmedName = displayName ? displayName.trim() : null;
-//         if (trimmedName && trimmedName.length > 32) {
-//             if (!isImport) {
-//                 throw new RangeError(`Can't add ${memberName}. ${enums.err.DISPLAY_NAME_TOO_LONG}`);
-//             }
-//             isValidDisplayName = false;
-//         }
-//     }
-//
-//     let isValidProxy;
-//     if (proxy) {
-//         isValidProxy = await mh.checkIfProxyExists(authorId, proxy).then((res) => {
-//             return res;
-//         }).catch((e) => {
-//             if (!isImport) {
-//                 throw e
-//             }
-//             return false;
-//         });
-//     }
-//
-//     let isValidPropic;
-//     if (propic) {
-//         isValidPropic = await mh.checkImageFormatValidity(propic).then((valid) => {
-//             return valid;
-//         }).catch((e) => {
-//             if (!isImport) {
-//                 throw (e);
-//             }
-//             return false;
-//         });
-//     }
-//
-//     const member = await database.members.create({
-//         name: memberName, userid: authorId, displayname: isValidDisplayName ? displayName: null, proxy: isValidProxy ? proxy : null, propic: isValidPropic ? propic : null,
-//     });
-//     if (!member) {
-//         new Error(`${enums.err.ADD_ERROR}`);
-//     }
-//     return member;
-// }
-//
-// mh.overwriteFullMemberFromImport = async function (authorId, memberName, displayName = null, proxy = null, propic = null) {
-//     await mh.getMemberByName(authorId, memberName).then((member) => {
-//         if (member) {
-//             throw new Error(`Can't add ${memberName}. ${enums.err.MEMBER_EXISTS}`);
-//         }
-//     });
-//
-//     let isValidDisplayName;
-//     if (displayName) {
-//         const trimmedName = displayName ? displayName.trim() : null;
-//         if (trimmedName && trimmedName.length > 32) {
-//             if (!isImport) {
-//                 throw new RangeError(`Can't add ${memberName}. ${enums.err.DISPLAY_NAME_TOO_LONG}`);
-//             }
-//             isValidDisplayName = false;
-//         }
-//     }
-//
-//     let isValidProxy;
-//     if (proxy) {
-//         isValidProxy = await mh.checkIfProxyExists(authorId, proxy).then((res) => {
-//             return res;
-//         }).catch((e) => {
-//             if (!isImport) {
-//                 throw e
-//             }
-//             return false;
-//         });
-//     }
-//
-//     let isValidPropic;
-//     if (propic) {
-//         isValidPropic = await mh.checkImageFormatValidity(propic).then((valid) => {
-//             return valid;
-//         }).catch((e) => {
-//             if (!isImport) {
-//                 throw (e);
-//             }
-//             return false;
-//         });
-//     }
-//
-//     const member = await database.members.create({
-//         name: memberName, userid: authorId, displayname: isValidDisplayName ? displayName: null, proxy: isValidProxy ? proxy : null, propic: isValidPropic ? propic : null,
-//     });
-//     if (!member) {
-//         new Error(`${enums.err.ADD_ERROR}`);
-//     }
-//     return member;
-// }
 
 /**
  * Updates one fields for a member in the database.
@@ -520,7 +393,6 @@ mh.getAllMembersInfo = async function (authorId, authorName) {
  * @param {string} authorId - The author of the message.
  * @param {string} memberName - The member's name.
  * @returns {Promise<model>} The member object.
- * @throws { EmptyResultError } When the member is not found.
  */
 mh.getMemberByName = async function (authorId, memberName) {
     return await database.members.findOne({where: {userid: authorId, name: {[Op.iLike]: memberName}}});
