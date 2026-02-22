@@ -12,7 +12,7 @@ helperEnums.err = {
     PROXY_EXISTS: "A duplicate proxy already exists for one of your members. Please pick a new one, or change the old one first.",
     NO_SUCH_COMMAND: "No such command exists.",
     PROPIC_FAILS_REQUIREMENTS: "Profile picture must be in JPG, PNG, or WEBP format and less than 10MB.",
-    PROPIC_CANNOT_LOAD: "Profile picture could not be loaded from URL.",
+    PROPIC_CANNOT_LOAD: "Profile picture could not be loaded. Are you sure this is a valid URL? (Try visiting the link to make sure!)",
     NO_WEBHOOKS_ALLOWED: "Channel does not support webhooks.",
     NOT_IN_SERVER: "You can only proxy in a server.",
     NO_MESSAGE_SENT_WITH_PROXY: 'Proxied message has no content.',
@@ -39,7 +39,7 @@ helperEnums.help = {
     DISPLAY_NAME: "Updates the display name for a specific member based on their name, for example: `pf;member jane displayname \"Jane Doe | ze/hir\"`.This can be up to 32 characters long. If it has spaces, __put it in quotes__.",
     PROXY: "Updates the proxy tag for a specific member based on their name. The proxy must be formatted with the tags surrounding the word 'text', for example: `pf;member jane proxy Jane:text` or `pf;member amal proxy [text]` This is so the bot can detect what the proxy tags are. **Only one proxy can be set per member currently.**",
     PROPIC: "Updates the profile picture for the member. Must be in JPG, PNG, or WEBP format and less than 10MB. The two options are:\n1. Pass in a direct remote image URL, for example: `pf;member jane propic https://cdn.pixabay.com/photo/2020/05/02/02/54/animal-5119676_1280.jpg`. You can upload images on sites like https://imgbb.com/.\n2. Upload an attachment directly.\n\n**NOTE:** Fluxer does not save your attachments forever, so option #1 is recommended.",
-    IMPORT: "Imports from PluralKit using the JSON file provided by their export command. Importing from other proxy bots is TBD. `pf;import` and attach your JSON file to the message. This will only save the fields that are present in the bot currently, not anything else like birthdays or system handles (yet?). **Only one proxy can be set per member currently.**"
+    IMPORT: "Imports from PluralKit using the JSON file provided by their export command. Importing from other proxy bots is TBD. `pf;import` and attach your JSON file to the message. This will only save the fields that are present in the bot currently, not anything else like birthdays or system handles (yet?). **Only one proxy can be set per member currently.**\n\n**PRO TIP**: For privacy reasons, try DMing the bot with this command and your JSON file--it should still work the same."
 }
 
 helperEnums.misc = {
