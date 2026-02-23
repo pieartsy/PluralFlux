@@ -1,4 +1,4 @@
-import { Client, Events } from '@fluxerjs/core';
+import { Client, Events, Message } from '@fluxerjs/core';
 import { messageHelper } from "./helpers/messageHelper.js";
 import {enums} from "./enums.js";
 import {commands} from "./commands.js";
@@ -15,15 +15,25 @@ if (!token) {
     process.exit(1);
 }
 
-const client = new Client({ intents: 0 });
+export const client = new Client({ intents: 0 });
 
 client.on(Events.MessageCreate, async (message) => {
-    try {
-        // Ignore bots and messages without content
-        if (message.author.bot || !message.content) return;
+    await handleMessageCreate(message);
+});
 
+/**
+ * Calls functions based off the contents of a message object.
+ *
+ * @async
+ * @param {Message} message - The message object
+ *
+ **/
+export const handleMessageCreate = async function(message) {
+    try {
         // Parse command and arguments
         const content = message.content.trim();
+        // Ignore bots and messages without content
+        if (message.author.bot || content.length === 0) return;
 
         // If message doesn't start with the bot prefix, it could still be a message with a proxy tag. If it's not, return.
         if (!content.startsWith(messageHelper.prefix)) {
@@ -53,7 +63,7 @@ client.on(Events.MessageCreate, async (message) => {
         console.error(error);
         // return await message.reply(error.message);
     }
-});
+}
 
 client.on(Events.Ready, () => {
     console.log(`Logged in as ${client.user?.username}`);
@@ -72,10 +82,12 @@ function printGuilds() {
 const debouncePrintGuilds  = utils.debounce(printGuilds, 2000);
 const debounceLogin  = utils.debounce(client.login, 60000);
 
-try {
-    await debounceLogin(token);
-    // await db.check_connection();
-} catch (err) {
-    console.error('Login failed:', err);
-    process.exit(1);
-}
+(async () => {
+    try {
+        await debounceLogin(token);
+        // await db.check_connection();
+    } catch (err) {
+        console.error('Login failed:', err);
+        process.exit(1);
+    }
+})
