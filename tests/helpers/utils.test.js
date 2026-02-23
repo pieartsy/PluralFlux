@@ -1,6 +1,9 @@
 const {enums} = require("../../src/enums");
-const {utils} = require("../../src/helpers/utils.js");
 
+const fetchMock = require('jest-fetch-mock');
+fetchMock.enableMocks();
+
+const {utils} = require("../../src/helpers/utils.js");
 
 describe('utils', () => {
 
