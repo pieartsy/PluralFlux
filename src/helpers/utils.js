@@ -26,6 +26,4 @@ u.checkImageFormatValidity = async function (imageUrl) {
     });
 }
 
-u.debounceCheckImageFormat  = u.debounce(u.checkImageFormatValidity, 60000);
-
 export const utils = u;

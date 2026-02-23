@@ -84,7 +84,7 @@ export const debounceLogin  = utils.debounce(client.login, 60000);
 
 (async () => {
     try {
-        await debounceLogin(token);
+        await client.login(token);
         // await db.check_connection();
     } catch (err) {
         console.error('Login failed:', err);

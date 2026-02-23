@@ -1,6 +1,5 @@
 import {enums} from "../enums.js";
 import {memberHelper} from "./memberHelper.js";
-import {utils} from "./utils.js";
 
 const ih = {};
 
@@ -40,7 +39,5 @@ ih.pluralKitImport = async function (authorId, attachmentUrl) {
             return aggregatedText;
         });
 }
-
-ih.debounceImport  = utils.debounce(ih.pluralKitImport, 5000);
 
 export const importHelper = ih;
