@@ -34,14 +34,14 @@ cmds.memberCommand = async function(message, args) {
     const reply = await memberHelper.parseMemberCommand(message.author.id, authorFull, args, attachmentUrl, attachmentExpires).catch(async (e) =>{console.error(e); await message.reply(e.message);});
 
     if (typeof reply === 'string') {
-        return await message.reply(reply);
+        await message.reply(reply);
     }
     else if (reply instanceof EmbedBuilder) {
         await message.reply({embeds: [reply]})
     }
     else if (typeof reply === 'object') {
         const errorsText = reply.errors.length > 0 ? reply.errors.join('\n- ') : null;
-        return await message.reply({content: `${reply.success} ${errorsText ? "\nThese errors occurred:\n" + errorsText : ""}`, embeds: [reply.embed]})
+        return await message.reply({content: `${reply.success} ${errorsText ? `\n\n${enums.err.ERRORS_OCCURRED}\n` + errorsText : ""}`, embeds: [reply.embed]})
     }
 
 }
@@ -92,11 +92,11 @@ cmds.importCommand = async function(message, args) {
     }).catch(async (error) => {
         if (error instanceof AggregateError) {
             // errors.message can be a list of successfully added members, or say that none were successful.
-            let errorsText = `${error.message}.\n\nThese errors occurred:\n${error.errors.join('\n')}`;
+            let errorsText = `${error.message}.\n\n${enums.err.ERRORS_OCCURRED}\n${error.errors.join('\n')}`;
 
             await message.reply(errorsText).catch(async () => {
                 const returnedBuffer = messageHelper.returnBufferFromText(errorsText);
-                await message.reply({content: returnedBuffer.text, files: [{ name: 'text.pdf', data: returnedBuffer.file }]
+                await message.reply({content: returnedBuffer.text, files: [{ name: 'text.txt', data: returnedBuffer.file }]
                 })
             });
         }
