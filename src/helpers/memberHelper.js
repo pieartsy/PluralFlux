@@ -235,6 +235,8 @@ mh.updateProxy = async function (authorId, memberName, proxy) {
  * @param {string} authorId - The author of the message
  * @param {string} memberName - The member to update
  * @param {string} values - The message arguments
+ * @param {string | null} attachmentUrl - The attachment URL, if any
+ * @param {string | null} attachmentExpiration - The attachment expiry date, if any
  * @returns {Promise<string>} A successful update.
  * @throws {Error} When loading the profile picture from a URL doesn't work.
  */
