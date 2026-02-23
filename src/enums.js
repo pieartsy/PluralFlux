@@ -20,7 +20,7 @@ helperEnums.err = {
     NO_PROXY_WRAPPER: "You need at least one proxy tag surrounding 'text', either before or after.\nCorrect usage examples: `pf;member jane proxy J:text`, `pf;member jane [text]`",
     NOT_JSON_FILE: "Please attach a valid JSON file.",
     NO_MEMBERS_IMPORTED: 'No members were imported.',
-    IMPORT_ERROR: "These errors occurred:",
+    ERRORS_OCCURRED: "These errors occurred:",
     COMMAND_NOT_RECOGNIZED: "Command not recognized. Try typing `pf;help` for command list.",
     SET_TO_NULL: "It has been set to null instead."
 }
