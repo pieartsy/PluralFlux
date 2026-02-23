@@ -92,7 +92,7 @@ mh.memberArgumentHandler = async function(authorId, authorFull, isHelp, command 
     const values = args.slice(2);
 
     // ex: pf;member blah blah
-    if (command && (memberName && values.length > 0 || newAndRemoveCommands.includes(command) && memberName)) {
+    if (command && memberName && (values.length > 0 || newAndRemoveCommands.includes(command) || attachmentUrl)) {
         return await mh.memberCommandHandler(authorId, command, memberName, values, attachmentUrl, attachmentExpiration).catch((e) => {throw e});
     }
     else if (memberName && values.length === 0) {
