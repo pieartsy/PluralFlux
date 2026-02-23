@@ -1,14 +1,8 @@
 import {memberHelper} from "./memberHelper.js";
-import {enums} from "../enums.js";
-import tmp, {setGracefulCleanup} from "tmp";
-import fs from 'fs';
-import {Message} from "@fluxerjs/core";
 
 const msgh = {};
 
 msgh.prefix = "pf;"
-
-setGracefulCleanup();
 
 /**
  * Parses and slices up message arguments, retaining quoted strings.
