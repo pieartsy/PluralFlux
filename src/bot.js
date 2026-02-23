@@ -70,9 +70,10 @@ function printGuilds() {
 }
 
 const debouncePrintGuilds  = utils.debounce(printGuilds, 2000);
+const debounceLogin  = utils.debounce(client.login, 60000);
 
 try {
-    await client.login(token);
+    await debounceLogin(token);
     // await db.check_connection();
 } catch (err) {
     console.error('Login failed:', err);

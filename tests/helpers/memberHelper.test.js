@@ -20,7 +20,7 @@ jest.mock("../../src/helpers/utils.js", () => {
     return {
         utils:
             {
-                checkImageFormatValidity: jest.fn().mockResolvedValue(),
+                debounceCheckImageFormat: jest.fn().mockResolvedValue(),
             }
     }
 });
@@ -476,15 +476,15 @@ describe('MemberHelper', () => {
             [mockMember.propic, null, null, mockMember.propic],
             [mockMember.propic, attachmentUrl, null, attachmentUrl],
             [null, attachmentUrl, attachmentExpiration, attachmentUrl]
-        ])('calls checkImageFormatValidity and updateMemberField and returns string', async(imgUrl, attachmentUrl, attachmentExpiration, expected) => {
+        ])('calls debounceCheckImageFormat and updateMemberField and returns string', async(imgUrl, attachmentUrl, attachmentExpiration, expected) => {
             // Arrange
 
             jest.spyOn(memberHelper, 'updateMemberField').mockResolvedValue("Updated");
             // Act
             return memberHelper.updatePropic(authorId, mockMember.name, imgUrl, attachmentUrl, attachmentExpiration).then((result) => {
                 expect(result).toEqual("Updated");
-                expect(utils.checkImageFormatValidity).toHaveBeenCalledTimes(1);
-                expect(utils.checkImageFormatValidity).toHaveBeenCalledWith(expected);
+                expect(utils.debounceCheckImageFormat).toHaveBeenCalledTimes(1);
+                expect(utils.debounceCheckImageFormat).toHaveBeenCalledWith(expected);
                 expect(memberHelper.updateMemberField).toHaveBeenCalledTimes(1);
                 expect(memberHelper.updateMemberField).toHaveBeenCalledWith(authorId, mockMember.name, "propic", expected, attachmentExpiration);
             });
@@ -603,7 +603,7 @@ describe('MemberHelper', () => {
             })
         })
 
-        test('if propic, call checkImageFormatValidity', async () => {
+        test('if propic, call debounceCheckImageFormat', async () => {
             // Arrange
             const expectedMemberArgs = {
                 name: mockMember.name,
@@ -618,8 +618,8 @@ describe('MemberHelper', () => {
             return await memberHelper.addFullMember(authorId, mockMember.name, null, null, mockMember.propic).then((res) => {
                 // Assert
                 expect(res).toEqual(expectedReturn);
-                expect(utils.checkImageFormatValidity).toHaveBeenCalledWith(mockMember.propic);
-                expect(utils.checkImageFormatValidity).toHaveBeenCalledTimes(1);
+                expect(utils.debounceCheckImageFormat).toHaveBeenCalledWith(mockMember.propic);
+                expect(utils.debounceCheckImageFormat).toHaveBeenCalledTimes(1);
                 expect(database.members.create).toHaveBeenCalledWith(expectedMemberArgs);
                 expect(database.members.create).toHaveBeenCalledTimes(1);
             })

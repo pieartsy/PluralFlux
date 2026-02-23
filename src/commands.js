@@ -54,7 +54,7 @@ cmds.set('import', {
         if ((message.content.includes('--help') || (args[0] === '' && args.length === 1)) && !attachmentUrl ) {
             return await message.reply(enums.help.IMPORT);
         }
-        return await importHelper.pluralKitImport(message.author.id, attachmentUrl).then(async (successfullyAdded) => {
+        return await importHelper.debounceImport(message.author.id, attachmentUrl).then(async (successfullyAdded) => {
             await message.reply(successfullyAdded);
         }).catch(async (error) => {
             if (error instanceof AggregateError) {

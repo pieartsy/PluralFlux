@@ -296,7 +296,7 @@ mh.updateProxy = async function (authorId, memberName, proxy) {
 mh.updatePropic = async function (authorId, memberName, values, attachmentUrl = null, attachmentExpiration = null) {
     const imgUrl = values ?? attachmentUrl;
     // Throws error if invalid
-    await utils.checkImageFormatValidity(imgUrl).catch((e) => { throw e });
+    await utils.debounceCheckImageFormat(imgUrl).catch((e) => { throw e });
 
     return await mh.updateMemberField(authorId, memberName, "propic", imgUrl, attachmentExpiration).catch((e) => { throw e });
 }
@@ -381,7 +381,7 @@ mh.addFullMember = async function (authorId, memberName, displayName = null, pro
 
     let isValidPropic;
     if (propic && propic.length > 0) {
-        await utils.checkImageFormatValidity(propic).then(() => {
+        await utils.debounceCheckImageFormat(propic).then(() => {
             isValidPropic = true;
         }).catch((e) => {
             errors.push(`Tried to set profile picture to \"${propic}\". ${e.message}. ${enums.err.SET_TO_NULL}`);
