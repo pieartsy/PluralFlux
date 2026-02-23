@@ -50,7 +50,7 @@ cmds.memberCommand = async function(message, args) {
 cmds.commandsMap.set('help', {
     description: enums.help.SHORT_DESC_HELP,
     async execute(message) {
-        const fields = [...cmds.entries()].map(([name, cmd]) => ({
+        const fields = [...cmds.commandsMap.entries()].map(([name, cmd]) => ({
             name: `${messageHelper.prefix}${name}`,
             value: cmd.description,
             inline: true,
@@ -63,7 +63,7 @@ cmds.commandsMap.set('help', {
             .setFooter({ text: `Prefix: ${messageHelper.prefix}` })
             .setTimestamp();
 
-        await message.reply({ embeds: [embed.toJSON()] });
+        await message.reply({ embeds: [embed] });
     },
 })
 
