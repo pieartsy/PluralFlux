@@ -40,6 +40,24 @@ describe('commands', () => {
     const authorId = '123';
     const discriminator = '123';
     const username = 'somePerson'
+    const attachmentUrl = 'oya.png';
+    const attachmentExpiration = new Date('2026-01-01').toDateString();
+    const message = {
+        author: {
+            username: username,
+            id: authorId,
+            discriminator: discriminator,
+        },
+        attachments: {
+            size: 1,
+            first: jest.fn().mockImplementation(() => ({
+                expires_at: attachmentExpiration,
+                url: attachmentUrl
+            }))
+        },
+        reply: jest.fn().mockResolvedValue(),
+    }
+    const args = ['new']
 
     beforeEach(() => {
 
@@ -48,24 +66,7 @@ describe('commands', () => {
     })
 
     describe('memberCommand', () => {
-        const attachmentUrl = 'oya.png';
-        const attachmentExpiration = new Date('2026-01-01').toDateString();
-        const message = {
-            author: {
-                username: username,
-                id: authorId,
-                discriminator: discriminator,
-            },
-            attachments: {
-                size: 1,
-                first: jest.fn().mockImplementation(() => ({
-                    expires_at: attachmentExpiration,
-                    url: attachmentUrl
-                }))
-            },
-            reply: jest.fn().mockResolvedValue()
-        }
-        const args = ['new']
+
 
         test('calls parseMemberCommand with the correct arguments', () => {
             // Arrange
@@ -100,11 +101,80 @@ describe('commands', () => {
             });
         })
 
-
-
+        test('if parseMemberCommand returns object, reply with embed and content', () => {
+            // Arrange
+            const reply = {
+                errors: ['error', 'error2'],
+                success: 'success',
+                embed: {}
+            }
+            memberHelper.parseMemberCommand = jest.fn().mockResolvedValue(reply);
+            // Act
+            return commands.memberCommand(message, args).catch(() => {
+                // Assert
+                expect(message.reply).toHaveBeenCalledTimes(1);
+                expect(message.reply).toHaveBeenCalledWith({content: `success\n\n${enums.err.ERRORS_OCCURRED}\n\nerror\nerror2}`, embeds: [reply.embed]})
+            });
+        })
     })
 
+    describe('importCommand', () => {
+        test('if message includes --help and no attachmentURL, return help message', () => {
+            const args = ["--help"];
+            message.content = "pf;import --help";
+            message.attachments.size = 0;
+            return commands.importCommand(message, args).then(() => {
+                expect(message.reply).toHaveBeenCalledTimes(1);
+                expect(message.reply).toHaveBeenCalledWith(enums.help.IMPORT);
+                expect(importHelper.pluralKitImport).not.toHaveBeenCalled();
+            })
+        })
 
+        test('if no args and no attachmentURL, return help message', () => {
+            const args = [""];
+            message.content = 'pf;import'
+            message.attachments.size = 0;
+            return commands.importCommand(message, args).then(() => {
+                expect(message.reply).toHaveBeenCalledTimes(1);
+                expect(message.reply).toHaveBeenCalledWith(enums.help.IMPORT);
+                expect(importHelper.pluralKitImport).not.toHaveBeenCalled();
+            })
+        })
+
+        test('if attachment URL, call pluralKitImport with correct arguments', () => {
+            const args = [""];
+            message.content = 'pf;import'
+            importHelper.pluralKitImport = jest.fn().mockResolvedValue('success');
+            return commands.importCommand(message, args).then(() => {
+                expect(message.reply).toHaveBeenCalledTimes(1);
+                expect(message.reply).toHaveBeenCalledWith('success');
+                expect(importHelper.pluralKitImport).toHaveBeenCalledTimes(1);
+                expect(importHelper.pluralKitImport).toHaveBeenCalledWith(authorId, attachmentUrl);
+            })
+        })
+
+        test('if pluralKitImport returns aggregate errors, send errors.', () => {
+            const args = [""];
+            message.content = 'pf;import'
+            importHelper.pluralKitImport = jest.fn().mockImplementation(() => {throw new AggregateError(['error1', 'error2'], 'errors')});
+            return commands.importCommand(message, args).catch(() => {
+                expect(message.reply).toHaveBeenCalledTimes(1);
+                expect(message.reply).toHaveBeenCalledWith(`errors. \n\n${enums.err.ERRORS_OCCURRED}\n\nerror1\nerror2`);
+            })
+        })
+
+        test('if message.reply throws error, call returnBufferFromText and message.reply again.', () => {
+            // Arrange
+            const args = [""];
+            message.content = 'pf;import'
+            message.reply = jest.fn().mockImplementationOnce(() => {throw e})
+            messageHelper.returnBufferFromText = jest.fn().mockResolvedValue({file: 'test.txt', text: 'normal content'});
+            return commands.importCommand(message, args).catch(() => {
+                expect(message.reply).toHaveBeenCalledTimes(2);
+                expect(message.reply).toHaveBeenNthCalledWith(1, {content: 'normal content', files: [{name: 'test.txt', data: 'test.txt' }],});
+            })
+        })
+    })
 
     afterEach(() => {
         // restore the spy created with spyOn
