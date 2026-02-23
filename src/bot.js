@@ -44,14 +44,20 @@ export const handleMessageCreate = async function(message) {
         }
 
         const commandName = content.slice(messageHelper.prefix.length).split(" ")[0];
+
         // If there's no command name (ie just the prefix)
         if (!commandName) return await message.reply(enums.help.SHORT_DESC_PLURALFLUX);
 
         const args = messageHelper.parseCommandArgs(content, commandName);
 
-        const command = commands.get(commandName);
+        let command = commands.commandsMap.get(commandName)
+        if (!command) {
+            const commandFromAlias = commands.aliasesMap.get(commandName);
+            command = commandFromAlias ? commands.commandsMap.get(commandFromAlias.command) : null;
+        }
+
         if (command) {
-            await command.execute(message, client, args).catch(e => {
+            await command.execute(message, args).catch(e => {
                 throw e
             });
         }
