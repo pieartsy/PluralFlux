@@ -57,39 +57,6 @@ describe('MemberHelper', () => {
             jest.spyOn(memberHelper, 'sendHelpEnum').mockResolvedValue("help enum")
         });
 
-        // test.each([
-        //     [['new', 'somePerson'], attachmentUrl],
-        //     [['new', 'somePerson'], null],
-        // ])('%s calls addNewMember and returns correct values', async(args, attachmentUrl) => {
-        //     // Act
-        //     return memberHelper.parseMemberCommand(authorId, authorFull, args, attachmentUrl).then((result) => {
-        //         // Assert
-        //         expect(result).toEqual("new member");
-        //         expect(memberHelper.addNewMember).toHaveBeenCalledTimes(1);
-        //         expect(memberHelper.addNewMember).toHaveBeenCalledWith(authorId, args, attachmentUrl);
-        //     });
-        // })
-        //
-        // test('["remove", "somePerson"] calls removeMember with authorId and "somePerson" and returns expected result', async() => {
-        //     // Act
-        //     return memberHelper.parseMemberCommand(authorId, authorFull, ["remove", "somePerson"]).then((result) => {
-        //         // Assert
-        //         expect(result).toEqual("remove member");
-        //         expect(memberHelper.removeMember).toHaveBeenCalledTimes(1);
-        //         expect(memberHelper.removeMember).toHaveBeenCalledWith(authorId, "somePerson");
-        //     });
-        // });
-        //
-        // test('["list"] calls getAllMembersInfo and returns expected result', async () => {
-        //     // Act
-        //     return memberHelper.parseMemberCommand(authorId, authorFull, ["list"]).then((result) => {
-        //         // Assert
-        //         expect(result).toEqual("all member info");
-        //         expect(memberHelper.getAllMembersInfo).toHaveBeenCalledTimes(1);
-        //         expect(memberHelper.getAllMembersInfo).toHaveBeenCalledWith(authorId, authorFull);
-        //     });
-        // });
-        //
         test.each([
             [['--help']],
             [['']],
@@ -105,68 +72,68 @@ describe('MemberHelper', () => {
         });
 
         test.each([
-            [[[mockMember.name, '--help'], null, null], undefined, true, undefined],
-            [[['new', '--help'], null, null], 'new', true, '--help'],
-            [[['remove', '--help'], null, null], 'remove', true, '--help'],
-            [[['name', '--help'], null, null], 'name', true, '--help'],
-            [[['list', '--help'], null, null], 'list', true, '--help'],
-            [[['name', '--help'], null, null], 'name', true, '--help'],
-            [[['displayname', '--help'], null, null], 'displayname', true, '--help'],
-            [[['proxy', '--help'], null, null], 'proxy', true, '--help'],
-            [[['propic', '--help'], null, null], 'propic', true, '--help'],
-            [[['new'], null, null], 'new', true, undefined],
-            [[['remove'], null, null], 'remove', true, undefined],
-            [[['name'], null, null], 'name', true, undefined],
-            [[['list'], null, null], 'list', false, undefined],
-            [[['displayname'], null, null], 'displayname', true, undefined],
-            [[['proxy'], null, null], 'proxy', true, undefined],
-            [[['propic'], null, null], 'propic', true, undefined],
-            [[[mockMember.name, 'remove'], null, null], 'remove', false, mockMember.name],
-            [[[mockMember.name, 'remove', 'test'], null, null], 'remove', false, mockMember.name],
-            [[[mockMember.name, 'new'], null, null], 'new', false, mockMember.name],
-            [[[mockMember.name, 'new', mockMember.displayname], null, null], 'new', false, mockMember.name],
-            [[[mockMember.name, 'new',  mockMember.displayname, mockMember.proxy], null, null], 'new', false, mockMember.name],
-            [[[mockMember.name, 'new', mockMember.displayname, mockMember.proxy,mockMember.propic], null, null], 'new', false, mockMember.name],
-            [[[mockMember.name, 'new',mockMember.displayname, mockMember.proxy, null], mockMember.propic, null], 'new', false, mockMember.name],
-            [[[mockMember.name, 'new', mockMember.displayname, mockMember.proxy, null], mockMember.propic, attachmentExpiration], 'new', false, mockMember.name],
-            [[[mockMember.name, 'name', mockMember.name], null, null], 'name', false, mockMember.name],
-            [[[mockMember.name, 'new',  '', mockMember.proxy], null, null], 'new', false, mockMember.name],
-            [[[mockMember.name, 'new', '', '', mockMember.propic], null, null], 'new', false, mockMember.name],
-            [[[mockMember.name, 'new', '', '', null], mockMember.propic, null], 'new', false, mockMember.name],
-            [[[mockMember.name, 'new', '', '', null], mockMember.propic, attachmentExpiration], 'new', false, mockMember.name],
+            [[mockMember.name, '--help'], null, null, undefined, true, undefined],
+            [['new', '--help'], null, null, 'new', true, '--help'],
+            [['remove', '--help'], null, null, 'remove', true, '--help'],
+            [['name', '--help'], null, null, 'name', true, '--help'],
+            [['list', '--help'], null, null, 'list', true, '--help'],
+            [['name', '--help'], null, null, 'name', true, '--help'],
+            [['displayname', '--help'], null, null, 'displayname', true, '--help'],
+            [['proxy', '--help'], null, null, 'proxy', true, '--help'],
+            [['propic', '--help'], null, null, 'propic', true, '--help'],
+            [['new'], null, null, 'new', true, undefined],
+            [['remove'], null, null, 'remove', true, undefined],
+            [['name'], null, null, 'name', true, undefined],
+            [['list'], null, null, 'list', false, undefined],
+            [['displayname'], null, null, 'displayname', true, undefined],
+            [['proxy'], null, null, 'proxy', true, undefined],
+            [['propic'], null, null, 'propic', true, undefined],
+            [[mockMember.name, 'remove'], null, null, 'remove', false, mockMember.name],
+            [[mockMember.name, 'remove', 'test'], null, null, 'remove', false, mockMember.name],
+            [[mockMember.name, 'new'], null, null, 'new', false, mockMember.name],
+            [[mockMember.name, 'new', mockMember.displayname], null, null, 'new', false, mockMember.name],
+            [[mockMember.name, 'new',  mockMember.displayname, mockMember.proxy], null, null, 'new', false, mockMember.name],
+            [[mockMember.name, 'new', mockMember.displayname, mockMember.proxy,mockMember.propic], null, null, 'new', false, mockMember.name],
+            [[mockMember.name, 'new',mockMember.displayname, mockMember.proxy, null], mockMember.propic, null, 'new', false, mockMember.name],
+            [[mockMember.name, 'new', mockMember.displayname, mockMember.proxy, null], mockMember.propic, attachmentExpiration, 'new', false, mockMember.name],
+            [[mockMember.name, 'name', mockMember.name], null, null, 'name', false, mockMember.name],
+            [[mockMember.name, 'new',  '', mockMember.proxy], null, null, 'new', false, mockMember.name],
+            [[mockMember.name, 'new', '', '', mockMember.propic], null, null, 'new', false, mockMember.name],
+            [[mockMember.name, 'new', '', '', null], mockMember.propic, null, 'new', false, mockMember.name],
+            [[mockMember.name, 'new', '', '', null], mockMember.propic, attachmentExpiration, 'new', false, mockMember.name],
             //
-            [[[mockMember.name, 'displayname', mockMember.displayname], null, null], 'displayname', false, mockMember.name],
-            [[[mockMember.name, 'proxy', mockMember.proxy], null, null], 'proxy', false, mockMember.name],
-            [[[mockMember.name, 'propic', mockMember.propic], null, null], 'propic', false, mockMember.name],
-            [[[mockMember.name, 'propic', null], mockMember.propic, null], 'propic', false, mockMember.name],
-            [[[mockMember.name, 'propic', null], mockMember.propic, attachmentExpiration], 'propic', false, mockMember.name],
-            [[['remove', mockMember.name], null, null], 'remove', false, mockMember.name],
-            [[['remove', mockMember.name, 'test'], null, null], 'remove', false, mockMember.name],
-            [[['new', mockMember.name], null, null], 'new', false, mockMember.name],
-            [[['new', mockMember.name, mockMember.displayname], null, null], 'new', false, mockMember.name],
-            [[['new', mockMember.name, mockMember.displayname, mockMember.proxy], null, null], 'new', false, mockMember.name],
-            [[['new', mockMember.name, mockMember.displayname, mockMember.proxy, mockMember.propic], null, null], 'new', false, mockMember.name],
-            [[['new', mockMember.name, undefined, mockMember.displayname, mockMember.proxy, undefined], mockMember.propic, null], 'new', false, mockMember.name],
-            [[['new', mockMember.name, undefined, mockMember.displayname, mockMember.proxy, undefined], mockMember.propic, attachmentExpiration], 'new', false, mockMember.name],
-            [[['new',mockMember.name,  '', mockMember.proxy], null, null], 'new', false, mockMember.name],
-            [[['new', mockMember.name, '', '', mockMember.propic], null, null], 'new', false, mockMember.name],
-            [[['new', mockMember.name, '', '', null], mockMember.propic, null], 'new', false, mockMember.name],
-            [[['new', mockMember.name, '', '', null], mockMember.propic, attachmentExpiration], 'new', false, mockMember.name],
+            [[mockMember.name, 'displayname', mockMember.displayname], null, null, 'displayname', false, mockMember.name],
+            [[mockMember.name, 'proxy', mockMember.proxy], null, null, 'proxy', false, mockMember.name],
+            [[mockMember.name, 'propic', mockMember.propic], null, null, 'propic', false, mockMember.name],
+            [[mockMember.name, 'propic', null], mockMember.propic, null, 'propic', false, mockMember.name],
+            [[mockMember.name, 'propic', null], mockMember.propic, attachmentExpiration, 'propic', false, mockMember.name],
+            [['remove', mockMember.name], null, null, 'remove', false, mockMember.name],
+            [['remove', mockMember.name, 'test'], null, null, 'remove', false, mockMember.name],
+            [['new', mockMember.name], null, null, 'new', false, mockMember.name],
+            [['new', mockMember.name, mockMember.displayname], null, null, 'new', false, mockMember.name],
+            [['new', mockMember.name, mockMember.displayname, mockMember.proxy], null, null, 'new', false, mockMember.name],
+            [['new', mockMember.name, mockMember.displayname, mockMember.proxy, mockMember.propic], null, null, 'new', false, mockMember.name],
+            [['new', mockMember.name, undefined, mockMember.displayname, mockMember.proxy, undefined], mockMember.propic, null, 'new', false, mockMember.name],
+            [['new', mockMember.name, undefined, mockMember.displayname, mockMember.proxy, undefined], mockMember.propic, attachmentExpiration, 'new', false, mockMember.name],
+            [['new',mockMember.name,  '', mockMember.proxy], null, null, 'new', false, mockMember.name],
+            [['new', mockMember.name, '', '', mockMember.propic], null, null, 'new', false, mockMember.name],
+            [['new', mockMember.name, '', '', null], mockMember.propic, null, 'new', false, mockMember.name],
+            [['new', mockMember.name, '', '', null], mockMember.propic, attachmentExpiration, 'new', false, mockMember.name],
             //
-            [[['name', mockMember.name, mockMember.name], null, null], 'name', false, mockMember.name],
-            [[['displayname', mockMember.name, mockMember.name, mockMember.displayname], null, null], 'displayname', false, mockMember.name],
-            [[['proxy', mockMember.name, mockMember.name, mockMember.displayname, mockMember.proxy], null, null], 'proxy', false, mockMember.name],
-            [[['propic', mockMember.name, mockMember.name, mockMember.displayname, mockMember.proxy, mockMember.propic], null, null], 'propic', false, mockMember.name],
-            [[['propic', mockMember.name, undefined, mockMember.name, mockMember.displayname, mockMember.proxy, undefined], mockMember.propic, null], 'propic', false, mockMember.name],
-            [[['propic', mockMember.name, undefined, mockMember.name, mockMember.displayname, mockMember.proxy, undefined], mockMember.propic, attachmentExpiration], 'propic', false, mockMember.name]
-        ])('calls memberCommandHandler with correct values', (args, command, isHelp, memberName) => {
+            [['name', mockMember.name, mockMember.name], null, null, 'name', false, mockMember.name],
+            [['displayname', mockMember.name, mockMember.name, mockMember.displayname], null, null, 'displayname', false, mockMember.name],
+            [['proxy', mockMember.name, mockMember.name, mockMember.displayname, mockMember.proxy], null, null, 'proxy', false, mockMember.name],
+            [['propic', mockMember.name, mockMember.name, mockMember.displayname, mockMember.proxy, mockMember.propic], null, null, 'propic', false, mockMember.name],
+            [['propic', mockMember.name, undefined, mockMember.name, mockMember.displayname, mockMember.proxy, undefined], mockMember.propic, null, 'propic', false, mockMember.name],
+            [['propic', mockMember.name, undefined, mockMember.name, mockMember.displayname, mockMember.proxy, undefined], mockMember.propic, attachmentExpiration, 'propic', false, mockMember.name]
+        ])('%s args with attachmentURL %s and attachment expiration %s calls memberCommandHandler with correct values', (args, attachmentUrl, attachmentExpiration, command, isHelp, memberName) => {
             console.log(args, command, isHelp)
             // Act
-            return memberHelper.parseMemberCommand(authorId, authorFull, args[0], args[1], args[2]).then((result) => {
+            return memberHelper.parseMemberCommand(authorId, authorFull, args, attachmentUrl, attachmentExpiration).then((result) => {
                 // Assert
                 expect(result).toEqual("handled argument");
                 expect(memberHelper.memberArgumentHandler).toHaveBeenCalledTimes(1);
-                expect(memberHelper.memberArgumentHandler).toHaveBeenCalledWith(authorId, authorFull, isHelp, command, memberName, args[0], args[1], args[2]);
+                expect(memberHelper.memberArgumentHandler).toHaveBeenCalledWith(authorId, authorFull, isHelp, command, memberName, args, attachmentUrl, attachmentExpiration);
             });
         })
     });
@@ -232,54 +199,54 @@ describe('MemberHelper', () => {
         })
 
         test.each([
-            [[[mockMember.name, 'remove'], null, null], 'remove', false, mockMember.name],
-            [[[mockMember.name, 'remove', 'test'], null, null], 'remove', false, mockMember.name],
-            [[[mockMember.name, 'new'], null, null], 'new', false, mockMember.name],
-            [[[mockMember.name, 'new', mockMember.displayname], null, null], 'new', false, mockMember.name],
-            [[[mockMember.name, 'new',  mockMember.displayname, mockMember.proxy], null, null], 'new', false, mockMember.name],
-            [[[mockMember.name, 'new', mockMember.displayname, mockMember.proxy,mockMember.propic], null, null], 'new', false, mockMember.name],
-            [[[mockMember.name, 'new',mockMember.displayname, mockMember.proxy, null], mockMember.propic, null], 'new', false, mockMember.name],
-            [[[mockMember.name, 'new', mockMember.displayname, mockMember.proxy, null], mockMember.propic, attachmentExpiration], 'new', false, mockMember.name],
-            [[[mockMember.name, 'name', mockMember.name], null, null], 'name', false, mockMember.name],
-            [[[mockMember.name, 'displayname', mockMember.displayname], null, null], 'displayname', false, mockMember.name],
+            [[mockMember.name, 'remove'], null, null, 'remove'],
+            [[mockMember.name, 'remove', 'test'], null, null, 'remove'],
+            [[mockMember.name, 'new'], null, null, 'new'],
+            [[mockMember.name, 'new', mockMember.displayname], null, null, 'new'],
+            [[mockMember.name, 'new',  mockMember.displayname, mockMember.proxy], null, null, 'new'],
+            [[mockMember.name, 'new', mockMember.displayname, mockMember.proxy,mockMember.propic], null, null, 'new'],
+            [[mockMember.name, 'new',mockMember.displayname, mockMember.proxy, null], mockMember.propic, null, 'new'],
+            [[mockMember.name, 'new', mockMember.displayname, mockMember.proxy, null], mockMember.propic, attachmentExpiration, 'new'],
+            [[mockMember.name, 'name', mockMember.name], null, null, 'name'],
+            [[mockMember.name, 'displayname', mockMember.displayname], null, null, 'displayname'],
             //
-            [[[mockMember.name, 'new', mockMember.displayname], null, null], 'new', false, mockMember.name],
-            [[[mockMember.name, 'new',  '', mockMember.proxy], null, null], 'new', false, mockMember.name],
-            [[[mockMember.name, 'new', '', '', mockMember.propic], null, null], 'new', false, mockMember.name],
-            [[[mockMember.name, 'new', '', '', null], mockMember.propic, null], 'new', false, mockMember.name],
-            [[[mockMember.name, 'new', '', '', null], mockMember.propic, attachmentExpiration], 'new', false, mockMember.name],
+            [[mockMember.name, 'new', mockMember.displayname], null, null, 'new'],
+            [[mockMember.name, 'new',  '', mockMember.proxy], null, null, 'new'],
+            [[mockMember.name, 'new', '', '', mockMember.propic], null, null, 'new'],
+            [[mockMember.name, 'new', '', '', null], mockMember.propic, null, 'new'],
+            [[mockMember.name, 'new', '', '', null], mockMember.propic, attachmentExpiration, 'new'],
             //
-            [[[mockMember.name, 'proxy', mockMember.proxy], null, null], 'proxy', false, mockMember.name],
-            [[[mockMember.name, 'propic', mockMember.propic], null, null], 'propic', false, mockMember.name],
-            [[[mockMember.name, 'propic', null], mockMember.propic, null], 'propic', false, mockMember.name],
-            [[[mockMember.name, 'propic', null], mockMember.propic, attachmentExpiration], 'propic', false, mockMember.name],
-            [[['remove', mockMember.name], null, null], 'remove', false, mockMember.name],
-            [[['remove', mockMember.name, 'test'], null, null], 'remove', false, mockMember.name],
-            [[['new', mockMember.name], null, null], 'new', false, mockMember.name],
-            [[['new', mockMember.name, mockMember.displayname], null, null], 'new', false, mockMember.name],
-            [[['new', mockMember.name, mockMember.displayname, mockMember.proxy], null, null], 'new', false, mockMember.name],
-            [[['new', mockMember.name, mockMember.displayname, mockMember.proxy, mockMember.propic], null, null], 'new', false, mockMember.name],
-            [[['new', mockMember.name, undefined, mockMember.displayname, mockMember.proxy, undefined], mockMember.propic, null], 'new', false, mockMember.name],
-            [[['new', mockMember.name, undefined, mockMember.displayname, mockMember.proxy, undefined], mockMember.propic, attachmentExpiration], 'new', false, mockMember.name],
-            [[['new', mockMember.name,  '', mockMember.proxy], null, null], 'new', false, mockMember.name],
-            [[['new', mockMember.name, '', '', mockMember.propic], null, null], 'new', false, mockMember.name],
-            [[['new', mockMember.name, '', '', null], mockMember.propic, null], 'new', false, mockMember.name],
-            [[['new', mockMember.name, '', '', null], mockMember.propic, attachmentExpiration], 'new', false, mockMember.name],
-            [[['name', mockMember.name, mockMember.name], null, null], 'name', false, mockMember.name],
-            [[['displayname', mockMember.name, mockMember.name, mockMember.displayname], null, null], 'displayname', false, mockMember.name],
-            [[['proxy', mockMember.name, mockMember.name, mockMember.displayname, mockMember.proxy], null, null], 'proxy', false, mockMember.name],
-            [[['propic', mockMember.name, mockMember.name, mockMember.displayname, mockMember.proxy, mockMember.propic], null, null], 'propic', false, mockMember.name],
-            [[['propic', mockMember.name, undefined, mockMember.name, mockMember.displayname, mockMember.proxy, undefined], mockMember.propic, null], 'propic', false, mockMember.name],
-            [[['propic', mockMember.name, undefined, mockMember.name, mockMember.displayname, mockMember.proxy, undefined], mockMember.propic, attachmentExpiration], 'propic', false, mockMember.name]
-        ])('calls memberCommandHandler', (args, command) => {
+            [[mockMember.name, 'proxy', mockMember.proxy], null, null, 'proxy'],
+            [[mockMember.name, 'propic', mockMember.propic], null, null, 'propic'],
+            [[mockMember.name, 'propic', null], mockMember.propic, null, 'propic'],
+            [[mockMember.name, 'propic', null], mockMember.propic, attachmentExpiration, 'propic'],
+            [['remove', mockMember.name], null, null, 'remove'],
+            [['remove', mockMember.name, 'test'], null, null, 'remove'],
+            [['new', mockMember.name], null, null, 'new'],
+            [['new', mockMember.name, mockMember.displayname], null, null, 'new'],
+            [['new', mockMember.name, mockMember.displayname, mockMember.proxy], null, null, 'new'],
+            [['new', mockMember.name, mockMember.displayname, mockMember.proxy, mockMember.propic], null, null, 'new'],
+            [['new', mockMember.name, undefined, mockMember.displayname, mockMember.proxy, undefined], mockMember.propic, null, 'new'],
+            [['new', mockMember.name, undefined, mockMember.displayname, mockMember.proxy, undefined], mockMember.propic, attachmentExpiration, 'new'],
+            [['new', mockMember.name,  '', mockMember.proxy], null, null, 'new'],
+            [['new', mockMember.name, '', '', mockMember.propic], null, null, 'new'],
+            [['new', mockMember.name, '', '', null], mockMember.propic, null, 'new'],
+            [['new', mockMember.name, '', '', null], mockMember.propic, attachmentExpiration, 'new'],
+            [['name', mockMember.name, mockMember.name], null, null, 'name'],
+            [['displayname', mockMember.name, mockMember.name, mockMember.displayname], null, null, 'displayname'],
+            [['proxy', mockMember.name, mockMember.name, mockMember.displayname, mockMember.proxy], null, null, 'proxy'],
+            [['propic', mockMember.name, mockMember.name, mockMember.displayname, mockMember.proxy, mockMember.propic], null, null, 'propic'],
+            [['propic', mockMember.name, undefined, mockMember.name, mockMember.displayname, mockMember.proxy, undefined], mockMember.propic, null, 'propic'],
+            [['propic', mockMember.name, undefined, mockMember.name, mockMember.displayname, mockMember.proxy, undefined], mockMember.propic, attachmentExpiration, 'propic']
+        ])('%s args with attachmentURL %s and attachment expiration %s calls memberCommandHandler', (args, attachmentUrl, attachmentExpiration, command) => {
             // Arrange
-            let values = args[0].slice(2);
+            let values = args.slice(2);
 
-            return memberHelper.memberArgumentHandler(authorId, authorFull, false, command, mockMember.name, args[0], args[1], args[2]).then((result) => {
+            return memberHelper.memberArgumentHandler(authorId, authorFull, false, command, mockMember.name, args, attachmentUrl, attachmentExpiration).then((result) => {
                 // Assert
                 expect(result).toEqual("handled command");
                 expect(memberHelper.memberCommandHandler).toHaveBeenCalledTimes(1);
-                expect(memberHelper.memberCommandHandler).toHaveBeenCalledWith(authorId, command, mockMember.name, values, args[1], args[2]);
+                expect(memberHelper.memberCommandHandler).toHaveBeenCalledWith(authorId, command, mockMember.name, values, attachmentUrl, attachmentExpiration);
             });
         })
 
@@ -362,120 +329,6 @@ describe('MemberHelper', () => {
             });
         })
     })
-        //
-        // test.each([
-        //     [['somePerson', 'name', 'newPerson'], "updateName", "update name"],
-        //     [['somePerson', 'displayname', 'Some Person'], "updateDisplayName", "update display name"],
-        //     [['somePerson', 'proxy', '--text'], "updateProxy", "update proxy"],
-        // ])('%s calls %s returns expected result %s', async (args, method, expectedResult) => {
-        //     // Act
-        //     return memberHelper.parseMemberCommand(authorId, authorFull, args).then((result) => {
-        //         // Assert
-        //         expect(result).toEqual(expectedResult);
-        //         expect(memberHelper[method]).toHaveBeenCalledTimes(1);
-        //         expect(memberHelper[method]).toHaveBeenCalledWith(authorId, args[0], args[2]);
-        //     });
-        // });
-        //
-        // test.each([
-        //     [["somePerson", "propic", attachmentUrl], null, null],
-        //     [["somePerson", "propic", null], 'ono.png', attachmentExpiration],
-        // ])('%s calls updatePropic and returns expected values', async (args, attachmentUrl, attachmentExpiration) => {
-        //     // Act
-        //     return memberHelper.parseMemberCommand(authorId, authorFull, args, attachmentUrl, attachmentExpiration).then((result) => {
-        //         // Assert
-        //         expect(result).toEqual("update propic");
-        //         expect(memberHelper['updatePropic']).toHaveBeenCalledTimes(1);
-        //         expect(memberHelper['updatePropic']).toHaveBeenCalledWith(authorId, args[0], args[2], attachmentUrl, attachmentExpiration)
-        //     });
-        // })
-        //
-        // test('any non-command returns getMemberInfo', async() => {
-        //     // Act
-        //     return memberHelper.parseMemberCommand(authorId, authorFull, ['somePerson']).then(() => {
-        //         // Assert
-        //         expect(memberHelper['getMemberInfo']).toHaveBeenCalledTimes(1);
-        //         expect(memberHelper['getMemberInfo']).toHaveBeenCalledWith(mockMember);
-        //     })
-        // })
-        //
-        // test.each([
-        //     [['new'], "addNewMember", enums.help.NEW],
-        //     [['new', '--help'], "addNewMember", enums.help.NEW],
-        //     [['remove'], "removeMember", enums.help.REMOVE],
-        //     [['remove', '--help'], "removeMember", enums.help.REMOVE],
-        //     [['name'], "updateName", enums.help.NAME],
-        //     [['name', '--help'], "updateName", enums.help.NAME],
-        //     [['somePerson', 'name'], "updateName", mockMember.name],
-        //     [['displayname'], "updateDisplayName", enums.help.DISPLAY_NAME],
-        //     [['displayname', '--help'], "updateDisplayName", enums.help.DISPLAY_NAME],
-        //     [['somePerson', 'displayname'], "updateDisplayName", mockMember.displayname],
-        //     [['proxy'], "updateProxy", enums.help.PROXY],
-        //     [['proxy', '--help'], "updateProxy", enums.help.PROXY],
-        //     [['somePerson', 'proxy'], "updateProxy", mockMember.proxy],
-        //     [['propic'], "updatePropic", enums.help.PROPIC],
-        //     [['propic', '--help'], "updatePropic", enums.help.PROPIC],
-        //     [['somePerson', 'propic'], "updatePropic", mockMember.propic],
-        //     [['list', '--help'], "getAllMembersInfo", enums.help.LIST],
-        // ])('%s shall not call %s and returns correct string', async (args, method, expectedResult) => {
-        //     // Act
-        //     return memberHelper.parseMemberCommand(authorId, authorFull, args).then((result) => {
-        //         // Assert
-        //         expect(result).toEqual(expectedResult);
-        //         expect(memberHelper[method]).not.toHaveBeenCalled();
-        //     });
-        // });
-        //
-        // test.each([
-        //     [['somePerson', 'displayname'], "updateDisplayName", "Display name"],
-        //     [['somePerson', 'proxy'], "updateProxy", "Proxy"],
-        //     [['somePerson', 'propic'], "updatePropic", "Profile picture"],
-        // ])('if value not set, %s shall not call %s and returns value error', async (args, method, expectedResult) => {
-        //     // Arrange
-        //     const mockEmptyMember = {
-        //         name: "somePerson",
-        //         displayname: null,
-        //         proxy: null,
-        //         propic: null,
-        //     }
-        //     jest.spyOn(memberHelper, 'getMemberByName').mockResolvedValue(mockEmptyMember);
-        //     // Act
-        //     return memberHelper.parseMemberCommand(authorId, authorFull, args).then((result) => {
-        //         // Assert
-        //         expect(result).toEqual(`${expectedResult} ${enums.err.NO_VALUE}`);
-        //         expect(memberHelper[method]).not.toHaveBeenCalled();
-        //     });
-        // });
-        //
-        // test('["new", "someNewPerson"] shall call addNewMember and return correct results', async () => {
-        //     // Act
-        //     return memberHelper.parseMemberCommand(authorId, authorFull, ['new', 'someNewPerson']).then((result) => {
-        //         // Assert
-        //         expect(result).toEqual("new member");
-        //         expect(memberHelper.getMemberByName).not.toHaveBeenCalled();
-        //     });
-        // });
-        //
-        // test('["new", "--help"] shall return help enum', async () => {
-        //     // Act
-        //     return memberHelper.parseMemberCommand(authorId, authorFull, ['new', '--help']).then((result) => {
-        //         // Assert
-        //         expect(result).toEqual(enums.help.NEW);
-        //         expect(memberHelper.addNewMember).not.toHaveBeenCalled();
-        //         expect(memberHelper.getMemberByName).not.toHaveBeenCalled();
-        //     });
-        // });
-        //
-        // test('["new"] shall return help enum', async () => {
-        //     // Act
-        //     return memberHelper.parseMemberCommand(authorId, authorFull, ['new']).then((result) => {
-        //         // Assert
-        //         expect(result).toEqual(enums.help.NEW);
-        //         expect(memberHelper.addNewMember).not.toHaveBeenCalled();
-        //         expect(memberHelper.getMemberByName).not.toHaveBeenCalled();
-        //     });
-        // });
-    // })
 
     describe('addNewMember', () => {
         test('calls addFullMember with correct arguments', async() => {
