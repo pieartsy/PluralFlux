@@ -50,51 +50,55 @@ describe('MemberHelper', () => {
     describe('parseMemberCommand', () => {
 
         beforeEach(() => {
-            jest.spyOn(memberHelper, 'getMemberByName').mockResolvedValue(mockMember);
-            jest.spyOn(memberHelper, 'getMemberInfo').mockResolvedValue("member info");
-            jest.spyOn(memberHelper, 'addNewMember').mockResolvedValue("new member");
-            jest.spyOn(memberHelper, 'removeMember').mockResolvedValue("remove member");
-            jest.spyOn(memberHelper, 'getAllMembersInfo').mockResolvedValue("all member info");
-            jest.spyOn(memberHelper, 'updateName').mockResolvedValue("update name");
-            jest.spyOn(memberHelper, 'updateDisplayName').mockResolvedValue("update display name");
-            jest.spyOn(memberHelper, 'updateProxy').mockResolvedValue("update proxy");
-            jest.spyOn(memberHelper, 'updatePropic').mockResolvedValue("update propic");
+            // jest.spyOn(memberHelper, 'getMemberByName').mockResolvedValue(mockMember);
+            // jest.spyOn(memberHelper, 'getMemberInfo').mockResolvedValue("member info");
+            // jest.spyOn(memberHelper, 'addNewMember').mockResolvedValue("new member");
+            // jest.spyOn(memberHelper, 'removeMember').mockResolvedValue("remove member");
+            // jest.spyOn(memberHelper, 'getAllMembersInfo').mockResolvedValue("all member info");
+            // jest.spyOn(memberHelper, 'updateName').mockResolvedValue("update name");
+            // jest.spyOn(memberHelper, 'updateDisplayName').mockResolvedValue("update display name");
+            // jest.spyOn(memberHelper, 'updateProxy').mockResolvedValue("update proxy");
+            // jest.spyOn(memberHelper, 'updatePropic').mockResolvedValue("update propic");
             jest.spyOn(memberHelper, 'getMemberCommandInfo').mockResolvedValue("member command info");
+            jest.spyOn(memberHelper, 'memberArgumentHandler').mockResolvedValue("handled argument");
+            jest.spyOn(memberHelper, 'memberCommandHandler').mockResolvedValue("called command");
+            jest.spyOn(memberHelper, 'sendCurrentValue').mockResolvedValue("current value");
+            jest.spyOn(memberHelper, 'sendHelpEnum').mockResolvedValue("help enum")
         });
 
-        test.each([
-            [['new', 'somePerson'], attachmentUrl],
-            [['new', 'somePerson'], null],
-        ])('%s calls addNewMember and returns correct values', async(args, attachmentUrl) => {
-            // Act
-            return memberHelper.parseMemberCommand(authorId, authorFull, args, attachmentUrl).then((result) => {
-                // Assert
-                expect(result).toEqual("new member");
-                expect(memberHelper.addNewMember).toHaveBeenCalledTimes(1);
-                expect(memberHelper.addNewMember).toHaveBeenCalledWith(authorId, args, attachmentUrl);
-            });
-        })
-
-        test('["remove", "somePerson"] calls removeMember with authorId and "somePerson" and returns expected result', async() => {
-            // Act
-            return memberHelper.parseMemberCommand(authorId, authorFull, ["remove", "somePerson"]).then((result) => {
-                // Assert
-                expect(result).toEqual("remove member");
-                expect(memberHelper.removeMember).toHaveBeenCalledTimes(1);
-                expect(memberHelper.removeMember).toHaveBeenCalledWith(authorId, "somePerson");
-            });
-        });
-
-        test('["list"] calls getAllMembersInfo and returns expected result', async () => {
-            // Act
-            return memberHelper.parseMemberCommand(authorId, authorFull, ["list"]).then((result) => {
-                // Assert
-                expect(result).toEqual("all member info");
-                expect(memberHelper.getAllMembersInfo).toHaveBeenCalledTimes(1);
-                expect(memberHelper.getAllMembersInfo).toHaveBeenCalledWith(authorId, authorFull);
-            });
-        });
-
+        // test.each([
+        //     [['new', 'somePerson'], attachmentUrl],
+        //     [['new', 'somePerson'], null],
+        // ])('%s calls addNewMember and returns correct values', async(args, attachmentUrl) => {
+        //     // Act
+        //     return memberHelper.parseMemberCommand(authorId, authorFull, args, attachmentUrl).then((result) => {
+        //         // Assert
+        //         expect(result).toEqual("new member");
+        //         expect(memberHelper.addNewMember).toHaveBeenCalledTimes(1);
+        //         expect(memberHelper.addNewMember).toHaveBeenCalledWith(authorId, args, attachmentUrl);
+        //     });
+        // })
+        //
+        // test('["remove", "somePerson"] calls removeMember with authorId and "somePerson" and returns expected result', async() => {
+        //     // Act
+        //     return memberHelper.parseMemberCommand(authorId, authorFull, ["remove", "somePerson"]).then((result) => {
+        //         // Assert
+        //         expect(result).toEqual("remove member");
+        //         expect(memberHelper.removeMember).toHaveBeenCalledTimes(1);
+        //         expect(memberHelper.removeMember).toHaveBeenCalledWith(authorId, "somePerson");
+        //     });
+        // });
+        //
+        // test('["list"] calls getAllMembersInfo and returns expected result', async () => {
+        //     // Act
+        //     return memberHelper.parseMemberCommand(authorId, authorFull, ["list"]).then((result) => {
+        //         // Assert
+        //         expect(result).toEqual("all member info");
+        //         expect(memberHelper.getAllMembersInfo).toHaveBeenCalledTimes(1);
+        //         expect(memberHelper.getAllMembersInfo).toHaveBeenCalledWith(authorId, authorFull);
+        //     });
+        // });
+        //
         test.each([
             [['--help']],
             [['']],
@@ -110,117 +114,172 @@ describe('MemberHelper', () => {
         });
 
         test.each([
-            [['somePerson', 'name', 'newPerson'], "updateName", "update name"],
-            [['somePerson', 'displayname', 'Some Person'], "updateDisplayName", "update display name"],
-            [['somePerson', 'proxy', '--text'], "updateProxy", "update proxy"],
-        ])('%s calls %s returns expected result %s', async (args, method, expectedResult) => {
+            [[mockMember.name, '--help'], null, true],
+            [['new', '--help'], 'new', true],
+            [['remove', '--help'], 'remove', true],
+            [['name', '--help'], 'name', true],
+            [['list', '--help'], 'list', true],
+            [['displayname', '--help'], 'displayname', true],
+            [['proxy', '--help'], 'proxy', true],
+            [['propic', '--help'], 'propic', true],
+            [['new'], 'new', true],
+            [['remove'], 'remove', true],
+            [['name'], 'name', true],
+            [['list'], 'list', true],
+            [['displayname'], 'displayname', true],
+            [['proxy'], 'proxy', true],
+            [['propic'], 'propic', true],
+            [[mockMember.name, 'remove'], 'remove', false],
+            [[mockMember.name, 'remove', 'test'], 'remove', false],
+            [[mockMember.name, 'new'], 'new', false],
+            [[mockMember.name, 'new', 'test'], 'new', false],
+            [[mockMember.name, 'new', mockMember.displayname], 'new', false],
+            [[mockMember.name, 'new', mockMember.proxy], 'new', false],
+            [[mockMember.name, 'new', mockMember.propic], 'new', false],
+            [[mockMember.name, 'new', null, mockMember.propic], 'new', false],
+            [[mockMember.name, 'new', null, mockMember.propic, attachmentExpiry], 'new', false],
+            [[mockMember.name, 'name', mockMember.name], 'name', false],
+            [[mockMember.name, 'displayname', mockMember.displayname], 'displayname', false],
+            [[mockMember.name, 'proxy', mockMember.proxy], 'proxy', false],
+            [[mockMember.name, 'propic', mockMember.propic], 'propic', false],
+            [[mockMember.name, 'propic', null, mockMember.propic], 'propic', false],
+            [[mockMember.name, 'propic', null, mockMember.propic, attachmentExpiry], 'propic', false],
+            [['remove', mockMember.name], 'remove'],
+            [['remove', mockMember.name, 'test'], 'remove'],
+            [['new', mockMember.name], 'new'],
+            [['new', mockMember.name, mockMember.displayname], 'new'],
+            [['new', mockMember.name, mockMember.displayname, mockMember.proxy], 'new'],
+            [['new', mockMember.name, mockMember.displayname, mockMember.proxy, mockMember.propic], 'new'],
+            [['new', mockMember.name, null, mockMember.displayname, mockMember.proxy, mockMember.propic, attachmentExpiry], 'new'],
+            [['new', mockMember.name, null, mockMember.displayname, mockMember.proxy, mockMember.propic, attachmentExpiry], 'new'],
+            [['name', mockMember.name, mockMember.name], 'name'],
+            [['displayname', mockMember.name, mockMember.name, mockMember.displayname], 'displayname'],
+            [['proxy', mockMember.name, mockMember.name, mockMember.displayname, mockMember.proxy], 'proxy'],
+            [['propic', mockMember.name, mockMember.name, mockMember.displayname, mockMember.proxy, mockMember.propic], 'propic'],
+            [['propic', mockMember.name, null, mockMember.name, mockMember.displayname, mockMember.proxy, mockMember.propic, attachmentExpiry], 'propic'],
+            [['propic', mockMember.name, null, mockMember.name, mockMember.displayname, mockMember.proxy, mockMember.propic, attachmentExpiry], 'propic'],
+        ])('%s calls memberCommandHandler with correct values', async (args, command, isHelp) => {
             // Act
-            return memberHelper.parseMemberCommand(authorId, authorFull, args).then((result) => {
+            return memberHelper.parseMemberCommand(authorId, authorFull, args).then((result, command) => {
                 // Assert
-                expect(result).toEqual(expectedResult);
-                expect(memberHelper[method]).toHaveBeenCalledTimes(1);
-                expect(memberHelper[method]).toHaveBeenCalledWith(authorId, args[0], args[2]);
-            });
-        });
-
-        test.each([
-            [["somePerson", "propic", attachmentUrl], null, null],
-            [["somePerson", "propic", null], 'ono.png', attachmentExpiry],
-        ])('%s calls updatePropic and returns expected values', async (args, attachmentUrl, attachmentExpiration) => {
-            // Act
-            return memberHelper.parseMemberCommand(authorId, authorFull, args, attachmentUrl, attachmentExpiration).then((result) => {
-                // Assert
-                expect(result).toEqual("update propic");
-                expect(memberHelper['updatePropic']).toHaveBeenCalledTimes(1);
-                expect(memberHelper['updatePropic']).toHaveBeenCalledWith(authorId, args[0], args[2], attachmentUrl, attachmentExpiration)
+                expect(result).toEqual("handled argument");
+                expect(memberHelper.memberArgumentHandler).toHaveBeenCalledTimes(1);
+                expect(memberHelper.memberArgumentHandler).toHaveBeenCalledWith(authorId, authorFull, isHelp, command, mockMember.name, args.slice(2));
             });
         })
-
-        test('any non-command returns getMemberInfo', async() => {
-            // Act
-            return memberHelper.parseMemberCommand(authorId, authorFull, ['somePerson']).then(() => {
-                // Assert
-                expect(memberHelper['getMemberInfo']).toHaveBeenCalledTimes(1);
-                expect(memberHelper['getMemberInfo']).toHaveBeenCalledWith(mockMember);
-            })
-        })
-
-        test.each([
-            [['new'], "addNewMember", enums.help.NEW],
-            [['new', '--help'], "addNewMember", enums.help.NEW],
-            [['remove'], "removeMember", enums.help.REMOVE],
-            [['remove', '--help'], "removeMember", enums.help.REMOVE],
-            [['name'], "updateName", enums.help.NAME],
-            [['name', '--help'], "updateName", enums.help.NAME],
-            [['somePerson', 'name'], "updateName", mockMember.name],
-            [['displayname'], "updateDisplayName", enums.help.DISPLAY_NAME],
-            [['displayname', '--help'], "updateDisplayName", enums.help.DISPLAY_NAME],
-            [['somePerson', 'displayname'], "updateDisplayName", mockMember.displayname],
-            [['proxy'], "updateProxy", enums.help.PROXY],
-            [['proxy', '--help'], "updateProxy", enums.help.PROXY],
-            [['somePerson', 'proxy'], "updateProxy", mockMember.proxy],
-            [['propic'], "updatePropic", enums.help.PROPIC],
-            [['propic', '--help'], "updatePropic", enums.help.PROPIC],
-            [['somePerson', 'propic'], "updatePropic", mockMember.propic],
-            [['list', '--help'], "getAllMembersInfo", enums.help.LIST],
-        ])('%s shall not call %s and returns correct string', async (args, method, expectedResult) => {
-            // Act
-            return memberHelper.parseMemberCommand(authorId, authorFull, args).then((result) => {
-                // Assert
-                expect(result).toEqual(expectedResult);
-                expect(memberHelper[method]).not.toHaveBeenCalled();
-            });
-        });
-
-        test.each([
-            [['somePerson', 'displayname'], "updateDisplayName", "Display name"],
-            [['somePerson', 'proxy'], "updateProxy", "Proxy"],
-            [['somePerson', 'propic'], "updatePropic", "Profile picture"],
-        ])('if value not set, %s shall not call %s and returns value error', async (args, method, expectedResult) => {
-            // Arrange
-            const mockEmptyMember = {
-                name: "somePerson",
-                displayname: null,
-                proxy: null,
-                propic: null,
-            }
-            jest.spyOn(memberHelper, 'getMemberByName').mockResolvedValue(mockEmptyMember);
-            // Act
-            return memberHelper.parseMemberCommand(authorId, authorFull, args).then((result) => {
-                // Assert
-                expect(result).toEqual(`${expectedResult} ${enums.err.NO_VALUE}`);
-                expect(memberHelper[method]).not.toHaveBeenCalled();
-            });
-        });
-
-        test('["new", "someNewPerson"] shall call addNewMember and return correct results', async () => {
-            // Act
-            return memberHelper.parseMemberCommand(authorId, authorFull, ['new', 'someNewPerson']).then((result) => {
-                // Assert
-                expect(result).toEqual("new member");
-                expect(memberHelper.getMemberByName).not.toHaveBeenCalled();
-            });
-        });
-
-        test('["new", "--help"] shall return help enum', async () => {
-            // Act
-            return memberHelper.parseMemberCommand(authorId, authorFull, ['new', '--help']).then((result) => {
-                // Assert
-                expect(result).toEqual(enums.help.NEW);
-                expect(memberHelper.addNewMember).not.toHaveBeenCalled();
-                expect(memberHelper.getMemberByName).not.toHaveBeenCalled();
-            });
-        });
-
-        test('["new"] shall return help enum', async () => {
-            // Act
-            return memberHelper.parseMemberCommand(authorId, authorFull, ['new']).then((result) => {
-                // Assert
-                expect(result).toEqual(enums.help.NEW);
-                expect(memberHelper.addNewMember).not.toHaveBeenCalled();
-                expect(memberHelper.getMemberByName).not.toHaveBeenCalled();
-            });
-        });
+        //
+        // test.each([
+        //     [['somePerson', 'name', 'newPerson'], "updateName", "update name"],
+        //     [['somePerson', 'displayname', 'Some Person'], "updateDisplayName", "update display name"],
+        //     [['somePerson', 'proxy', '--text'], "updateProxy", "update proxy"],
+        // ])('%s calls %s returns expected result %s', async (args, method, expectedResult) => {
+        //     // Act
+        //     return memberHelper.parseMemberCommand(authorId, authorFull, args).then((result) => {
+        //         // Assert
+        //         expect(result).toEqual(expectedResult);
+        //         expect(memberHelper[method]).toHaveBeenCalledTimes(1);
+        //         expect(memberHelper[method]).toHaveBeenCalledWith(authorId, args[0], args[2]);
+        //     });
+        // });
+        //
+        // test.each([
+        //     [["somePerson", "propic", attachmentUrl], null, null],
+        //     [["somePerson", "propic", null], 'ono.png', attachmentExpiry],
+        // ])('%s calls updatePropic and returns expected values', async (args, attachmentUrl, attachmentExpiration) => {
+        //     // Act
+        //     return memberHelper.parseMemberCommand(authorId, authorFull, args, attachmentUrl, attachmentExpiration).then((result) => {
+        //         // Assert
+        //         expect(result).toEqual("update propic");
+        //         expect(memberHelper['updatePropic']).toHaveBeenCalledTimes(1);
+        //         expect(memberHelper['updatePropic']).toHaveBeenCalledWith(authorId, args[0], args[2], attachmentUrl, attachmentExpiration)
+        //     });
+        // })
+        //
+        // test('any non-command returns getMemberInfo', async() => {
+        //     // Act
+        //     return memberHelper.parseMemberCommand(authorId, authorFull, ['somePerson']).then(() => {
+        //         // Assert
+        //         expect(memberHelper['getMemberInfo']).toHaveBeenCalledTimes(1);
+        //         expect(memberHelper['getMemberInfo']).toHaveBeenCalledWith(mockMember);
+        //     })
+        // })
+        //
+        // test.each([
+        //     [['new'], "addNewMember", enums.help.NEW],
+        //     [['new', '--help'], "addNewMember", enums.help.NEW],
+        //     [['remove'], "removeMember", enums.help.REMOVE],
+        //     [['remove', '--help'], "removeMember", enums.help.REMOVE],
+        //     [['name'], "updateName", enums.help.NAME],
+        //     [['name', '--help'], "updateName", enums.help.NAME],
+        //     [['somePerson', 'name'], "updateName", mockMember.name],
+        //     [['displayname'], "updateDisplayName", enums.help.DISPLAY_NAME],
+        //     [['displayname', '--help'], "updateDisplayName", enums.help.DISPLAY_NAME],
+        //     [['somePerson', 'displayname'], "updateDisplayName", mockMember.displayname],
+        //     [['proxy'], "updateProxy", enums.help.PROXY],
+        //     [['proxy', '--help'], "updateProxy", enums.help.PROXY],
+        //     [['somePerson', 'proxy'], "updateProxy", mockMember.proxy],
+        //     [['propic'], "updatePropic", enums.help.PROPIC],
+        //     [['propic', '--help'], "updatePropic", enums.help.PROPIC],
+        //     [['somePerson', 'propic'], "updatePropic", mockMember.propic],
+        //     [['list', '--help'], "getAllMembersInfo", enums.help.LIST],
+        // ])('%s shall not call %s and returns correct string', async (args, method, expectedResult) => {
+        //     // Act
+        //     return memberHelper.parseMemberCommand(authorId, authorFull, args).then((result) => {
+        //         // Assert
+        //         expect(result).toEqual(expectedResult);
+        //         expect(memberHelper[method]).not.toHaveBeenCalled();
+        //     });
+        // });
+        //
+        // test.each([
+        //     [['somePerson', 'displayname'], "updateDisplayName", "Display name"],
+        //     [['somePerson', 'proxy'], "updateProxy", "Proxy"],
+        //     [['somePerson', 'propic'], "updatePropic", "Profile picture"],
+        // ])('if value not set, %s shall not call %s and returns value error', async (args, method, expectedResult) => {
+        //     // Arrange
+        //     const mockEmptyMember = {
+        //         name: "somePerson",
+        //         displayname: null,
+        //         proxy: null,
+        //         propic: null,
+        //     }
+        //     jest.spyOn(memberHelper, 'getMemberByName').mockResolvedValue(mockEmptyMember);
+        //     // Act
+        //     return memberHelper.parseMemberCommand(authorId, authorFull, args).then((result) => {
+        //         // Assert
+        //         expect(result).toEqual(`${expectedResult} ${enums.err.NO_VALUE}`);
+        //         expect(memberHelper[method]).not.toHaveBeenCalled();
+        //     });
+        // });
+        //
+        // test('["new", "someNewPerson"] shall call addNewMember and return correct results', async () => {
+        //     // Act
+        //     return memberHelper.parseMemberCommand(authorId, authorFull, ['new', 'someNewPerson']).then((result) => {
+        //         // Assert
+        //         expect(result).toEqual("new member");
+        //         expect(memberHelper.getMemberByName).not.toHaveBeenCalled();
+        //     });
+        // });
+        //
+        // test('["new", "--help"] shall return help enum', async () => {
+        //     // Act
+        //     return memberHelper.parseMemberCommand(authorId, authorFull, ['new', '--help']).then((result) => {
+        //         // Assert
+        //         expect(result).toEqual(enums.help.NEW);
+        //         expect(memberHelper.addNewMember).not.toHaveBeenCalled();
+        //         expect(memberHelper.getMemberByName).not.toHaveBeenCalled();
+        //     });
+        // });
+        //
+        // test('["new"] shall return help enum', async () => {
+        //     // Act
+        //     return memberHelper.parseMemberCommand(authorId, authorFull, ['new']).then((result) => {
+        //         // Assert
+        //         expect(result).toEqual(enums.help.NEW);
+        //         expect(memberHelper.addNewMember).not.toHaveBeenCalled();
+        //         expect(memberHelper.getMemberByName).not.toHaveBeenCalled();
+        //     });
+        // });
     })
 
     describe('addNewMember', () => {

@@ -12,7 +12,8 @@ cmds.set('member', {
         const authorFull = `${message.author.username}#${message.author.discriminator}`
         const attachmentUrl = message.attachments.size > 0 ? message.attachments.first().url : null;
         const attachmentExpires = message.attachments.size > 0 ? message.attachments.first().expires_at : null;
-        const reply = await memberHelper.parseMemberCommand(message.author.id, authorFull, args, attachmentUrl, attachmentExpires).catch(async (e) =>{await message.reply(e.message);});
+        if (attachmentUrl) args.push(null, attachmentUrl, attachmentExpires);
+        const reply = await memberHelper.parseMemberCommand(message.author.id, authorFull, args).catch(async (e) =>{await message.reply(e.message);});
         if (typeof reply === 'string') {
             return await message.reply(reply);
         }
