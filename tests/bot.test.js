@@ -11,7 +11,8 @@ jest.mock('@fluxerjs/core', () => {
         Client: jest.fn().mockImplementation(() => {
             return {
                 on: jest.fn(),
-                intents: 0
+                intents: 0,
+                login: jest.fn()
             }
         }),
         Message: jest.fn()
@@ -70,7 +71,6 @@ describe('bot', () => {
     })
 
     describe('handleMessageCreate', () => {
-
 
         test('on message creation, if message is from bot, return', () => {
             // Arrange
@@ -251,12 +251,12 @@ describe('bot', () => {
         })
     })
 
-    test('calls debounceLogin with correct argument', () => {
+    test('calls client.login with correct argument', () => {
         // Act
-        debounceLogin = jest.fn().mockResolvedValue();
+        client.login = jest.fn().mockResolvedValue();
         // Assert
-        expect(debounceLogin).toHaveBeenCalledTimes(1);
-        expect(debounceLogin).toHaveBeenCalledWith(process.env.FLUXER_BOT_TOKEN)
+        expect(client.login).toHaveBeenCalledTimes(1);
+        expect(client.login).toHaveBeenCalledWith(process.env.FLUXER_BOT_TOKEN)
     })
 
     afterEach(() => {
