@@ -1,4 +1,4 @@
-const env = require('dotenv');
+const env = require('dotenv').config({path: './.env.jest'})
 const {enums} = require("../src/enums.js");
 
 jest.mock('@fluxerjs/core', () => {
@@ -59,12 +59,9 @@ const {commands} = require("../src/commands.js");
 const {webhookHelper} = require("../src/helpers/webhookHelper.js");
 
 const {utils} = require("../src/helpers/utils.js");
-let {handleMessageCreate, client, debounceLogin} = require("../src/bot.js");
-
-env.config();
+let {handleMessageCreate, client} = require("../src/bot.js");
 
 describe('bot', () => {
-
     beforeEach(() => {
         jest.resetModules();
         jest.clearAllMocks();
@@ -74,6 +71,7 @@ describe('bot', () => {
 
         test('on message creation, if message is from bot, return', () => {
             // Arrange
+            console.log(env)
             const message = {
                 author: {
                     bot: true

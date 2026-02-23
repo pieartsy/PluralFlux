@@ -3,12 +3,12 @@ import { messageHelper } from "./helpers/messageHelper.js";
 import {enums} from "./enums.js";
 import {commands} from "./commands.js";
 import {webhookHelper} from "./helpers/webhookHelper.js";
-import * as env from 'dotenv';
+import env from 'dotenv';
 import {utils} from "./helpers/utils.js";
 
-env.config();
+env.config({path: './.env'});
 
-const token = process.env.FLUXER_BOT_TOKEN;
+export const token = process.env.FLUXER_BOT_TOKEN;
 
 if (!token) {
     console.error("Missing FLUXER_BOT_TOKEN environment variable.");
@@ -84,6 +84,7 @@ export const debounceLogin  = utils.debounce(client.login, 60000);
 
 (async () => {
     try {
+
         await client.login(token);
         // await db.check_connection();
     } catch (err) {
