@@ -36,7 +36,7 @@ All commands are prefixed by `pf;`. Currently only a few are implemented.
     1. Pass in a direct remote image URL, for example: `pf;member jane propic <https://cdn.pixabay.com/photo/2020/05/02/02/54/animal-5119676_1280.jpg>`. You can upload images on sites like <https://imgbb.com/>.
     2. Upload an attachment directly.
     **NOTE:** Fluxer does not save your attachments forever, so option #1 is recommended.
-  - `proxy` Updates the proxy tag for a specific member based on their name. The proxy must be formatted with the tags surrounding the word 'text', for example: `pf;member jane proxy Jane:text` or `pf;member amal proxy [text]` This is so the bot can detect what the proxy tags are. **Only one proxy can be set per member currently.**
+  - `proxy` Updates the proxy tag for a specific member based on their name. The proxy must be formatted with the tags surrounding the word 'text', for example: `pf;member jane proxy Jane:text` or `pf;member amal proxy A{text}` This is so the bot can detect what the proxy tags are. **Only one proxy can be set per member currently.**
 
 ## Upcoming
 - [ ] More than one proxy possible per member (including on import)
