@@ -6,7 +6,7 @@ import {utils} from "./utils.js";
 
 const mh = {};
 
-const commandList = ['new', 'remove', 'name', 'list', 'displayName', 'proxy', 'propic'];
+const commandList = ['new', 'remove', 'name', 'list', 'displayname', 'proxy', 'propic'];
 const newAndRemoveCommands = ['new', 'remove'];
 
 /**
@@ -16,24 +16,29 @@ const newAndRemoveCommands = ['new', 'remove'];
  * @param {string} authorId - The id of the message author
  * @param {string} authorFull - The username and discriminator of the message author
  * @param {string[]} args - The message arguments
+ * @param {string | null} attachmentUrl - The attachment URL, if any
+ * @param {string | null} attachmentExpiration - The attachment expiry date, if any
  * @returns {Promise<string>} A success message.
  * @returns {Promise <EmbedBuilder>} A list of 25 members as an embed.
  * @returns {Promise <EmbedBuilder>} A list of member commands and descriptions.
  * @returns {Promise<{EmbedBuilder, [string], string}>} A member info embed + info/errors.
  * @throws {Error}
  */
-mh.parseMemberCommand = async function (authorId, authorFull, args) {
+mh.parseMemberCommand = async function (authorId, authorFull, args, attachmentUrl = null, attachmentExpiration = null) {
     let memberName, command, isHelp = false;
     // checks whether command is in list, otherwise assumes it's a name
 
+    // ex: pf;member remove, pf;member remove --help
     // ex: pf;member, pf;member --help
     if (args.length === 0 || args[0] === '--help' || args[0] === '') {
         return mh.getMemberCommandInfo();
     }
     // ex: pf;member remove somePerson
-    if (commandList.includes(args[0]) && args[1]) {
+    if (commandList.includes(args[0])) {
         command = args[0];
-        memberName = args[1];
+        if (args[1]) {
+            memberName = args[1];
+        }
     }
     // ex: pf;member somePerson propic
     else if (args[1] && commandList.includes(args[1])) {
@@ -44,42 +49,40 @@ mh.parseMemberCommand = async function (authorId, authorFull, args) {
     else if (!commandList.includes(args[0]) && !args[1]) {
         memberName = args[0];
     }
-    // ex: pf;member remove, pf;member remove --help
-    if (command && (!memberName || args.includes("--help"))) {
+    if (args[1] === "--help" || command && (memberName === "--help" || !memberName && command !== 'list')) {
         isHelp = true;
     }
 
-    return await mh.memberArgumentHandler(authorId, authorFull, isHelp, command, memberName, args)
+    return await mh.memberArgumentHandler(authorId, authorFull, isHelp, command, memberName, args, attachmentUrl, attachmentExpiration)
 }
 
-mh.memberArgumentHandler = async function(authorId, authorFull, isHelp, command = null, memberName = null,args = null) {
+mh.memberArgumentHandler = async function(authorId, authorFull, isHelp, command = null, memberName = null, args = [], attachmentUrl = null, attachmentExpiration = null) {
     if (!command && !memberName && !isHelp) {
         throw new Error(enums.err.COMMAND_NOT_RECOGNIZED);
     }
-    // ex: pf;member blah blah
-    if (!memberName && !isHelp) {
-        throw new Error(enums.err.NO_MEMBER);
-    }
-    // remove memberName and command from values to reduce confusion
-    console.log(command, memberName, isHelp, args);
-    let values = args.slice(2);
-    console.log(values);
-
-    if (isHelp) {
-        mh.sendHelpEnum(command);
+    else if (isHelp) {
+        return mh.sendHelpEnum(command);
     }
     else if (command === "list") {
         return await mh.getAllMembersInfo(authorId, authorFull);
     }
-    else if (command && memberName && values || newAndRemoveCommands.includes(command) && memberName) {
-        return await mh.memberCommandHandler(authorId, command, memberName, values);
+    else if (!memberName && !isHelp) {
+        throw new Error(enums.err.NO_MEMBER);
     }
-    else if (command && memberName) {
-        return await mh.sendCurrentValue(authorId, memberName, command);
+
+    // remove memberName and command from values to reduce confusion
+    const values = args.slice(2);
+
+    // ex: pf;member blah blah
+    if (command && (memberName && values.length > 0 || newAndRemoveCommands.includes(command) && memberName)) {
+        return await mh.memberCommandHandler(authorId, command, memberName, values, attachmentUrl, attachmentExpiration).catch((e) => {throw e});
+    }
+    else if (memberName && values.length === 0) {
+        return await mh.sendCurrentValue(authorId, memberName, command).catch((e) => {throw e});
     }
 }
 
-mh.sendCurrentValue = async function(authorId, memberName, command) {
+mh.sendCurrentValue = async function(authorId, memberName, command = null) {
     const member = await mh.getMemberByName(authorId, memberName).then((m) => {
         if (!m) throw new Error(enums.err.NO_MEMBER);
         return m;
@@ -93,11 +96,11 @@ mh.sendCurrentValue = async function(authorId, memberName, command) {
         case 'name':
             return `The name of ${member.name} is \"${member.name}\" but you probably already knew that!`;
         case 'displayname':
-            return `The display name for ${member.name} is \"${member.displayname}\".`;
+            return member.displayname ? `The display name for ${member.name} is \"${member.displayname}\".` : `Display name ${enums.err.NO_VALUE}`;
         case 'proxy':
-            return `The proxy for ${member.name} is \"${member.proxy}\".`;
+            return member.proxy ? `The proxy for ${member.name} is \"${member.proxy}\".` : `Proxy ${enums.err.NO_VALUE}`;
         case 'propic':
-            return `The profile picture for ${member.name} is \"${member.propic}\".`;
+            return member.propic ? `The profile picture for ${member.name} is \"${member.propic}\".` : `Propic ${enums.err.NO_VALUE}`;
     }
 }
 
@@ -121,10 +124,10 @@ mh.sendHelpEnum = function(command) {
 }
 
 
-mh.memberCommandHandler = async function(authorId, command, memberName, values) {
+mh.memberCommandHandler = async function(authorId, command, memberName, values,attachmentUrl = null, attachmentExpiration = null) {
     switch (command) {
         case 'new':
-            return await mh.addNewMember(authorId, memberName, values).catch((e) => {throw e});
+            return await mh.addNewMember(authorId, memberName, values, attachmentUrl, attachmentExpiration).catch((e) => {throw e});
         case 'remove':
             return await mh.removeMember(authorId, memberName).catch((e) => {throw e});
         case 'name':
@@ -134,7 +137,7 @@ mh.memberCommandHandler = async function(authorId, command, memberName, values) 
         case 'proxy':
             return await mh.updateProxy(authorId, memberName, values[0]).catch((e) => {throw e});
         case 'propic':
-            return await mh.updatePropic(authorId, memberName, values).catch((e) => {throw e});
+            return await mh.updatePropic(authorId, memberName, values[0], attachmentUrl, attachmentExpiration).catch((e) => {throw e});
     }
 }
 
@@ -145,16 +148,17 @@ mh.memberCommandHandler = async function(authorId, command, memberName, values) 
  * @param {string} authorId - The author of the message
  * @param {string} memberName - The member name
  * @param {string[]} values - The arguments following the member name and command
- * @returns {Promise<string>} A successful addition.
+ * @param {string | null} attachmentUrl - The attachment URL, if any
+ * @param {string | null} attachmentExpiration - The attachment expiry date, if any
+ * @returns {Promise<{EmbedBuilder, [string], string}>} A successful addition.
  * @throws {Error}  When the member exists, or creating a member doesn't work.
  */
-mh.addNewMember = async function (authorId, memberName, values) {
-    const displayName = values[2];
-    const proxy = values[3];
-    const propic = values[4] ?? values[5];
+mh.addNewMember = async function (authorId, memberName, values, attachmentUrl = null, attachmentExpiration = null) {
+    const displayName = values[0];
+    const proxy = values[1];
+    const propic = values[2] ?? attachmentUrl;
 
-
-    return await mh.addFullMember(authorId, memberName, displayName, proxy, propic).then(async(response) => {
+    return await mh.addFullMember(authorId, memberName, displayName, proxy, propic, attachmentExpiration).then((response) => {
         const memberInfoEmbed = mh.getMemberInfo(response.member);
         return {embed: memberInfoEmbed, errors: response.errors, success: `${memberName} has been added successfully.`};
     }).catch(e => {
@@ -234,13 +238,12 @@ mh.updateProxy = async function (authorId, memberName, proxy) {
  * @returns {Promise<string>} A successful update.
  * @throws {Error} When loading the profile picture from a URL doesn't work.
  */
-mh.updatePropic = async function (authorId, memberName, values) {
-    const imgUrl = values[0] ?? values[1];
-    const attachmentExpiry = values[1] ? values[2] : null;
+mh.updatePropic = async function (authorId, memberName, values, attachmentUrl = null, attachmentExpiration = null) {
+    const imgUrl = values ?? attachmentUrl;
     // Throws error if invalid
-    await utils.checkImageFormatValidity(attachmentUrl ?? imgUrl).catch((e) => { throw e });
+    await utils.checkImageFormatValidity(imgUrl).catch((e) => { throw e });
 
-    return await mh.updateMemberField(authorId, memberName, "propic", imgUrl, attachmentExpiry).catch((e) => { throw e });
+    return await mh.updateMemberField(authorId, memberName, "propic", imgUrl, attachmentExpiration).catch((e) => { throw e });
 }
 
 /**
@@ -277,10 +280,11 @@ mh.removeMember = async function (authorId, memberName) {
  * @param {string | null} displayName - The display name of the member.
  * @param {string | null} proxy - The proxy tag of the member.
  * @param {string | null} propic - The profile picture URL of the member.
+ * @param {string | null} attachmentExpiration - The profile picture URL of the member.
  * @returns {Promise<{model, string[]}>} A successful addition object, including errors if there are any.
  * @throws {Error}  When the member already exists, there are validation errors, or adding a member doesn't work.
  */
-mh.addFullMember = async function (authorId, memberName, displayName = null, proxy = null, propic = null) {
+mh.addFullMember = async function (authorId, memberName, displayName = null, proxy = null, propic = null, attachmentExpiration = null) {
     await mh.getMemberByName(authorId, memberName).then((member) => {
         if (member) {
             throw new Error(`Can't add ${memberName}. ${enums.err.MEMBER_EXISTS}`);
@@ -328,6 +332,9 @@ mh.addFullMember = async function (authorId, memberName, displayName = null, pro
             errors.push(`Tried to set profile picture to \"${propic}\". ${e.message}. ${enums.err.SET_TO_NULL}`);
             isValidPropic = false;
         });
+    }
+    if (isValidPropic && attachmentExpiration) {
+        errors.push(mh.setExpirationWarning(attachmentExpiration));
     }
     const member = await database.members.create({
         name: memberName, userid: authorId, displayname: isValidDisplayName ? displayName : null, proxy: isValidProxy ? proxy : null, propic: isValidPropic ? propic : null
