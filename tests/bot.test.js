@@ -58,7 +58,7 @@ const {commands} = require("../src/commands.js");
 const {webhookHelper} = require("../src/helpers/webhookHelper.js");
 
 const {utils} = require("../src/helpers/utils.js");
-const {handleMessageCreate, client} = require("../src/bot.js");
+let {handleMessageCreate, client, debounceLogin} = require("../src/bot.js");
 
 env.config();
 
@@ -251,6 +251,13 @@ describe('bot', () => {
         })
     })
 
+    test('calls debounceLogin with correct argument', () => {
+        // Act
+        debounceLogin = jest.fn().mockResolvedValue();
+        // Assert
+        expect(debounceLogin).toHaveBeenCalledTimes(1);
+        expect(debounceLogin).toHaveBeenCalledWith(process.env.FLUXER_BOT_TOKEN)
+    })
 
     afterEach(() => {
         // restore the spy created with spyOn

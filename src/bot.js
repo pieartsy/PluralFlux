@@ -80,7 +80,7 @@ function printGuilds() {
 }
 
 const debouncePrintGuilds  = utils.debounce(printGuilds, 2000);
-const debounceLogin  = utils.debounce(client.login, 60000);
+export const debounceLogin  = utils.debounce(client.login, 60000);
 
 (async () => {
     try {
@@ -90,4 +90,4 @@ const debounceLogin  = utils.debounce(client.login, 60000);
         console.error('Login failed:', err);
         process.exit(1);
     }
-})
+})();
