@@ -10,7 +10,7 @@ const commandList = ['new', 'remove', 'name', 'list', 'displayname', 'proxy', 'p
 const newAndRemoveCommands = ['new', 'remove'];
 
 /**
- * Parses through the subcommands that come after "pf;member" and calls functions accordingly.
+ * Parses through the subcommands that come after "pf;member" to identify member name, command, and associated values.
  *
  * @async
  * @param {string} authorId - The id of the message author
@@ -56,6 +56,24 @@ mh.parseMemberCommand = async function (authorId, authorFull, args, attachmentUr
     return await mh.memberArgumentHandler(authorId, authorFull, isHelp, command, memberName, args, attachmentUrl, attachmentExpiration)
 }
 
+/**
+ * Parses through the command, argument, and values and calls appropriate functions based on their presence or absence.
+ *
+ * @async
+ * @param {string} authorId - The id of the message author
+ * @param {string} authorFull - The username and discriminator of the message author
+ * @param {boolean} isHelp - Whether this is a help command or not
+ * @param {string | null} command - The command name
+ * @param {string | null} memberName - The member name
+ * @param {string[]} args - The message arguments
+ * @param {string | null} attachmentUrl - The attachment URL, if any
+ * @param {string | null} attachmentExpiration - The attachment expiry date, if any
+ * @returns {Promise<string>} A success message.
+ * @returns {Promise <EmbedBuilder>} A list of 25 members as an embed.
+ * @returns {Promise <EmbedBuilder>} A list of member commands and descriptions.
+ * @returns {Promise<{EmbedBuilder, [string], string}>} A member info embed + info/errors.
+ * @throws {Error}
+ */
 mh.memberArgumentHandler = async function(authorId, authorFull, isHelp, command = null, memberName = null, args = [], attachmentUrl = null, attachmentExpiration = null) {
     if (!command && !memberName && !isHelp) {
         throw new Error(enums.err.COMMAND_NOT_RECOGNIZED);
@@ -82,6 +100,19 @@ mh.memberArgumentHandler = async function(authorId, authorFull, isHelp, command 
     }
 }
 
+/**
+ * Sends the current value of a field based on the command.
+ *
+ * @async
+ * @param {string} authorId - The id of the message author
+ * @param {string} memberName - The name of the member
+ * @param {string | null} command - The command being called to query a value.
+ * @returns {Promise<string>} A success message.
+ * @returns {Promise <EmbedBuilder>} A list of 25 members as an embed.
+ * @returns {Promise <EmbedBuilder>} A list of member commands and descriptions.
+ * @returns {Promise<{EmbedBuilder, [string], string}>} A member info embed + info/errors.
+ * @throws {Error}
+ */
 mh.sendCurrentValue = async function(authorId, memberName, command = null) {
     const member = await mh.getMemberByName(authorId, memberName).then((m) => {
         if (!m) throw new Error(enums.err.NO_MEMBER);
@@ -104,6 +135,13 @@ mh.sendCurrentValue = async function(authorId, memberName, command = null) {
     }
 }
 
+/**
+ * Sends the help text associated with a command.
+ *
+ * @param {string | null} command - The command being called to query a value.
+ * @returns {Promise<string>} A success message.
+ * @returns {string} A list of 25 members as an embed.
+ */
 mh.sendHelpEnum = function(command) {
     switch (command) {
         case 'new':
@@ -123,8 +161,23 @@ mh.sendHelpEnum = function(command) {
     }
 }
 
-
-mh.memberCommandHandler = async function(authorId, command, memberName, values,attachmentUrl = null, attachmentExpiration = null) {
+/**
+ * Handles the commands that need to call other update/edit commands.
+ *
+ * @async
+ * @param {string} authorId - The id of the message author
+ * @param {string} memberName - The name of the member
+ * @param {string | null} command - The command being called.
+ * @param {string[]} values - The values to be passed in. Only includes the values after member name and command name.
+ * @param {string | null} attachmentUrl - The attachment URL, if any
+ * @param {string | null} attachmentExpiration - The attachment expiry date, if any
+ * @returns {Promise<string>} A success message.
+ * @returns {Promise <EmbedBuilder>} A list of 25 members as an embed.
+ * @returns {Promise <EmbedBuilder>} A list of member commands and descriptions.
+ * @returns {Promise<{EmbedBuilder, [string], string}>} A member info embed + info/errors.
+ * @throws {Error}
+ */
+mh.memberCommandHandler = async function(authorId, command, memberName, values, attachmentUrl = null, attachmentExpiration = null) {
     switch (command) {
         case 'new':
             return await mh.addNewMember(authorId, memberName, values, attachmentUrl, attachmentExpiration).catch((e) => {throw e});
