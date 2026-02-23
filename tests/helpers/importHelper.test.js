@@ -69,14 +69,14 @@ describe('importHelper', () => {
         test('if addFullMember returns nothing, return correct enum', () => {
             memberHelper.addFullMember.mockResolvedValue();
             return importHelper.pluralKitImport(authorId, attachmentUrl).catch((res) => {
-                expect(res).toEqual(new AggregateError([], `${enums.err.NO_MEMBERS_IMPORTED}\n\n${enums.err.IMPORT_ERROR}`));
+                expect(res).toEqual(new AggregateError([], enums.err.NO_MEMBERS_IMPORTED));
             })
         })
 
         test('if addFullMember returns nothing and throws error, catch and return error', () => {
             memberHelper.addFullMember.mockResolvedValue(new Error('error'));
             return importHelper.pluralKitImport(authorId, attachmentUrl).catch((res) => {
-                expect(res).toEqual(new AggregateError([new Error('error')], `${enums.err.NO_MEMBERS_IMPORTED}\n\n${enums.err.IMPORT_ERROR}`))
+                expect(res).toEqual(new AggregateError([new Error('error')], enums.err.NO_MEMBERS_IMPORTED))
             })
         })
 
@@ -87,7 +87,7 @@ describe('importHelper', () => {
             // Act
             return importHelper.pluralKitImport(authorId, attachmentUrl).catch((res) => {
                 // Assert
-                expect(res).toEqual(new AggregateError(['error'], `Successfully added members: ${mockAddReturnMember.name}\n\n${enums.err.IMPORT_ERROR}`))
+                expect(res).toEqual(new AggregateError(['error'], `Successfully added members: ${mockAddReturnMember.name}`))
             })
         })
 

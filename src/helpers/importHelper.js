@@ -34,7 +34,7 @@ ih.pluralKitImport = async function (authorId, attachmentUrl= null) {
             }
             const aggregatedText = addedMembers.length > 0 ? `Successfully added members: ${addedMembers.join(', ')}` : `${enums.err.NO_MEMBERS_IMPORTED}`;
             if (errors.length > 0) {
-                throw new AggregateError(errors, `${aggregatedText}\n\n${enums.err.IMPORT_ERROR}`);
+                throw new AggregateError(errors, aggregatedText);
             }
             return aggregatedText;
         });
