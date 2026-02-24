@@ -36,8 +36,7 @@ msgh.parseCommandArgs = function(content, commandName) {
  * @param {string} authorId - The author of the message.
  * @param {string} content - The full message content
  * @param {string | null} [attachmentUrl] - The url for an attachment to the message, if any exists.
- * @returns {{model, string, bool}} The proxy message object.
- * @throws {Error} If a proxy message is sent with no message or attachment within it.
+ * @returns {Promise<{model, string, bool}>} The proxy message object.
  */
 msgh.parseProxyTags = async function (authorId, content, attachmentUrl = null){
     const members = await memberHelper.getMembersByAuthor(authorId);
