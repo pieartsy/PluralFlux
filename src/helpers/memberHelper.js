@@ -16,12 +16,12 @@ const newAndRemoveCommands = ['new', 'remove'];
  * @param {string} authorId - The id of the message author
  * @param {string} authorFull - The username and discriminator of the message author
  * @param {string[]} args - The message arguments
- * @param {string | null} attachmentUrl - The attachment URL, if any
- * @param {string | null} attachmentExpiration - The attachment expiry date, if any
+ * @param {string | null} [attachmentUrl] - The attachment URL, if any
+ * @param {string | null} [attachmentExpiration] - The attachment expiry date, if any
  * @returns {Promise<string>} A success message.
  * @returns {Promise <EmbedBuilder>} A list of 25 members as an embed.
  * @returns {Promise <EmbedBuilder>} A list of member commands and descriptions.
- * @returns {Promise<{EmbedBuilder, [string], string}>} A member info embed + info/errors.
+ * @returns {Promise<{EmbedBuilder, string[], string}>} A member info embed + info/errors.
  * @throws {Error}
  */
 mh.parseMemberCommand = async function (authorId, authorFull, args, attachmentUrl = null, attachmentExpiration = null) {
@@ -63,11 +63,11 @@ mh.parseMemberCommand = async function (authorId, authorFull, args, attachmentUr
  * @param {string} authorId - The id of the message author
  * @param {string} authorFull - The username and discriminator of the message author
  * @param {boolean} isHelp - Whether this is a help command or not
- * @param {string | null} command - The command name
- * @param {string | null} memberName - The member name
- * @param {string[]} args - The message arguments
- * @param {string | null} attachmentUrl - The attachment URL, if any
- * @param {string | null} attachmentExpiration - The attachment expiry date, if any
+ * @param {string | null} [command] - The command name
+ * @param {string | null} [memberName] - The member name
+ * @param {string[]} [args] - The message arguments
+ * @param {string | null} [attachmentUrl] - The attachment URL, if any
+ * @param {string | null} [attachmentExpiration] - The attachment expiry date, if any
  * @returns {Promise<string>} A success message.
  * @returns {Promise <EmbedBuilder>} A list of 25 members as an embed.
  * @returns {Promise <EmbedBuilder>} A list of member commands and descriptions.
@@ -106,14 +106,13 @@ mh.memberArgumentHandler = async function(authorId, authorFull, isHelp, command 
  * @async
  * @param {string} authorId - The id of the message author
  * @param {string} memberName - The name of the member
- * @param {string | null} command - The command being called to query a value.
+ * @param {string | null} [command] - The command being called to query a value.
  * @returns {Promise<string>} A success message.
  * @returns {Promise <EmbedBuilder>} A list of 25 members as an embed.
  * @returns {Promise <EmbedBuilder>} A list of member commands and descriptions.
- * @returns {Promise<{EmbedBuilder, [string], string}>} A member info embed + info/errors.
- * @throws {Error}
+ * @returns {Promise<{EmbedBuilder, string[], string}>} A member info embed + info/errors.
  */
-mh.sendCurrentValue = async function(authorId, memberName, command = null) {
+mh.sendCurrentValue = async function(authorId, memberName, command= null) {
     const member = await mh.getMemberByName(authorId, memberName).then((m) => {
         if (!m) throw new Error(enums.err.NO_MEMBER);
         return m;
@@ -138,9 +137,8 @@ mh.sendCurrentValue = async function(authorId, memberName, command = null) {
 /**
  * Sends the help text associated with a command.
  *
- * @param {string | null} command - The command being called to query a value.
- * @returns {Promise<string>} A success message.
- * @returns {string} A list of 25 members as an embed.
+ * @param {string} command - The command being called.
+ * @returns {string} - The help text associated with a command.
  */
 mh.sendHelpEnum = function(command) {
     switch (command) {
@@ -167,7 +165,7 @@ mh.sendHelpEnum = function(command) {
  * @async
  * @param {string} authorId - The id of the message author
  * @param {string} memberName - The name of the member
- * @param {string | null} command - The command being called.
+ * @param {string} command - The command being called.
  * @param {string[]} values - The values to be passed in. Only includes the values after member name and command name.
  * @param {string | null} attachmentUrl - The attachment URL, if any
  * @param {string | null} attachmentExpiration - The attachment expiry date, if any
@@ -201,10 +199,10 @@ mh.memberCommandHandler = async function(authorId, command, memberName, values, 
  * @param {string} authorId - The author of the message
  * @param {string} memberName - The member name
  * @param {string[]} values - The arguments following the member name and command
- * @param {string | null} attachmentUrl - The attachment URL, if any
- * @param {string | null} attachmentExpiration - The attachment expiry date, if any
- * @returns {Promise<{EmbedBuilder, [string], string}>} A successful addition.
- * @throws {Error}  When the member exists, or creating a member doesn't work.
+ * @param {string | null} [attachmentUrl] - The attachment URL, if any
+ * @param {string | null} [attachmentExpiration] - The attachment expiry date, if any
+ * @returns {Promise<{EmbedBuilder, string[], string}>} A successful addition.
+ * @throws {Error}  When creating a member doesn't work.
  */
 mh.addNewMember = async function (authorId, memberName, values, attachmentUrl = null, attachmentExpiration = null) {
     const displayName = values[0];
@@ -332,10 +330,10 @@ mh.removeMember = async function (authorId, memberName) {
  * @async
  * @param {string} authorId - The author of the message
  * @param {string} memberName - The name of the member.
- * @param {string | null} displayName - The display name of the member.
- * @param {string | null} proxy - The proxy tag of the member.
- * @param {string | null} propic - The profile picture URL of the member.
- * @param {string | null} attachmentExpiration - The profile picture URL of the member.
+ * @param {string | null} [displayName] - The display name of the member.
+ * @param {string | null} [proxy] - The proxy tag of the member.
+ * @param {string | null} [propic] - The profile picture URL of the member.
+ * @param {string | null} [attachmentExpiration] - The expiration date of an uploaded profile picture.
  * @returns {Promise<{model, string[]}>} A successful addition object, including errors if there are any.
  * @throws {Error}  When the member already exists, there are validation errors, or adding a member doesn't work.
  */
@@ -406,9 +404,9 @@ mh.addFullMember = async function (authorId, memberName, displayName = null, pro
  * @param {string} memberName - The member to update
  * @param {string} columnName - The column name to update.
  * @param {string} value - The value to update to.
- * @param {string | null} attachmentExpiration - The attachment expiration date (if any)
+ * @param {string | null} [attachmentExpiration] - The attachment expiration date (if any)
  * @returns {Promise<string>} A successful update.
- * @throws {Error} When the member is not found, or catchall error.
+ * @throws {Error} When no member row was updated.
  */
 mh.updateMemberField = async function (authorId, memberName, columnName, value, attachmentExpiration = null) {
     let fluxerPropicWarning;

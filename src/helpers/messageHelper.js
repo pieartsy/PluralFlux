@@ -32,11 +32,12 @@ msgh.parseCommandArgs = function(content, commandName) {
 /**
  * Parses messages to see if any part of the text matches the tags of any member belonging to an author.
  *
+ * @async
  * @param {string} authorId - The author of the message.
  * @param {string} content - The full message content
- * @param {string | null} attachmentUrl - The url for an attachment to the message, if any exists.
+ * @param {string | null} [attachmentUrl] - The url for an attachment to the message, if any exists.
  * @returns {{model, string, bool}} The proxy message object.
- * @throws {Error} If a proxy message is sent with no message within it.
+ * @throws {Error} If a proxy message is sent with no message or attachment within it.
  */
 msgh.parseProxyTags = async function (authorId, content, attachmentUrl = null){
     const members = await memberHelper.getMembersByAuthor(authorId);
