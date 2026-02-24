@@ -37,10 +37,7 @@ export const handleMessageCreate = async function(message) {
 
         // If message doesn't start with the bot prefix, it could still be a message with a proxy tag. If it's not, return.
         if (!content.startsWith(messageHelper.prefix)) {
-            await webhookHelper.sendMessageAsMember(client, message).catch((e) => {
-                throw e
-            });
-            return;
+            return await webhookHelper.sendMessageAsMember(client, message);
         }
 
         const commandName = content.slice(messageHelper.prefix.length).split(" ")[0];
@@ -57,9 +54,7 @@ export const handleMessageCreate = async function(message) {
         }
 
         if (command) {
-            await command.execute(message, args).catch(e => {
-                throw e
-            });
+            await command.execute(message, args);
         }
         else {
             await message.reply(enums.err.COMMAND_NOT_RECOGNIZED);
@@ -67,7 +62,6 @@ export const handleMessageCreate = async function(message) {
     }
     catch(error) {
         console.error(error);
-        // return await message.reply(error.message);
     }
 }
 
@@ -90,7 +84,6 @@ export const debounceLogin  = utils.debounce(client.login, 60000);
 
 (async () => {
     try {
-
         await client.login(token);
         // await db.check_connection();
     } catch (err) {

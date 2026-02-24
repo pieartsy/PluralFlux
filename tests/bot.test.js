@@ -74,7 +74,7 @@ describe('bot', () => {
 
     describe('handleMessageCreate', () => {
 
-        test('on message creation, if message is from bot, return', () => {
+        test('on message creation, if message is from bot, return', async() => {
             // Arrange
             const message = {
                 author: {
@@ -82,12 +82,11 @@ describe('bot', () => {
                 }
             }
             // Act
-            return handleMessageCreate(message).then((res) => {
-                expect(res).toBe(undefined);
-            });
+            const res = await handleMessageCreate(message);
+            expect(res).toBeUndefined();
         })
 
-        test('on message creation, if message is empty, return', () => {
+        test('on message creation, if message is empty, return', async() => {
             // Arrange
             const message = {
                 content: "            ",
@@ -96,13 +95,11 @@ describe('bot', () => {
                 }
             }
             // Act
-            return handleMessageCreate(message).then((res) => {
-                // Assert
-                expect(res).toBe(undefined);
-            });
+            const res = await handleMessageCreate(message);
+            expect(res).toBeUndefined();
         })
 
-        test("if message doesn't start with bot prefix, call sendMessageAsMember", () => {
+        test("if message doesn't start with bot prefix, call sendMessageAsMember", async () => {
             // Arrange
             webhookHelper.sendMessageAsMember.mockResolvedValue();
             const message = {
@@ -112,14 +109,13 @@ describe('bot', () => {
                 }
             }
             // Act
-            return handleMessageCreate(message).then(() => {
-                // Assert
-                expect(webhookHelper.sendMessageAsMember).toHaveBeenCalledTimes(1);
-                expect(webhookHelper.sendMessageAsMember).toHaveBeenCalledWith(client, message)
-            });
+            const res = await handleMessageCreate(message);
+            // Assert
+            expect(webhookHelper.sendMessageAsMember).toHaveBeenCalledTimes(1);
+            expect(webhookHelper.sendMessageAsMember).toHaveBeenCalledWith(client, message)
         })
 
-        test("if sendMessageAsMember returns error, log error", () => {
+        test("if sendMessageAsMember returns error, catch and log error", async () => {
             // Arrange
             webhookHelper.sendMessageAsMember.mockImplementation(() => {
                 throw Error("error")
@@ -130,20 +126,17 @@ describe('bot', () => {
                     bot: false
                 }
             }
-            jest.mock('console', () => {
-                return {error: jest.fn()}
-            })
+            jest.spyOn(global.console, 'error').mockImplementation(() => {})
             // Act
-            return handleMessageCreate(message).catch(() => {
-                // Assert
-                expect(webhookHelper.sendMessageAsMember).toHaveBeenCalledTimes(1);
-                expect(webhookHelper.sendMessageAsMember).toHaveBeenCalledWith(client, message)
-                expect(console.error).toHaveBeenCalledTimes(1);
-                expect(console.error).toHaveBeenCalledWith(new Error('error'))
-            });
+            await handleMessageCreate(message);
+            // Assert
+            expect(webhookHelper.sendMessageAsMember).toHaveBeenCalledTimes(1);
+            expect(webhookHelper.sendMessageAsMember).toHaveBeenCalledWith(client, message)
+            expect(console.error).toHaveBeenCalledTimes(1);
+            expect(console.error).toHaveBeenCalledWith(new Error('error'));
         })
 
-        test("if no command after prefix, return correct enum", () => {
+        test("if no command after prefix, return correct enum", async() => {
             // Arrange
             const message = {
                 content: "pf;",
@@ -153,15 +146,14 @@ describe('bot', () => {
                 reply: jest.fn()
             }
             // Act
-            return handleMessageCreate(message).then(() => {
-                // Assert
-                expect(message.reply).toHaveBeenCalledTimes(1);
-                expect(message.reply).toHaveBeenCalledWith(enums.help.SHORT_DESC_PLURALFLUX);
-                expect(webhookHelper.sendMessageAsMember).not.toHaveBeenCalled();
-            });
+            await handleMessageCreate(message);
+            // Assert
+            expect(message.reply).toHaveBeenCalledTimes(1);
+            expect(message.reply).toHaveBeenCalledWith(enums.help.SHORT_DESC_PLURALFLUX);
+            expect(webhookHelper.sendMessageAsMember).not.toHaveBeenCalled();
         })
 
-        test("if command after prefix, call parseCommandArgs and commandsMap.get", () => {
+        test("if command after prefix, call parseCommandArgs and commandsMap.get", async() => {
             // Arrange
             const message = {
                 content: "pf;help",
@@ -175,17 +167,16 @@ describe('bot', () => {
             }
             commands.commandsMap.get = jest.fn().mockReturnValue(command);
             // Act
-            return handleMessageCreate(message).then(() => {
-                // Assert
-                expect(messageHelper.parseCommandArgs).toHaveBeenCalledTimes(1);
-                expect(messageHelper.parseCommandArgs).toHaveBeenCalledWith('pf;help', 'help');
-                expect(commands.commandsMap.get).toHaveBeenCalledTimes(1);
-                expect(commands.commandsMap.get).toHaveBeenCalledWith('help');
-                expect(webhookHelper.sendMessageAsMember).not.toHaveBeenCalled();
-            });
+            await handleMessageCreate(message);
+            // Assert
+            expect(messageHelper.parseCommandArgs).toHaveBeenCalledTimes(1);
+            expect(messageHelper.parseCommandArgs).toHaveBeenCalledWith('pf;help', 'help');
+            expect(commands.commandsMap.get).toHaveBeenCalledTimes(1);
+            expect(commands.commandsMap.get).toHaveBeenCalledWith('help');
+            expect(webhookHelper.sendMessageAsMember).not.toHaveBeenCalled();
         })
 
-        test('if commands.commandsMap.get returns undefined, call aliasesMap.get and commandsMap.get again with that value', () => {
+        test('if commands.commandsMap.get returns undefined, call aliasesMap.get and commandsMap.get again with that value', async() => {
             // Arrange
             const message = {
                 content: "pf;m",
@@ -200,18 +191,17 @@ describe('bot', () => {
             commands.commandsMap.get = jest.fn().mockReturnValueOnce();
             commands.aliasesMap.get = jest.fn().mockReturnValueOnce(mockAlias);
             // Act
-            return handleMessageCreate(message).then(() => {
-                // Assert
-                expect(commands.commandsMap.get).toHaveBeenCalledTimes(2);
-                expect(commands.commandsMap.get).toHaveBeenNthCalledWith(1, 'm');
-                expect(commands.commandsMap.get).toHaveBeenNthCalledWith(2, 'member');
-                expect(commands.aliasesMap.get).toHaveBeenCalledTimes(1);
-                expect(commands.aliasesMap.get).toHaveBeenCalledWith('m');
-            });
+            await handleMessageCreate(message);
+            // Assert
+            expect(commands.commandsMap.get).toHaveBeenCalledTimes(2);
+            expect(commands.commandsMap.get).toHaveBeenNthCalledWith(1, 'm');
+            expect(commands.commandsMap.get).toHaveBeenNthCalledWith(2, 'member');
+            expect(commands.aliasesMap.get).toHaveBeenCalledTimes(1);
+            expect(commands.aliasesMap.get).toHaveBeenCalledWith('m');
         })
 
 
-        test('if aliasesMap.get returns undefined, do not call commandsMap again', () => {
+        test('if aliasesMap.get returns undefined, do not call commandsMap again', async() => {
             // Arrange
             const message = {
                 content: "pf;m",
@@ -226,13 +216,10 @@ describe('bot', () => {
             commands.commandsMap.get = jest.fn().mockReturnValueOnce();
             commands.aliasesMap.get = jest.fn().mockReturnValueOnce();
             // Act
-            return handleMessageCreate(message).then(() => {
-                // Assert
-                expect(commands.commandsMap.get).toHaveBeenCalledTimes(1);
-                expect(commands.commandsMap.get).toHaveBeenNthCalledWith(1, 'm');
-                expect(commands.aliasesMap.get).toHaveBeenCalledTimes(1);
-                expect(commands.aliasesMap.get).toHaveBeenCalledWith('m');
-            });
+            await handleMessageCreate(message);
+            // Assert
+            expect(commands.aliasesMap.get).toHaveBeenCalledTimes(1);
+            expect(commands.aliasesMap.get).toHaveBeenCalledWith('m');
         })
 
         test("if command exists, call command.execute", () => {
@@ -260,12 +247,12 @@ describe('bot', () => {
             });
         })
 
-        test("if command.execute returns error, log error", () => {
+        test("if command.execute returns error, log error", async () => {
             // Arrange
             const command = {
                 execute: jest.fn()
             }
-            commands.get = jest.fn().mockReturnValue(command);
+            commands.commandsMap.get = jest.fn().mockReturnValue(command);
             command.execute.mockImplementation(() => {
                 throw Error("error")
             });
@@ -276,18 +263,15 @@ describe('bot', () => {
                 },
                 reply: jest.fn()
             }
-            jest.mock('console', () => {
-                return {error: jest.fn()}
-            })
+            jest.spyOn(global.console, 'error').mockImplementation(() => {})
             // Act
-            return handleMessageCreate(message).catch(() => {
-                // Assert
-                expect(console.error).toHaveBeenCalledTimes(1);
-                expect(console.error).toHaveBeenCalledWith(new Error('error'))
-            });
+            await handleMessageCreate(message);
+            // Assert
+            expect(console.error).toHaveBeenCalledTimes(1);
+            expect(console.error).toHaveBeenCalledWith(new Error('error'))
         })
 
-        test("if command does not exist, return correct enum", () => {
+        test("if command does not exist, return correct enum", async() => {
             // Arrange
             commands.commandsMap.get = jest.fn().mockReturnValue();
             commands.aliasesMap.get = jest.fn().mockReturnValue();
@@ -299,11 +283,10 @@ describe('bot', () => {
                 reply: jest.fn()
             }
             // Act
-            return handleMessageCreate(message).then(() => {
-                // Assert
-                expect(message.reply).toHaveBeenCalledWith(enums.err.COMMAND_NOT_RECOGNIZED);
-                expect(message.reply).toHaveBeenCalledTimes(1);
-            });
+            await handleMessageCreate(message);
+            // Assert
+            expect(message.reply).toHaveBeenCalledWith(enums.err.COMMAND_NOT_RECOGNIZED);
+            expect(message.reply).toHaveBeenCalledTimes(1);
         })
     })
 
