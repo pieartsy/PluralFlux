@@ -24,9 +24,6 @@ jest.mock('../src/helpers/importHelper.js', () => {
         }
     }
 })
-jest.mock('console', () => {
-    return {error: jest.fn()}
-})
 
 import {messageHelper} from "../src/helpers/messageHelper.js";
 
@@ -197,15 +194,18 @@ describe('commands', () => {
             expect(message.reply).toHaveBeenCalledWith(expected);
         })
 
-        test('if pluralKitImport returns one error, reply with error', async () => {
+        test('if pluralKitImport returns one error, reply with error and log it', async () => {
             // Arrange
             importHelper.pluralKitImport = jest.fn().mockImplementation(() => {
                 throw new Error('error');
             });
+            jest.spyOn(global.console, 'error').mockImplementation(() => {})
             // Act
             await commands.importCommand(message, args);
             expect(message.reply).toHaveBeenCalledTimes(1);
             expect(message.reply).toHaveBeenCalledWith('error');
+            expect(console.error).toHaveBeenCalledTimes(1);
+            expect(console.error).toHaveBeenCalledWith(new Error('error'));
         })
     })
 
