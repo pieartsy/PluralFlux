@@ -39,9 +39,7 @@ All commands are prefixed by `pf;`. Currently only a few are implemented.
   - `proxy` Updates the proxy tag for a specific member based on their name. The proxy must be formatted with the tags surrounding the word 'text', for example: `pf;member jane proxy Jane:text` or `pf;member amal proxy A{text}` This is so the bot can detect what the proxy tags are. **Only one proxy can be set per member currently.**
 
 ## Upcoming
-- [ ] More than one proxy possible per member (including on import)
-- [ ] File attachments
-- [ ] React with x to delete message
-- [ ] System tag at the end of messages
-- [ ] Optionally keep proxy tag in message
-- [ ] Autoproxy front
+Check for, and add, feature requests in the [Issues tracker](https://github.com/pieartsy/PluralFlux/issues).
+
+## LLM note
+I do **not** use LLMs or other GenAI to generate code, nor do I ever plan to. _Very_ rarely, I ask questions of LLMs to troubleshoot bugs after search engines/StackOverflow/friends' knowledge has failed me, but that should lessen even more over time. As well, I used the Docker "Gordon" LLM to fix the many errors in my initial docker compose, but now that I have a devops person helping me, that should never happen again.
