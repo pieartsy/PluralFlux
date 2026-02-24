@@ -72,80 +72,82 @@ describe('commands', () => {
     describe('memberCommand', () => {
 
 
-        test('calls parseMemberCommand with the correct arguments', () => {
+        test('calls parseMemberCommand with the correct arguments', async () => {
             // Arrange
             memberHelper.parseMemberCommand = jest.fn().mockResolvedValue("parsed command");
             // Act
-            return commands.memberCommand(message, args).then(() => {
-                expect(memberHelper.parseMemberCommand).toHaveBeenCalledTimes(1);
-                expect(memberHelper.parseMemberCommand).toHaveBeenCalledWith(authorId, `${username}#${discriminator}`, args, attachmentUrl, attachmentExpiration);
-            });
-        })
+            await commands.memberCommand(message, args)
+            // Assert
+            expect(memberHelper.parseMemberCommand).toHaveBeenCalledTimes(1);
+            expect(memberHelper.parseMemberCommand).toHaveBeenCalledWith(authorId, `${username}#${discriminator}`, args, attachmentUrl, attachmentExpiration);
+        });
+    })
 
-        test('if parseMemberCommand returns error, log error and reply with error', () => {
-            // Arrange
-            memberHelper.parseMemberCommand = jest.fn().mockImplementation(() => {
-                throw new Error('error')
-            });
-            // Act
-            return commands.memberCommand(message, args).catch(() => {
-                expect(message.reply).toHaveBeenCalledTimes(1);
-                expect(message.reply).toHaveBeenCalledWith('error');
-                expect(console.error).toHaveBeenCalledWith(new Error('error'));
-            });
-        })
+    test('if parseMemberCommand returns error, log error and reply with error', async () => {
+        // Arrange
+        memberHelper.parseMemberCommand = jest.fn().mockImplementation(() => {
+            throw new Error('error')
+        });
+        // Act
+        await commands.memberCommand(message, args)
+        // Assert
+        expect(message.reply).toHaveBeenCalledTimes(1);
+        expect(message.reply).toHaveBeenCalledWith('error');
+    });
 
-        test('if parseMemberCommand returns embed, reply with embed', async () => {
-            // Arrange
-            const embed = new EmbedBuilder();
-            memberHelper.parseMemberCommand = jest.fn().mockResolvedValue(embed);
-            // Act
-            await commands.memberCommand(message, args);
-            expect(message.reply).toHaveBeenCalledTimes(1);
-            expect(message.reply).toHaveBeenCalledWith({embeds: [embed]})
-        })
+    test('if parseMemberCommand returns embed, reply with embed', async () => {
+        // Arrange
+        const embed = new EmbedBuilder();
+        memberHelper.parseMemberCommand = jest.fn().mockResolvedValue(embed);
+        // Act
+        await commands.memberCommand(message, args);
+        expect(message.reply).toHaveBeenCalledTimes(1);
+        expect(message.reply).toHaveBeenCalledWith({embeds: [embed]})
+    })
 
-        test('if parseMemberCommand returns object, reply with embed and content', () => {
-            // Arrange
-            const reply = {
-                errors: ['error', 'error2'],
-                success: 'success',
-                embed: {}
-            }
-            memberHelper.parseMemberCommand = jest.fn().mockResolvedValue(reply);
-            // Act
-            return commands.memberCommand(message, args).catch(() => {
-                // Assert
-                expect(message.reply).toHaveBeenCalledTimes(1);
-                expect(message.reply).toHaveBeenCalledWith({
-                    content: `success\n\n${enums.err.ERRORS_OCCURRED}\n\nerror\nerror2}`,
-                    embeds: [reply.embed]
-                })
-            });
+    test('if parseMemberCommand returns object, reply with embed and content', async () => {
+        // Arrange
+        const reply = {
+            errors: ['error', 'error2'],
+            success: 'success',
+            embed: {}
+        }
+        memberHelper.parseMemberCommand = jest.fn().mockResolvedValue(reply);
+        // Act
+        await commands.memberCommand(message, args);
+        // Assert
+        expect(message.reply).toHaveBeenCalledTimes(1);
+        expect(message.reply).toHaveBeenCalledWith({
+            content: `success\n\n${enums.err.ERRORS_OCCURRED}\n\nerror\nerror2`,
+            embeds: [reply.embed]
         })
     })
 
     describe('importCommand', () => {
-        test('if message includes --help and no attachmentURL, return help message', () => {
+        test('if message includes --help and no attachmentURL, return help message', async () => {
+            // Arrange
             const args = ["--help"];
             message.content = "pf;import --help";
             message.attachments.size = 0;
-            return commands.importCommand(message, args).then(() => {
-                expect(message.reply).toHaveBeenCalledTimes(1);
-                expect(message.reply).toHaveBeenCalledWith(enums.help.IMPORT);
-                expect(importHelper.pluralKitImport).not.toHaveBeenCalled();
-            })
+            // Act
+            await commands.importCommand(message, args)
+            // Assert
+            expect(message.reply).toHaveBeenCalledTimes(1);
+            expect(message.reply).toHaveBeenCalledWith(enums.help.IMPORT);
+            expect(importHelper.pluralKitImport).not.toHaveBeenCalled();
         })
 
-        test('if no args and no attachmentURL, return help message', () => {
+        test('if no args and no attachmentURL, return help message', async () => {
+            // Arrange
             const args = [""];
             message.content = 'pf;import'
             message.attachments.size = 0;
-            return commands.importCommand(message, args).then(() => {
-                expect(message.reply).toHaveBeenCalledTimes(1);
-                expect(message.reply).toHaveBeenCalledWith(enums.help.IMPORT);
-                expect(importHelper.pluralKitImport).not.toHaveBeenCalled();
-            })
+            // Act
+            await commands.importCommand(message, args)
+            // Assert
+            expect(message.reply).toHaveBeenCalledTimes(1);
+            expect(message.reply).toHaveBeenCalledWith(enums.help.IMPORT);
+            expect(importHelper.pluralKitImport).not.toHaveBeenCalled();
         })
 
         test('if attachment URL, call pluralKitImport with correct arguments', async () => {
@@ -195,7 +197,7 @@ describe('commands', () => {
             expect(message.reply).toHaveBeenCalledWith(expected);
         })
 
-        test('if pluralKitImport returns one error, reply with error', async() => {
+        test('if pluralKitImport returns one error, reply with error', async () => {
             // Arrange
             importHelper.pluralKitImport = jest.fn().mockImplementation(() => {
                 throw new Error('error');

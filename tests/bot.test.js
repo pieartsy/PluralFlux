@@ -75,7 +75,7 @@ describe('bot', () => {
 
     describe('handleMessageCreate', () => {
 
-        test('on message creation, if message is from bot, return', async() => {
+        test('on message creation, if message is from bot, return', async () => {
             // Arrange
             const message = {
                 author: {
@@ -87,7 +87,7 @@ describe('bot', () => {
             expect(res).toBeUndefined();
         })
 
-        test('on message creation, if message is empty, return', async() => {
+        test('on message creation, if message is empty, return', async () => {
             // Arrange
             const message = {
                 content: "            ",
@@ -127,7 +127,8 @@ describe('bot', () => {
                     bot: false
                 }
             }
-            jest.spyOn(global.console, 'error').mockImplementation(() => {})
+            jest.spyOn(global.console, 'error').mockImplementation(() => {
+            })
             // Act
             await handleMessageCreate(message);
             // Assert
@@ -137,7 +138,7 @@ describe('bot', () => {
             expect(console.error).toHaveBeenCalledWith(new Error('error'));
         })
 
-        test("if no command after prefix, return correct enum", async() => {
+        test("if no command after prefix, return correct enum", async () => {
             // Arrange
             const message = {
                 content: "pf;",
@@ -154,7 +155,7 @@ describe('bot', () => {
             expect(webhookHelper.sendMessageAsMember).not.toHaveBeenCalled();
         })
 
-        test("if command after prefix, call parseCommandArgs and commandsMap.get", async() => {
+        test("if command after prefix, call parseCommandArgs and commandsMap.get", async () => {
             // Arrange
             const message = {
                 content: "pf;help",
@@ -177,7 +178,7 @@ describe('bot', () => {
             expect(webhookHelper.sendMessageAsMember).not.toHaveBeenCalled();
         })
 
-        test('if commands.commandsMap.get returns undefined, call aliasesMap.get and commandsMap.get again with that value', async() => {
+        test('if commands.commandsMap.get returns undefined, call aliasesMap.get and commandsMap.get again with that value', async () => {
             // Arrange
             const message = {
                 content: "pf;m",
@@ -202,7 +203,7 @@ describe('bot', () => {
         })
 
 
-        test('if aliasesMap.get returns undefined, do not call commandsMap again', async() => {
+        test('if aliasesMap.get returns undefined, do not call commandsMap again', async () => {
             // Arrange
             const message = {
                 content: "pf;m",
@@ -223,7 +224,7 @@ describe('bot', () => {
             expect(commands.aliasesMap.get).toHaveBeenCalledWith('m');
         })
 
-        test("if command exists, call command.execute", () => {
+        test("if command exists, call command.execute", async () => {
             // Arrange
             const message = {
                 content: "pf;member test",
@@ -240,58 +241,58 @@ describe('bot', () => {
             command.execute = jest.fn().mockResolvedValue();
 
             // Act
-            return handleMessageCreate(message).then(() => {
-                // Assert
-                expect(command.execute).toHaveBeenCalledTimes(1);
-                expect(command.execute).toHaveBeenCalledWith(message, ['test']);
-                expect(webhookHelper.sendMessageAsMember).not.toHaveBeenCalled();
-            });
-        })
-
-        test("if command.execute returns error, log error", async () => {
-            // Arrange
-            const command = {
-                execute: jest.fn()
-            }
-            commands.commandsMap.get = jest.fn().mockReturnValue(command);
-            command.execute.mockImplementation(() => {
-                throw Error("error")
-            });
-            const message = {
-                content: "pf;member test",
-                author: {
-                    bot: false
-                },
-                reply: jest.fn()
-            }
-            jest.spyOn(global.console, 'error').mockImplementation(() => {})
-            // Act
-            await handleMessageCreate(message);
+            await handleMessageCreate(message)
             // Assert
-            expect(console.error).toHaveBeenCalledTimes(1);
-            expect(console.error).toHaveBeenCalledWith(new Error('error'))
-        })
-
-        test("if command does not exist, return correct enum", async() => {
-            // Arrange
-            commands.commandsMap.get = jest.fn().mockReturnValue();
-            commands.aliasesMap.get = jest.fn().mockReturnValue();
-            const message = {
-                content: "pf;asdfjlas",
-                author: {
-                    bot: false
-                },
-                reply: jest.fn()
-            }
-            // Act
-            await handleMessageCreate(message);
-            // Assert
-            expect(message.reply).toHaveBeenCalledWith(enums.err.COMMAND_NOT_RECOGNIZED);
-            expect(message.reply).toHaveBeenCalledTimes(1);
-        })
+            expect(command.execute).toHaveBeenCalledTimes(1);
+            expect(command.execute).toHaveBeenCalledWith(message, ['test']);
+            expect(webhookHelper.sendMessageAsMember).not.toHaveBeenCalled();
+        });
     })
 
-    test('login calls client.login with correct argument', async() => {
+    test("if command.execute returns error, log error", async () => {
+        // Arrange
+        const command = {
+            execute: jest.fn()
+        }
+        commands.commandsMap.get = jest.fn().mockReturnValue(command);
+        command.execute.mockImplementation(() => {
+            throw Error("error")
+        });
+        const message = {
+            content: "pf;member test",
+            author: {
+                bot: false
+            },
+            reply: jest.fn()
+        }
+        jest.spyOn(global.console, 'error').mockImplementation(() => {
+        })
+        // Act
+        await handleMessageCreate(message);
+        // Assert
+        expect(console.error).toHaveBeenCalledTimes(1);
+        expect(console.error).toHaveBeenCalledWith(new Error('error'))
+    })
+
+    test("if command does not exist, return correct enum", async () => {
+        // Arrange
+        commands.commandsMap.get = jest.fn().mockReturnValue();
+        commands.aliasesMap.get = jest.fn().mockReturnValue();
+        const message = {
+            content: "pf;asdfjlas",
+            author: {
+                bot: false
+            },
+            reply: jest.fn()
+        }
+        // Act
+        await handleMessageCreate(message);
+        // Assert
+        expect(message.reply).toHaveBeenCalledWith(enums.err.COMMAND_NOT_RECOGNIZED);
+        expect(message.reply).toHaveBeenCalledTimes(1);
+    })
+
+    test('login calls client.login with correct argument', async () => {
         // Arrange
         client.login = jest.fn().mockResolvedValue();
         // Act
