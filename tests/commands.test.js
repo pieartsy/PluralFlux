@@ -28,7 +28,7 @@ jest.mock('console', () => {
     return {error: jest.fn()}
 })
 
-import {messageHelper, prefix} from "../src/helpers/messageHelper.js";
+import {messageHelper} from "../src/helpers/messageHelper.js";
 
 import {memberHelper} from "../src/helpers/memberHelper.js";
 import {EmbedBuilder} from "@fluxerjs/core";
@@ -42,28 +42,31 @@ describe('commands', () => {
     const username = 'somePerson'
     const attachmentUrl = 'oya.json';
     const attachmentExpiration = new Date('2026-01-01').toDateString();
-    const message = {
-        author: {
-            username: username,
-            id: authorId,
-            discriminator: discriminator,
-        },
-        attachments: {
-            size: 1,
-            first: jest.fn().mockImplementation(() => ({
-                expires_at: attachmentExpiration,
-                url: attachmentUrl
-            }))
-        },
-        reply: jest.fn().mockResolvedValue(),
-        content: 'pf;import'
-    }
+    let message;
     const args = ['new']
 
     beforeEach(() => {
 
         jest.resetModules();
         jest.clearAllMocks();
+        message= {
+            author: {
+                username: username,
+                id: authorId,
+                discriminator: discriminator,
+            },
+            attachments: {
+                size: 1,
+                first: jest.fn().mockImplementation(() => {
+                    return {
+                        url: attachmentUrl,
+                        expires_at: attachmentExpiration
+                    }
+                })
+            },
+            reply: jest.fn().mockResolvedValue(),
+            content: 'pf;import'
+        }
     })
 
     describe('memberCommand', () => {
@@ -143,7 +146,7 @@ describe('commands', () => {
         test('if attachment URL, call pluralKitImport with correct arguments', async () => {
             // Arrange
             const args = [""];
-            message.content = 'pf;import'
+            message.content = 'pf;import';
             importHelper.pluralKitImport = jest.fn().mockResolvedValue('success');
             // Act
             await commands.importCommand(message, args);
