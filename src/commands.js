@@ -30,8 +30,14 @@ cmds.memberCommand = async function(message, args) {
     const authorFull = `${message.author.username}#${message.author.discriminator}`
     const attachmentUrl = message.attachments.size > 0 ? message.attachments.first().url : null;
     const attachmentExpires = message.attachments.size > 0 ? message.attachments.first().expires_at : null;
-
-    const reply = await memberHelper.parseMemberCommand(message.author.id, authorFull, args, attachmentUrl, attachmentExpires).catch(async (e) =>{console.error(e); await message.reply(e.message);});
+    let reply;
+    try {
+        reply = await memberHelper.parseMemberCommand(message.author.id, authorFull, args, attachmentUrl, attachmentExpires)
+    }
+    catch(e) {
+        console.log(e);
+        await message.reply(e.message);
+    }
 
     if (typeof reply === 'string') {
         await message.reply(reply);
@@ -87,24 +93,29 @@ cmds.importCommand = async function(message, args) {
     if ((message.content.includes('--help') || (args[0] === '' && args.length === 1)) && !attachmentUrl ) {
         return await message.reply(enums.help.IMPORT);
     }
-    return await importHelper.pluralKitImport(message.author.id, attachmentUrl).then(async (successfullyAdded) => {
+    try {
+        const successfullyAdded = await importHelper.pluralKitImport(message.author.id, attachmentUrl)
         await message.reply(successfullyAdded);
-    }).catch(async (error) => {
+    }
+    catch(error) {
         if (error instanceof AggregateError) {
             // errors.message can be a list of successfully added members, or say that none were successful.
-            let errorsText = `${error.message}.\n\n${enums.err.ERRORS_OCCURRED}\n${error.errors.join('\n')}`;
-
-            await message.reply(errorsText).catch(async () => {
+            let errorsText = `${error.message}.\n\n${enums.err.ERRORS_OCCURRED}\n\n${error.errors.join('\n')}`;
+            if (errorsText.length > 2000) {
                 const returnedBuffer = messageHelper.returnBufferFromText(errorsText);
-                await message.reply({content: returnedBuffer.text, files: [{ name: 'text.txt', data: returnedBuffer.file }]
+                await message.reply({
+                    content: returnedBuffer.text, files: [{name: 'text.txt', data: returnedBuffer.file}]
                 })
-            });
+            } else {
+                await message.reply(errorsText);
+            }
         }
         // If just one error was returned.
         else {
+            console.error(error);
             return await message.reply(error.message);
         }
-    })
+    }
 }
 
 export const commands = cmds;

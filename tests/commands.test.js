@@ -40,7 +40,7 @@ describe('commands', () => {
     const authorId = '123';
     const discriminator = '123';
     const username = 'somePerson'
-    const attachmentUrl = 'oya.png';
+    const attachmentUrl = 'oya.json';
     const attachmentExpiration = new Date('2026-01-01').toDateString();
     const message = {
         author: {
@@ -56,6 +56,7 @@ describe('commands', () => {
             }))
         },
         reply: jest.fn().mockResolvedValue(),
+        content: 'pf;import'
     }
     const args = ['new']
 
@@ -89,16 +90,14 @@ describe('commands', () => {
             });
         })
 
-        test('if parseMemberCommand returns embed, reply with embed', () => {
+        test('if parseMemberCommand returns embed, reply with embed', async () => {
             // Arrange
             const embed = new EmbedBuilder();
-            memberHelper.parseMemberCommand = jest.fn().mockResolvedValue();
+            memberHelper.parseMemberCommand = jest.fn().mockResolvedValue(embed);
             // Act
-            return commands.memberCommand(message, args).catch(() => {
-                // Assert
-                expect(message.reply).toHaveBeenCalledTimes(1);
-                expect(message.reply).toHaveBeenCalledWith({embeds: [embed]})
-            });
+            await commands.memberCommand(message, args);
+            expect(message.reply).toHaveBeenCalledTimes(1);
+            expect(message.reply).toHaveBeenCalledWith({embeds: [embed]})
         })
 
         test('if parseMemberCommand returns object, reply with embed and content', () => {
@@ -141,39 +140,52 @@ describe('commands', () => {
             })
         })
 
-        test('if attachment URL, call pluralKitImport with correct arguments', () => {
-            const args = [""];
-            message.content = 'pf;import'
-            importHelper.pluralKitImport = jest.fn().mockResolvedValue('success');
-            return commands.importCommand(message, args).then(() => {
-                expect(message.reply).toHaveBeenCalledTimes(1);
-                expect(message.reply).toHaveBeenCalledWith('success');
-                expect(importHelper.pluralKitImport).toHaveBeenCalledTimes(1);
-                expect(importHelper.pluralKitImport).toHaveBeenCalledWith(authorId, attachmentUrl);
-            })
-        })
-
-        test('if pluralKitImport returns aggregate errors, send errors.', () => {
-            const args = [""];
-            message.content = 'pf;import'
-            importHelper.pluralKitImport = jest.fn().mockImplementation(() => {throw new AggregateError(['error1', 'error2'], 'errors')});
-            return commands.importCommand(message, args).catch(() => {
-                expect(message.reply).toHaveBeenCalledTimes(1);
-                expect(message.reply).toHaveBeenCalledWith(`errors. \n\n${enums.err.ERRORS_OCCURRED}\n\nerror1\nerror2`);
-            })
-        })
-
-        test('if message.reply throws error, call returnBufferFromText and message.reply again.', () => {
+        test('if attachment URL, call pluralKitImport with correct arguments', async () => {
             // Arrange
             const args = [""];
             message.content = 'pf;import'
-            message.reply = jest.fn().mockImplementationOnce(() => {throw e})
-            messageHelper.returnBufferFromText = jest.fn().mockResolvedValue({file: 'test.txt', text: 'normal content'});
-            return commands.importCommand(message, args).catch(() => {
-                expect(message.reply).toHaveBeenCalledTimes(2);
-                expect(message.reply).toHaveBeenNthCalledWith(1, {content: 'normal content', files: [{name: 'test.txt', data: 'test.txt' }],});
-            })
+            importHelper.pluralKitImport = jest.fn().mockResolvedValue('success');
+            // Act
+            await commands.importCommand(message, args);
+            // Assert
+            expect(message.reply).toHaveBeenCalledTimes(1);
+            expect(message.reply).toHaveBeenCalledWith('success');
+            expect(importHelper.pluralKitImport).toHaveBeenCalledTimes(1);
+            expect(importHelper.pluralKitImport).toHaveBeenCalledWith(authorId, attachmentUrl);
         })
+
+        test('if pluralKitImport returns aggregate errors with length <= 2000, send errors.', async() => {
+            // Arrange
+            const args = [""];
+            message.content = 'pf;import'
+            importHelper.pluralKitImport = jest.fn().mockImplementation(() => {
+                throw new AggregateError(['error1', 'error2'], 'errors')
+            });
+            // Act
+            await commands.importCommand(message, args);
+            // Assert
+            expect(message.reply).toHaveBeenCalledTimes(1);
+            expect(message.reply).toHaveBeenCalledWith(`errors.\n\n${enums.err.ERRORS_OCCURRED}\n\nerror1\nerror2`);
+        })
+
+        test('if pluralKitImport returns aggregate errors with length > 2000, call returnBufferFromText and message.reply.', async () => {
+            // Arrange
+            const args = [""];
+            const text = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbb";
+            const file = Buffer.from(text, 'utf-8');
+            const returnedBuffer = {text: 'bbbb', file: file};
+            const expected = {content: returnedBuffer.text, files: [{name: 'text.txt', data: returnedBuffer.file}]};
+
+            importHelper.pluralKitImport = jest.fn().mockImplementation(() => {
+                throw new AggregateError([text, 'error2'], 'errors')
+            });
+            messageHelper.returnBufferFromText = jest.fn().mockReturnValue(returnedBuffer);
+            // Act
+            await commands.importCommand(message, args);
+            // Assert
+            expect(message.reply).toHaveBeenCalledTimes(1);
+            expect(message.reply).toHaveBeenCalledWith(expected);
+            })
     })
 
     afterEach(() => {
