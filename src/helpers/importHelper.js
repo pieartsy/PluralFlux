@@ -45,7 +45,6 @@ ih.pluralKitImport = async function (authorId, attachmentUrl= null) {
             }
         }
         catch(e) {
-            console.error(e);
             errors.push(e);
         }
     }
