@@ -50,45 +50,50 @@ describe('importHelper', () => {
 
     describe('pluralKitImport', () => {
 
-        test('if no attachment URL, throws error', () => {
-            return importHelper.pluralKitImport(authorId).catch((e) => {
-                expect(e).toEqual(new Error(enums.err.NOT_JSON_FILE));
-            })
+        test('if no attachment URL, throws error', async() => {
+            await expect(importHelper.pluralKitImport(authorId)).rejects.toThrow(enums.err.NOT_JSON_FILE);
         })
 
-        test('if attachment URL, calls fetch and addFullMember and returns value', () => {
+        test('if attachment URL, calls fetch and addFullMember and returns value', async() => {
             memberHelper.addFullMember.mockResolvedValue(mockAddReturn);
-            return importHelper.pluralKitImport(authorId, attachmentUrl).then((res) => {
-                expect(fetch).toHaveBeenCalledTimes(1);
-                expect(fetch).toHaveBeenCalledWith(attachmentUrl);
-                expect(memberHelper.addFullMember).toHaveBeenCalledWith(authorId, mockImportedMember.name, mockImportedMember.display_name, 'SP{text}', mockImportedMember.avatar_url);
-                expect(res).toEqual(`Successfully added members: ${mockAddReturnMember.name}`)
-            })
+            const result = await importHelper.pluralKitImport(authorId, attachmentUrl);
+
+            expect(fetch).toHaveBeenCalledTimes(1);
+            expect(fetch).toHaveBeenCalledWith(attachmentUrl);
+            expect(memberHelper.addFullMember).toHaveBeenCalledWith(authorId, mockImportedMember.name, mockImportedMember.display_name, 'SP{text}', mockImportedMember.avatar_url);
+            expect(result).toEqual(`Successfully added members: ${mockAddReturnMember.name}`)
         })
 
-        test('if addFullMember returns nothing, return correct enum', () => {
+
+        test('if fetch fails, throws error', async() => {
+            global.fetch = jest.fn().mockRejectedValue("can't get");
+            await expect(importHelper.pluralKitImport(authorId, attachmentUrl)).rejects.toThrow(enums.err.CANNOT_FETCH_RESOURCE, "can't get file");
+        })
+
+        test('if json conversion fails, throws error', async() => {
+            global.fetch = jest.fn().mockResolvedValue({
+                ok: true,
+                json: () => Promise.reject("not json")
+            })
+            await expect(importHelper.pluralKitImport(authorId, attachmentUrl)).rejects.toThrow(enums.err.NOT_JSON_FILE, "not json");
+        })
+
+        test('if addFullMember returns nothing, return correct enum', async () => {
             memberHelper.addFullMember.mockResolvedValue();
-            return importHelper.pluralKitImport(authorId, attachmentUrl).catch((res) => {
-                expect(res).toEqual(new AggregateError([], enums.err.NO_MEMBERS_IMPORTED));
-            })
+            await expect(importHelper.pluralKitImport(authorId, attachmentUrl)).rejects.toThrow(([], enums.err.NO_MEMBERS_IMPORTED));
         })
 
-        test('if addFullMember returns nothing and throws error, catch and return error', () => {
+        test('if addFullMember returns nothing and throws error, catch and return error', async() => {
             memberHelper.addFullMember.mockResolvedValue(new Error('error'));
-            return importHelper.pluralKitImport(authorId, attachmentUrl).catch((res) => {
-                expect(res).toEqual(new AggregateError([new Error('error')], enums.err.NO_MEMBERS_IMPORTED))
-            })
+            await expect(importHelper.pluralKitImport(authorId, attachmentUrl)).rejects.toThrow(([new Error('error')], enums.err.NO_MEMBERS_IMPORTED));
         })
 
-        test('if addFullMember returns member but also contains error, return member and error', () => {
+        test('if addFullMember returns member but also contains error, return member and error', async () => {
             // Arrange
             const memberObj = {errors: ['error'], member: mockAddReturnMember};
             memberHelper.addFullMember.mockResolvedValue(memberObj);
-            // Act
-            return importHelper.pluralKitImport(authorId, attachmentUrl).catch((res) => {
-                // Assert
-                expect(res).toEqual(new AggregateError(['error'], `Successfully added members: ${mockAddReturnMember.name}`))
-            })
+            // Act & Assert
+            await expect(importHelper.pluralKitImport(authorId, attachmentUrl)).rejects.toThrow((['error'], `Successfully added members: ${mockAddReturnMember.name}`));
         })
 
     })
