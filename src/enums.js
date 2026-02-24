@@ -22,7 +22,8 @@ helperEnums.err = {
     NO_MEMBERS_IMPORTED: 'No members were imported.',
     ERRORS_OCCURRED: "These errors occurred:",
     COMMAND_NOT_RECOGNIZED: "Command not recognized. Try typing `pf;help` for command list.",
-    SET_TO_NULL: "It has been set to null instead."
+    SET_TO_NULL: "It has been set to null instead.",
+    CANNOT_FETCH_RESOURCE: "Could not download the file at this time."
 }
 
 helperEnums.help = {
