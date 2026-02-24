@@ -1,46 +1,63 @@
-import { Client, Events } from '@fluxerjs/core';
+import { Client, Events, Message } from '@fluxerjs/core';
 import { messageHelper } from "./helpers/messageHelper.js";
 import {enums} from "./enums.js";
 import {commands} from "./commands.js";
 import {webhookHelper} from "./helpers/webhookHelper.js";
-import * as env from 'dotenv';
+import env from 'dotenv';
+import {utils} from "./helpers/utils.js";
 
-env.config();
+env.config({path: './.env'});
 
-const token = process.env.FLUXER_BOT_TOKEN;
+export const token = process.env.FLUXER_BOT_TOKEN;
 
 if (!token) {
     console.error("Missing FLUXER_BOT_TOKEN environment variable.");
     process.exit(1);
 }
 
-const client = new Client({ intents: 0 });
+export const client = new Client({ intents: 0 });
 
 client.on(Events.MessageCreate, async (message) => {
-    try {
-        // Ignore bots and messages without content
-        if (message.author.bot || !message.content) return;
+    await handleMessageCreate(message);
+});
 
+/**
+ * Calls functions based off the contents of a message object.
+ *
+ * @async
+ * @param {Message} message - The message object
+ *
+ **/
+export const handleMessageCreate = async function(message) {
+    try {
         // Parse command and arguments
         const content = message.content.trim();
+        // Ignore bots and messages without content
+        if (message.author.bot || content.length === 0) return;
 
         // If message doesn't start with the bot prefix, it could still be a message with a proxy tag. If it's not, return.
         if (!content.startsWith(messageHelper.prefix)) {
-            await webhookHelper.sendMessageAsMember(client, message, content).catch((e) => {
+            await webhookHelper.sendMessageAsMember(client, message).catch((e) => {
                 throw e
             });
             return;
         }
 
         const commandName = content.slice(messageHelper.prefix.length).split(" ")[0];
+
         // If there's no command name (ie just the prefix)
         if (!commandName) return await message.reply(enums.help.SHORT_DESC_PLURALFLUX);
 
         const args = messageHelper.parseCommandArgs(content, commandName);
 
-        const command = commands.get(commandName);
+        let command = commands.commandsMap.get(commandName)
+        if (!command) {
+            const commandFromAlias = commands.aliasesMap.get(commandName);
+            command = commandFromAlias ? commands.commandsMap.get(commandFromAlias.command) : null;
+        }
+
         if (command) {
-            await command.execute(message, client, args).catch(e => {
+            await command.execute(message, args).catch(e => {
                 throw e
             });
         }
@@ -52,7 +69,7 @@ client.on(Events.MessageCreate, async (message) => {
         console.error(error);
         // return await message.reply(error.message);
     }
-});
+}
 
 client.on(Events.Ready, () => {
     console.log(`Logged in as ${client.user?.username}`);
@@ -61,27 +78,23 @@ client.on(Events.Ready, () => {
 let guildCount = 0;
 client.on(Events.GuildCreate, () => {
     guildCount++;
-    callback();
+    debouncePrintGuilds();
 });
 
 function printGuilds() {
     console.log(`Serving ${client.guilds.size} guild(s)`);
 }
 
-const callback  = Debounce(printGuilds, 2000);
+const debouncePrintGuilds  = utils.debounce(printGuilds, 2000);
+export const debounceLogin  = utils.debounce(client.login, 60000);
 
-function Debounce(func, delay) {
-    let timeout = null;
-    return function (...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func(...args), delay);
-    };
-}
+(async () => {
+    try {
 
-try {
-    await client.login(token);
-    // await db.check_connection();
-} catch (err) {
-    console.error('Login failed:', err);
-    process.exit(1);
-}
+        await client.login(token);
+        // await db.check_connection();
+    } catch (err) {
+        console.error('Login failed:', err);
+        process.exit(1);
+    }
+})();

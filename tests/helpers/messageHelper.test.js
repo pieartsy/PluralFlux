@@ -1,11 +1,6 @@
 const env = require('dotenv');
 env.config();
 
-const {memberHelper} = require("../../src/helpers/memberHelper.js");
-const {Message} = require("@fluxerjs/core");
-const {fs} = require('fs');
-const {enums} = require('../../src/enums');
-const {tmp, setGracefulCleanup} = require('tmp');
 
 jest.mock('../../src/helpers/memberHelper.js', () => {
     return {memberHelper: {
@@ -13,10 +8,7 @@ jest.mock('../../src/helpers/memberHelper.js', () => {
     }}
 })
 
-jest.mock('tmp');
-jest.mock('fs');
-jest.mock('@fluxerjs/core');
-
+const {memberHelper} = require("../../src/helpers/memberHelper.js");
 const {messageHelper} = require("../../src/helpers/messageHelper.js");
 
 describe('messageHelper', () => {

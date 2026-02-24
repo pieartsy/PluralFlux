@@ -1,45 +1,151 @@
 import {database} from '../database.js';
 import {enums} from "../enums.js";
-import {EmptyResultError, Op} from "sequelize";
+import {Op} from "sequelize";
 import {EmbedBuilder} from "@fluxerjs/core";
+import {utils} from "./utils.js";
 
 const mh = {};
 
-// Has an empty "command" to parse the help message properly
-const commandList = ['--help', 'new', 'remove', 'name', 'list', 'displayName', 'proxy', 'propic', ''];
+const commandList = ['new', 'remove', 'name', 'list', 'displayname', 'proxy', 'propic'];
+const newAndRemoveCommands = ['new', 'remove'];
 
 /**
- * Parses through the subcommands that come after "pf;member" and calls functions accordingly.
+ * Parses through the subcommands that come after "pf;member" to identify member name, command, and associated values.
  *
  * @async
  * @param {string} authorId - The id of the message author
  * @param {string} authorFull - The username and discriminator of the message author
  * @param {string[]} args - The message arguments
- * @param {string | null} attachmentUrl - The message attachment url.
- * @param {string | null} attachmentExpiration - The message attachment expiration (if uploaded via Fluxer)
+ * @param {string | null} [attachmentUrl] - The attachment URL, if any
+ * @param {string | null} [attachmentExpiration] - The attachment expiry date, if any
  * @returns {Promise<string>} A success message.
  * @returns {Promise <EmbedBuilder>} A list of 25 members as an embed.
- * @returns {Promise<{EmbedBuilder, [], string}>} A member info embed + info/errors.
+ * @returns {Promise <EmbedBuilder>} A list of member commands and descriptions.
+ * @returns {Promise<{EmbedBuilder, string[], string}>} A member info embed + info/errors.
  * @throws {Error}
  */
 mh.parseMemberCommand = async function (authorId, authorFull, args, attachmentUrl = null, attachmentExpiration = null) {
-    let member;
+    let memberName, command, isHelp = false;
     // checks whether command is in list, otherwise assumes it's a name
-    if (!commandList.includes(args[0]) && !args[1]) {
-        member = await mh.getMemberInfo(authorId, args[0]);
+
+    // ex: pf;member remove, pf;member remove --help
+    // ex: pf;member, pf;member --help
+    if (args.length === 0 || args[0] === '--help' || args[0] === '') {
+        return mh.getMemberCommandInfo();
     }
-    switch (args[0]) {
-        case '--help':
-        case '':
-            return mh.getMemberCommandInfo();
+    // ex: pf;member remove somePerson
+    if (commandList.includes(args[0])) {
+        command = args[0];
+        if (args[1]) {
+            memberName = args[1];
+        }
+    }
+    // ex: pf;member somePerson propic
+    else if (args[1] && commandList.includes(args[1])) {
+        command = args[1];
+        memberName = args[0];
+    }
+    // ex: pf;member somePerson
+    else if (!commandList.includes(args[0]) && !args[1]) {
+        memberName = args[0];
+    }
+    if (args[1] === "--help" || command && (memberName === "--help" || !memberName && command !== 'list')) {
+        isHelp = true;
+    }
+
+    return await mh.memberArgumentHandler(authorId, authorFull, isHelp, command, memberName, args, attachmentUrl, attachmentExpiration)
+}
+
+/**
+ * Parses through the command, argument, and values and calls appropriate functions based on their presence or absence.
+ *
+ * @async
+ * @param {string} authorId - The id of the message author
+ * @param {string} authorFull - The username and discriminator of the message author
+ * @param {boolean} isHelp - Whether this is a help command or not
+ * @param {string | null} [command] - The command name
+ * @param {string | null} [memberName] - The member name
+ * @param {string[]} [args] - The message arguments
+ * @param {string | null} [attachmentUrl] - The attachment URL, if any
+ * @param {string | null} [attachmentExpiration] - The attachment expiry date, if any
+ * @returns {Promise<string>} A success message.
+ * @returns {Promise <EmbedBuilder>} A list of 25 members as an embed.
+ * @returns {Promise <EmbedBuilder>} A list of member commands and descriptions.
+ * @returns {Promise<{EmbedBuilder, [string], string}>} A member info embed + info/errors.
+ * @throws {Error}
+ */
+mh.memberArgumentHandler = async function(authorId, authorFull, isHelp, command = null, memberName = null, args = [], attachmentUrl = null, attachmentExpiration = null) {
+    if (!command && !memberName && !isHelp) {
+        throw new Error(enums.err.COMMAND_NOT_RECOGNIZED);
+    }
+    else if (isHelp) {
+        return mh.sendHelpEnum(command);
+    }
+    else if (command === "list") {
+        return await mh.getAllMembersInfo(authorId, authorFull);
+    }
+    else if (!memberName && !isHelp) {
+        throw new Error(enums.err.NO_MEMBER);
+    }
+
+    // remove memberName and command from values to reduce confusion
+    const values = args.slice(2);
+
+    // ex: pf;member blah blah
+    if (command && memberName && (values.length > 0 || newAndRemoveCommands.includes(command) || attachmentUrl)) {
+        return await mh.memberCommandHandler(authorId, command, memberName, values, attachmentUrl, attachmentExpiration).catch((e) => {throw e});
+    }
+    else if (memberName && values.length === 0) {
+        return await mh.sendCurrentValue(authorId, memberName, command).catch((e) => {throw e});
+    }
+}
+
+/**
+ * Sends the current value of a field based on the command.
+ *
+ * @async
+ * @param {string} authorId - The id of the message author
+ * @param {string} memberName - The name of the member
+ * @param {string | null} [command] - The command being called to query a value.
+ * @returns {Promise<string>} A success message.
+ * @returns {Promise <EmbedBuilder>} A list of 25 members as an embed.
+ * @returns {Promise <EmbedBuilder>} A list of member commands and descriptions.
+ * @returns {Promise<{EmbedBuilder, string[], string}>} A member info embed + info/errors.
+ */
+mh.sendCurrentValue = async function(authorId, memberName, command= null) {
+    const member = await mh.getMemberByName(authorId, memberName).then((m) => {
+        if (!m) throw new Error(enums.err.NO_MEMBER);
+        return m;
+    });
+
+    if (!command) {
+        return mh.getMemberInfo(member);
+    }
+
+    switch (command) {
+        case 'name':
+            return `The name of ${member.name} is \"${member.name}\" but you probably already knew that!`;
+        case 'displayname':
+            return member.displayname ? `The display name for ${member.name} is \"${member.displayname}\".` : `Display name ${enums.err.NO_VALUE}`;
+        case 'proxy':
+            return member.proxy ? `The proxy for ${member.name} is \"${member.proxy}\".` : `Proxy ${enums.err.NO_VALUE}`;
+        case 'propic':
+            return member.propic ? `The profile picture for ${member.name} is \"${member.propic}\".` : `Propic ${enums.err.NO_VALUE}`;
+    }
+}
+
+/**
+ * Sends the help text associated with a command.
+ *
+ * @param {string} command - The command being called.
+ * @returns {string} - The help text associated with a command.
+ */
+mh.sendHelpEnum = function(command) {
+    switch (command) {
         case 'new':
-            return await mh.addNewMember(authorId, args, attachmentUrl).catch((e) => {
-                throw e
-            });
+            return enums.help.NEW;
         case 'remove':
-            return await mh.removeMember(authorId, args).catch((e) => {
-                throw e
-            });
+            return enums.help.REMOVE;
         case 'name':
             return enums.help.NAME;
         case 'displayname':
@@ -49,35 +155,40 @@ mh.parseMemberCommand = async function (authorId, authorFull, args, attachmentUr
         case 'propic':
             return enums.help.PROPIC;
         case 'list':
-            if (args[1] && args[1] === "--help") {
-                return enums.help.LIST;
-            }
-            return await mh.getAllMembersInfo(authorId, authorFull).catch((e) => {
-                throw e
-            });
+            return enums.help.LIST;
     }
-    switch (args[1]) {
+}
+
+/**
+ * Handles the commands that need to call other update/edit commands.
+ *
+ * @async
+ * @param {string} authorId - The id of the message author
+ * @param {string} memberName - The name of the member
+ * @param {string} command - The command being called.
+ * @param {string[]} values - The values to be passed in. Only includes the values after member name and command name.
+ * @param {string | null} attachmentUrl - The attachment URL, if any
+ * @param {string | null} attachmentExpiration - The attachment expiry date, if any
+ * @returns {Promise<string>} A success message.
+ * @returns {Promise <EmbedBuilder>} A list of 25 members as an embed.
+ * @returns {Promise <EmbedBuilder>} A list of member commands and descriptions.
+ * @returns {Promise<{EmbedBuilder, [string], string}>} A member info embed + info/errors.
+ * @throws {Error}
+ */
+mh.memberCommandHandler = async function(authorId, command, memberName, values, attachmentUrl = null, attachmentExpiration = null) {
+    switch (command) {
+        case 'new':
+            return await mh.addNewMember(authorId, memberName, values, attachmentUrl, attachmentExpiration).catch((e) => {throw e});
+        case 'remove':
+            return await mh.removeMember(authorId, memberName).catch((e) => {throw e});
         case 'name':
-            return await mh.updateName(authorId, args).catch((e) => {
-                throw e
-            });
+            return await mh.updateName(authorId, memberName, values[0]).catch((e) => {throw e});
         case 'displayname':
-            return await mh.updateDisplayName(authorId, args).catch((e) => {
-                throw e
-            });
+            return await mh.updateDisplayName(authorId, memberName, values[0]).catch((e) => {throw e});
         case 'proxy':
-            if (!args[2]) return await mh.getProxyByMember(authorId, args[0]).catch((e) => {
-                throw e
-            });
-            return await mh.updateProxy(authorId, args).catch((e) => {
-                throw e
-            });
+            return await mh.updateProxy(authorId, memberName, values[0]).catch((e) => {throw e});
         case 'propic':
-            return await mh.updatePropic(authorId, args, attachmentUrl, attachmentExpiration).catch((e) => {
-                throw e
-            });
-        default:
-            return member;
+            return await mh.updatePropic(authorId, memberName, values[0], attachmentUrl, attachmentExpiration).catch((e) => {throw e});
     }
 }
 
@@ -86,24 +197,23 @@ mh.parseMemberCommand = async function (authorId, authorFull, args, attachmentUr
  *
  * @async
  * @param {string} authorId - The author of the message
- * @param {string[]} args - The message arguments
- * @param {string | null} attachmentURL - The attachment URL, if any exists
- * @returns {Promise<string>} A successful addition.
- * @throws {Error}  When the member exists, or creating a member doesn't work.
+ * @param {string} memberName - The member name
+ * @param {string[]} values - The arguments following the member name and command
+ * @param {string | null} [attachmentUrl] - The attachment URL, if any
+ * @param {string | null} [attachmentExpiration] - The attachment expiry date, if any
+ * @returns {Promise<{EmbedBuilder, string[], string}>} A successful addition.
+ * @throws {Error}  When creating a member doesn't work.
  */
-mh.addNewMember = async function (authorId, args, attachmentURL = null) {
-    if (args[1] && args[1] === "--help" || !args[1]) {
-        return enums.help.NEW;
-    }
-    const memberName = args[1];
-    const displayName = args[2];
-    const proxy = args[3];
-    const propic = args[4] ?? attachmentURL;
+mh.addNewMember = async function (authorId, memberName, values, attachmentUrl = null, attachmentExpiration = null) {
+    const displayName = values[0];
+    const proxy = values[1];
+    const propic = values[2] ?? attachmentUrl;
 
-    return await mh.addFullMember(authorId, memberName, displayName, proxy, propic).then(async(response) => {
-        const memberInfoEmbed = await mh.getMemberInfo(authorId, memberName).catch((e) => {throw e})
+    return await mh.addFullMember(authorId, memberName, displayName, proxy, propic, attachmentExpiration).then((response) => {
+        const memberInfoEmbed = mh.getMemberInfo(response.member);
         return {embed: memberInfoEmbed, errors: response.errors, success: `${memberName} has been added successfully.`};
     }).catch(e => {
+        console.error(e);
         throw e;
     })
 }
@@ -113,24 +223,17 @@ mh.addNewMember = async function (authorId, args, attachmentURL = null) {
  *
  * @async
  * @param {string} authorId - The author of the message
- * @param {string[]} args - The message arguments
+ * @param {string} memberName - The member to update
+ * @param {string} name - The message arguments
  * @returns {Promise<string>} A successful update.
  * @throws {RangeError} When the name doesn't exist.
  */
-mh.updateName = async function (authorId, args) {
-    if (args[2] && args[2] === "--help") {
-        return enums.help.NAME;
-    }
-
-    const name = args[2];
-    if (!name) {
-        return `The name for ${args[0]} is ${args[0]}, but you probably knew that!`;
-    }
+mh.updateName = async function (authorId, memberName, name) {
     const trimmedName = name.trim();
     if (trimmedName === '') {
         throw new RangeError(`Name ${enums.err.NO_VALUE}`);
     }
-    return await mh.updateMemberField(authorId, args).catch((e) => {
+    return await mh.updateMemberField(authorId, memberName, "name", trimmedName).catch((e) => {
         throw e
     });
 }
@@ -140,34 +243,21 @@ mh.updateName = async function (authorId, args) {
  *
  * @async
  * @param {string} authorId - The author of the message
- * @param {string[]} args - The message arguments
+ * @param {string} membername - The member to update
+ * @param {string} displayname - The display name to set
  * @returns {Promise<string>} A successful update.
  * @throws {RangeError} When the display name is too long or doesn't exist.
  */
-mh.updateDisplayName = async function (authorId, args) {
-    if (args[2] && args[2] === "--help") {
-        return enums.help.DISPLAY_NAME;
-    }
+mh.updateDisplayName = async function (authorId, membername, displayname) {
+    const trimmedName = displayname.trim();
 
-    const memberName = args[0];
-    const displayName = args[2];
-    const trimmedName = displayName ? displayName.trim() : null;
-
-    if (!displayName) {
-        return await mh.getMemberByName(authorId, memberName).then((member) => {
-            if (member && member.displayname) {
-                return `Display name for ${memberName} is: \"${member.displayname}\".`;
-            } else if (member) {
-                throw new Error(`Display name ${enums.err.NO_VALUE}`);
-            }
-        });
-    } else if (displayName.length > 32) {
+    if (trimmedName.length > 32) {
         throw new RangeError(enums.err.DISPLAY_NAME_TOO_LONG);
     }
     else if (trimmedName === '') {
         throw new RangeError(`Display name ${enums.err.NO_VALUE}`);
     }
-    return await mh.updateMemberField(authorId, args).catch((e) => {
+    return await mh.updateMemberField(authorId, membername, "displayname", trimmedName).catch((e) => {
         throw e
     });
 }
@@ -177,24 +267,16 @@ mh.updateDisplayName = async function (authorId, args) {
  *
  * @async
  * @param {string} authorId - The author of the message
- * @param {string[]} args - The message arguments
+ * @param {string} memberName - The member to update
+ * @param {string} proxy - The proxy to set
  * @returns {Promise<string> } A successful update.
- * @throws {RangeError | Error} When an empty proxy was provided, or no proxy exists.
+ * @throws {Error} When an empty proxy was provided, or a proxy exists.
  */
-mh.updateProxy = async function (authorId, args) {
-    if (args[2] && args[2] === "--help") {
-        return enums.help.PROXY;
-    }
-    const proxyExists = await mh.checkIfProxyExists(authorId, args[2]).then((proxyExists) => {
-        return proxyExists;
-    }).catch((e) => {
-        throw e
-    });
-    if (!proxyExists) {
-        return await mh.updateMemberField(authorId, args).catch((e) => {
-            throw e
-        });
-    }
+mh.updateProxy = async function (authorId, memberName, proxy) {
+    // Throws error if exists
+    await mh.checkIfProxyExists(authorId, proxy).catch((e) => { throw e; });
+
+    return await mh.updateMemberField(authorId, memberName, "proxy", proxy).catch((e) => { throw e;});
 }
 
 /**
@@ -202,53 +284,19 @@ mh.updateProxy = async function (authorId, args) {
  *
  * @async
  * @param {string} authorId - The author of the message
- * @param {string[]} args - The message arguments
- * @param {string} attachmentUrl - The url of the first attachment in the message
- * @param {string | null} attachmentExpiry - The expiration date of the first attachment in the message (if uploaded to Fluxer)
+ * @param {string} memberName - The member to update
+ * @param {string} values - The message arguments
+ * @param {string | null} attachmentUrl - The attachment URL, if any
+ * @param {string | null} attachmentExpiration - The attachment expiry date, if any
  * @returns {Promise<string>} A successful update.
  * @throws {Error} When loading the profile picture from a URL doesn't work.
  */
-mh.updatePropic = async function (authorId, args, attachmentUrl, attachmentExpiry = null) {
-    if (args[2] && args[2] === "--help") {
-        return enums.help.PROPIC;
-    }
-    let img;
-    const updatedArgs = args;
-    if (!updatedArgs[1] && !attachmentUrl) {
-        return enums.help.PROPIC;
-    } else if (attachmentUrl) {
-        updatedArgs[2] = attachmentUrl;
-        updatedArgs[3] = attachmentExpiry;
-    }
-    if (updatedArgs[2]) {
-        img = updatedArgs[2];
-    }
-    const isValidImage = await mh.checkImageFormatValidity(img).catch((e) => {
-        throw e
-    });
-    if (isValidImage) {
-        return await mh.updateMemberField(authorId, updatedArgs).catch((e) => {
-            throw e
-        });
-    }
-}
+mh.updatePropic = async function (authorId, memberName, values, attachmentUrl = null, attachmentExpiration = null) {
+    const imgUrl = values ?? attachmentUrl;
+    // Throws error if invalid
+    await utils.checkImageFormatValidity(imgUrl).catch((e) => { throw e });
 
-/**
- * Checks if an uploaded picture is in the right format.
- *
- * @async
- * @param {string} imageUrl - The url of the image
- * @returns {Promise<boolean>} - If the image is a valid format.
- * @throws {Error} When loading the profile picture from a URL doesn't work, or it fails requirements.
- */
-mh.checkImageFormatValidity = async function (imageUrl) {
-    const acceptableImages = ['image/png', 'image/jpg', 'image/jpeg', 'image/webp'];
-    return await fetch(imageUrl).then(r => r.blob()).then(blobFile => {
-        if (blobFile.size > 1000000 || !acceptableImages.includes(blobFile.type)) throw new Error(enums.err.PROPIC_FAILS_REQUIREMENTS);
-        return true;
-    }).catch((error) => {
-        throw new Error(`${enums.err.PROPIC_CANNOT_LOAD}: ${error.message}`);
-    });
+    return await mh.updateMemberField(authorId, memberName, "propic", imgUrl, attachmentExpiration).catch((e) => { throw e });
 }
 
 /**
@@ -256,16 +304,11 @@ mh.checkImageFormatValidity = async function (imageUrl) {
  *
  * @async
  * @param {string} authorId - The author of the message
- * @param {string[]} args - The message arguments
+ * @param {string} memberName - The name of the member to remove
  * @returns {Promise<string>} A successful removal.
- * @throws {EmptyResultError} When there is no member to remove.
+ * @throws {Error} When there is no member to remove.
  */
-mh.removeMember = async function (authorId, args) {
-    if (args[1] && args[1] === "--help" || !args[1]) {
-        return enums.help.REMOVE;
-    }
-
-    const memberName = args[1];
+mh.removeMember = async function (authorId, memberName) {
     return await database.members.destroy({
         where: {
             name: {[Op.iLike]: memberName},
@@ -275,7 +318,7 @@ mh.removeMember = async function (authorId, args) {
         if (result) {
             return `Member "${memberName}" has been deleted.`;
         }
-        throw new EmptyResultError(`${enums.err.NO_MEMBER}`);
+        throw new Error(`${enums.err.NO_MEMBER}`);
     })
 }
 
@@ -287,13 +330,14 @@ mh.removeMember = async function (authorId, args) {
  * @async
  * @param {string} authorId - The author of the message
  * @param {string} memberName - The name of the member.
- * @param {string | null} displayName - The display name of the member.
- * @param {string | null} proxy - The proxy tag of the member.
- * @param {string | null} propic - The profile picture URL of the member.
- * @returns {Promise<{model, []}>} A successful addition object, including errors if there are any.
+ * @param {string | null} [displayName] - The display name of the member.
+ * @param {string | null} [proxy] - The proxy tag of the member.
+ * @param {string | null} [propic] - The profile picture URL of the member.
+ * @param {string | null} [attachmentExpiration] - The expiration date of an uploaded profile picture.
+ * @returns {Promise<{model, string[]}>} A successful addition object, including errors if there are any.
  * @throws {Error}  When the member already exists, there are validation errors, or adding a member doesn't work.
  */
-mh.addFullMember = async function (authorId, memberName, displayName = null, proxy = null, propic = null) {
+mh.addFullMember = async function (authorId, memberName, displayName = null, proxy = null, propic = null, attachmentExpiration = null) {
     await mh.getMemberByName(authorId, memberName).then((member) => {
         if (member) {
             throw new Error(`Can't add ${memberName}. ${enums.err.MEMBER_EXISTS}`);
@@ -301,10 +345,19 @@ mh.addFullMember = async function (authorId, memberName, displayName = null, pro
     });
     const errors = [];
 
+    const trimmedName = memberName.trim();
+    if (trimmedName.length === 0) {
+        throw new Error(`Name ${enums.err.NO_VALUE}. ${enums.err.NAME_REQUIRED}`);
+    }
+
     let isValidDisplayName;
-    if (displayName && displayName.length > 0) {
-        const trimmedName = displayName ? displayName.trim() : null;
-        if (trimmedName && trimmedName.length > 32) {
+    if (displayName) {
+        const trimmedDisplayName= displayName ? displayName.trim() : null;
+        if (!trimmedDisplayName || trimmedDisplayName.length === 0) {
+            errors.push(`Display name ${enums.err.NO_VALUE}. ${enums.err.SET_TO_NULL}`);
+            isValidDisplayName = false;
+        }
+        else if (trimmedDisplayName.length > 32) {
             errors.push(`Tried to set displayname to \"${displayName}\". ${enums.err.DISPLAY_NAME_TOO_LONG}. ${enums.err.SET_TO_NULL}`);
             isValidDisplayName = false;
         }
@@ -312,6 +365,7 @@ mh.addFullMember = async function (authorId, memberName, displayName = null, pro
             isValidDisplayName = true;
         }
     }
+
 
     let isValidProxy;
     if (proxy && proxy.length > 0) {
@@ -325,12 +379,15 @@ mh.addFullMember = async function (authorId, memberName, displayName = null, pro
 
     let isValidPropic;
     if (propic && propic.length > 0) {
-        await mh.checkImageFormatValidity(propic).then(() => {
+        await utils.checkImageFormatValidity(propic).then(() => {
             isValidPropic = true;
         }).catch((e) => {
             errors.push(`Tried to set profile picture to \"${propic}\". ${e.message}. ${enums.err.SET_TO_NULL}`);
             isValidPropic = false;
         });
+    }
+    if (isValidPropic && attachmentExpiration) {
+        errors.push(mh.setExpirationWarning(attachmentExpiration));
     }
     const member = await database.members.create({
         name: memberName, userid: authorId, displayname: isValidDisplayName ? displayName : null, proxy: isValidProxy ? proxy : null, propic: isValidPropic ? propic : null
@@ -339,126 +396,24 @@ mh.addFullMember = async function (authorId, memberName, displayName = null, pro
     return {member: member, errors: errors};
 }
 
-// mh.mergeFullMember = async function (authorId, memberName, displayName = null, proxy = null, propic = null) {
-//     await mh.getMemberByName(authorId, memberName).then((member) => {
-//         if (member) {
-//             throw new Error(`Can't add ${memberName}. ${enums.err.MEMBER_EXISTS}`);
-//         }
-//     });
-//
-//     let isValidDisplayName;
-//     if (displayName) {
-//         const trimmedName = displayName ? displayName.trim() : null;
-//         if (trimmedName && trimmedName.length > 32) {
-//             if (!isImport) {
-//                 throw new RangeError(`Can't add ${memberName}. ${enums.err.DISPLAY_NAME_TOO_LONG}`);
-//             }
-//             isValidDisplayName = false;
-//         }
-//     }
-//
-//     let isValidProxy;
-//     if (proxy) {
-//         isValidProxy = await mh.checkIfProxyExists(authorId, proxy).then((res) => {
-//             return res;
-//         }).catch((e) => {
-//             if (!isImport) {
-//                 throw e
-//             }
-//             return false;
-//         });
-//     }
-//
-//     let isValidPropic;
-//     if (propic) {
-//         isValidPropic = await mh.checkImageFormatValidity(propic).then((valid) => {
-//             return valid;
-//         }).catch((e) => {
-//             if (!isImport) {
-//                 throw (e);
-//             }
-//             return false;
-//         });
-//     }
-//
-//     const member = await database.members.create({
-//         name: memberName, userid: authorId, displayname: isValidDisplayName ? displayName: null, proxy: isValidProxy ? proxy : null, propic: isValidPropic ? propic : null,
-//     });
-//     if (!member) {
-//         new Error(`${enums.err.ADD_ERROR}`);
-//     }
-//     return member;
-// }
-//
-// mh.overwriteFullMemberFromImport = async function (authorId, memberName, displayName = null, proxy = null, propic = null) {
-//     await mh.getMemberByName(authorId, memberName).then((member) => {
-//         if (member) {
-//             throw new Error(`Can't add ${memberName}. ${enums.err.MEMBER_EXISTS}`);
-//         }
-//     });
-//
-//     let isValidDisplayName;
-//     if (displayName) {
-//         const trimmedName = displayName ? displayName.trim() : null;
-//         if (trimmedName && trimmedName.length > 32) {
-//             if (!isImport) {
-//                 throw new RangeError(`Can't add ${memberName}. ${enums.err.DISPLAY_NAME_TOO_LONG}`);
-//             }
-//             isValidDisplayName = false;
-//         }
-//     }
-//
-//     let isValidProxy;
-//     if (proxy) {
-//         isValidProxy = await mh.checkIfProxyExists(authorId, proxy).then((res) => {
-//             return res;
-//         }).catch((e) => {
-//             if (!isImport) {
-//                 throw e
-//             }
-//             return false;
-//         });
-//     }
-//
-//     let isValidPropic;
-//     if (propic) {
-//         isValidPropic = await mh.checkImageFormatValidity(propic).then((valid) => {
-//             return valid;
-//         }).catch((e) => {
-//             if (!isImport) {
-//                 throw (e);
-//             }
-//             return false;
-//         });
-//     }
-//
-//     const member = await database.members.create({
-//         name: memberName, userid: authorId, displayname: isValidDisplayName ? displayName: null, proxy: isValidProxy ? proxy : null, propic: isValidPropic ? propic : null,
-//     });
-//     if (!member) {
-//         new Error(`${enums.err.ADD_ERROR}`);
-//     }
-//     return member;
-// }
-
 /**
  * Updates one fields for a member in the database.
  *
  * @async
  * @param {string} authorId - The author of the message
- * @param {string[]} args - The message arguments
+ * @param {string} memberName - The member to update
+ * @param {string} columnName - The column name to update.
+ * @param {string} value - The value to update to.
+ * @param {string | null} [attachmentExpiration] - The attachment expiration date (if any)
  * @returns {Promise<string>} A successful update.
- * @throws {EmptyResultError | Error} When the member is not found, or catchall error.
+ * @throws {Error} When no member row was updated.
  */
-mh.updateMemberField = async function (authorId, args) {
-    const memberName = args[0];
-    const columnName = args[1];
-    const value = args[2];
+mh.updateMemberField = async function (authorId, memberName, columnName, value, attachmentExpiration = null) {
     let fluxerPropicWarning;
 
     // indicates that an attachment was uploaded on Fluxer directly
-    if (columnName === "propic" && args[3]) {
-        fluxerPropicWarning = mh.setExpirationWarning(args[3]);
+    if (columnName === "propic" && attachmentExpiration) {
+        fluxerPropicWarning = mh.setExpirationWarning(value);
     }
     return await database.members.update({[columnName]: value}, {
         where: {
@@ -467,7 +422,7 @@ mh.updateMemberField = async function (authorId, args) {
         }
     }).then((res) => {
             if (res[0] === 0) {
-                throw new EmptyResultError(`Can't update ${memberName}. ${enums.err.NO_MEMBER}.`);
+                throw new Error(`Can't update ${memberName}. ${enums.err.NO_MEMBER}.`);
             } else {
                 return `Updated ${columnName} for ${memberName} to ${value}${fluxerPropicWarning ?? ''}.`;
             }
@@ -491,25 +446,19 @@ mh.setExpirationWarning = function (expirationString) {
 /**
  * Gets the details for a member.
  *
- * @async
- * @param {string} authorId - The author of the message
- * @param {string} memberName - The message arguments
- * @returns {Promise<EmbedBuilder>} The member's info.
+ * @param {model} member - The member object
+ * @returns {EmbedBuilder} The member's info.
  */
-mh.getMemberInfo = async function (authorId, memberName) {
-    return await mh.getMemberByName(authorId, memberName).then((member) => {
-        if (member) {
-            return new EmbedBuilder()
-                .setTitle(member.name)
-                .setDescription(`Details for ${member.name}`)
-                .addFields({
-                    name: 'Display name: ',
-                    value: member.displayname ?? 'unset',
-                    inline: true
-                }, {name: 'Proxy tag: ', value: member.proxy ?? 'unset', inline: true},)
-                .setImage(member.propic);
-        }
-    });
+mh.getMemberInfo = function (member) {
+    return new EmbedBuilder()
+        .setTitle(member.name)
+        .setDescription(`Details for ${member.name}`)
+        .addFields({
+            name: 'Display name: ',
+            value: member.displayname ?? 'unset',
+            inline: true
+        }, {name: 'Proxy tag: ', value: member.proxy ?? 'unset', inline: true},)
+        .setImage(member.propic ?? null);
 }
 
 /**
@@ -539,40 +488,9 @@ mh.getAllMembersInfo = async function (authorId, authorName) {
  * @param {string} authorId - The author of the message.
  * @param {string} memberName - The member's name.
  * @returns {Promise<model>} The member object.
- * @throws { EmptyResultError } When the member is not found.
  */
 mh.getMemberByName = async function (authorId, memberName) {
     return await database.members.findOne({where: {userid: authorId, name: {[Op.iLike]: memberName}}});
-}
-
-/**
- * Gets a member based on the author and proxy tag.
- *
- * @async
- * @param {string} authorId - The author of the message.
- * @param {string} memberName - The member's name.
- * @returns {Promise<string>} The member object.
- * @throws { EmptyResultError } When the member is not found.
- */
-mh.getProxyByMember = async function (authorId, memberName) {
-    return await mh.getMemberByName(authorId, memberName).then((member) => {
-        if (member) {
-            return member.proxy;
-        }
-        throw new EmptyResultError(enums.err.NO_MEMBER);
-    })
-}
-
-/**
- * Gets a member based on the author and proxy tag.
- *
- * @async
- * @param {string} authorId - The author of the message
- * @param {string} proxy - The proxy tag
- * @returns {Promise<model>} The member object.
- */
-mh.getMemberByProxy = async function (authorId, proxy) {
-    return await db.members.findOne({where: {userid: authorId, proxy: proxy}});
 }
 
 /**
@@ -586,7 +504,6 @@ mh.getMembersByAuthor = async function (authorId) {
     return await database.members.findAll({where: {userid: authorId}});
 }
 
-
 /**
  * Checks if proxy exists for a member.
  *
@@ -596,21 +513,19 @@ mh.getMembersByAuthor = async function (authorId) {
  * @throws {Error} When an empty proxy was provided, or no proxy exists.
  */
 mh.checkIfProxyExists = async function (authorId, proxy) {
-    if (proxy) {
-        const splitProxy = proxy.trim().split("text");
-        if (splitProxy.length < 2) throw new Error(enums.err.NO_TEXT_FOR_PROXY);
-        if (!splitProxy[0] && !splitProxy[1]) throw new Error(enums.err.NO_PROXY_WRAPPER);
+    const splitProxy = proxy.trim().split("text");
+    if (splitProxy.length < 2) throw new Error(enums.err.NO_TEXT_FOR_PROXY);
+    if (!splitProxy[0] && !splitProxy[1]) throw new Error(enums.err.NO_PROXY_WRAPPER);
 
-        await mh.getMembersByAuthor(authorId).then((memberList) => {
-            const proxyExists = memberList.some(member => member.proxy === proxy);
-            if (proxyExists) {
-                throw new Error(enums.err.PROXY_EXISTS);
-            }
-        }).catch(e => {
-            throw e
-        });
-    }
-
+    await mh.getMembersByAuthor(authorId).then((memberList) => {
+        const proxyExists = memberList.some(member => member.proxy === proxy);
+        if (proxyExists) {
+            throw new Error(enums.err.PROXY_EXISTS);
+        }
+    }).catch(e => {
+        throw e
+    });
+    return false;
 }
 
 /**

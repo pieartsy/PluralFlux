@@ -8,11 +8,11 @@ const ih = {};
  *
  * @async
  * @param {string} authorId - The author of the message
- * @param {string} attachmentUrl - The attached JSON url.
+ * @param {string | null} [attachmentUrl] - The attached JSON url.
  * @returns {string} A successful addition of all members.
  * @throws {Error}  When the member exists, or creating a member doesn't work.
  */
-ih.pluralKitImport = async function (authorId, attachmentUrl) {
+ih.pluralKitImport = async function (authorId, attachmentUrl= null) {
     if (!attachmentUrl) {
         throw new Error(enums.err.NOT_JSON_FILE);
     }
@@ -32,7 +32,7 @@ ih.pluralKitImport = async function (authorId, attachmentUrl) {
                     errors.push(e.message);
                 });
             }
-            const aggregatedText = addedMembers.length > 0 ? `Successfully added members: ${addedMembers.join(', ')}` : enums.err.NO_MEMBERS_IMPORTED;
+            const aggregatedText = addedMembers.length > 0 ? `Successfully added members: ${addedMembers.join(', ')}` : `${enums.err.NO_MEMBERS_IMPORTED}`;
             if (errors.length > 0) {
                 throw new AggregateError(errors, aggregatedText);
             }
