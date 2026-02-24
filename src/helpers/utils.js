@@ -15,6 +15,7 @@ u.debounce = function(func, delay) {
  *
  * @async
  * @param {string} imageUrl - The url of the image
+ * @returns {bool} - Whether the image is in a valid format
  * @throws {Error} When loading the profile picture from a URL doesn't work, or it fails requirements.
  */
 u.checkImageFormatValidity = async function (imageUrl) {
@@ -24,15 +25,17 @@ u.checkImageFormatValidity = async function (imageUrl) {
         response = await fetch(imageUrl);
     }
     catch(e) {
-        throw new Error(`${enums.err.CANNOT_FETCH_RESOURCE}: {error.message}`);
+        throw new Error(`${enums.err.PROPIC_CANNOT_LOAD}: ${e.message}`);
     }
 
     try {
-        blobFile = response.blob();
+        blobFile = await response.blob();
         if (blobFile.size > 1000000 || !acceptableImages.includes(blobFile.type)) throw new Error(enums.err.PROPIC_FAILS_REQUIREMENTS);
+
+        return true;
     }
     catch(error) {
-        throw new Error(`${enums.err.PROPIC_CANNOT_LOAD}: ${error.message}`);
+        throw new Error(error.message);
     }
 }
 
