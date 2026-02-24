@@ -112,7 +112,6 @@ cmds.importCommand = async function(message, args) {
         }
         // If just one error was returned.
         else {
-            console.error(error);
             return await message.reply(error.message);
         }
     }

@@ -49,7 +49,7 @@ describe('commands', () => {
 
         jest.resetModules();
         jest.clearAllMocks();
-        message= {
+        message = {
             author: {
                 username: username,
                 id: authorId,
@@ -84,7 +84,9 @@ describe('commands', () => {
 
         test('if parseMemberCommand returns error, log error and reply with error', () => {
             // Arrange
-            memberHelper.parseMemberCommand = jest.fn().mockImplementation(() => {throw new Error('error')});
+            memberHelper.parseMemberCommand = jest.fn().mockImplementation(() => {
+                throw new Error('error')
+            });
             // Act
             return commands.memberCommand(message, args).catch(() => {
                 expect(message.reply).toHaveBeenCalledTimes(1);
@@ -115,7 +117,10 @@ describe('commands', () => {
             return commands.memberCommand(message, args).catch(() => {
                 // Assert
                 expect(message.reply).toHaveBeenCalledTimes(1);
-                expect(message.reply).toHaveBeenCalledWith({content: `success\n\n${enums.err.ERRORS_OCCURRED}\n\nerror\nerror2}`, embeds: [reply.embed]})
+                expect(message.reply).toHaveBeenCalledWith({
+                    content: `success\n\n${enums.err.ERRORS_OCCURRED}\n\nerror\nerror2}`,
+                    embeds: [reply.embed]
+                })
             });
         })
     })
@@ -157,7 +162,7 @@ describe('commands', () => {
             expect(importHelper.pluralKitImport).toHaveBeenCalledWith(authorId, attachmentUrl);
         })
 
-        test('if pluralKitImport returns aggregate errors with length <= 2000, send errors.', async() => {
+        test('if pluralKitImport returns aggregate errors with length <= 2000, send errors.', async () => {
             // Arrange
             const args = [""];
             message.content = 'pf;import'
@@ -188,7 +193,18 @@ describe('commands', () => {
             // Assert
             expect(message.reply).toHaveBeenCalledTimes(1);
             expect(message.reply).toHaveBeenCalledWith(expected);
-            })
+        })
+
+        test('if pluralKitImport returns one error, reply with error', async() => {
+            // Arrange
+            importHelper.pluralKitImport = jest.fn().mockImplementation(() => {
+                throw new Error('error');
+            });
+            // Act
+            await commands.importCommand(message, args);
+            expect(message.reply).toHaveBeenCalledTimes(1);
+            expect(message.reply).toHaveBeenCalledWith('error');
+        })
     })
 
     afterEach(() => {
