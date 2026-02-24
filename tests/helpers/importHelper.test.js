@@ -1,5 +1,4 @@
 const {enums} = require('../../src/enums.js');
-const fetchMock = require('jest-fetch-mock');
 
 jest.mock('../../src/helpers/memberHelper.js', () => {
     return {
@@ -9,7 +8,6 @@ jest.mock('../../src/helpers/memberHelper.js', () => {
     }
 })
 
-fetchMock.enableMocks();
 const {memberHelper} = require("../../src/helpers/memberHelper.js");
 const {importHelper} = require('../../src/helpers/importHelper.js');
 
@@ -40,12 +38,12 @@ describe('importHelper', () => {
     }
 
     beforeEach(() => {
-        global.fetch = jest.fn();
+        jest.resetModules();
+        jest.clearAllMocks();
         global.fetch = jest.fn().mockResolvedValue({
             ok: true,
             json: () => Promise.resolve(mockData)
         })
-
     })
 
     describe('pluralKitImport', () => {
