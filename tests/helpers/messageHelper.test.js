@@ -3,9 +3,11 @@ env.config();
 
 
 jest.mock('../../src/helpers/memberHelper.js', () => {
-    return {memberHelper: {
-        getMembersByAuthor: jest.fn()
-    }}
+    return {
+        memberHelper: {
+            getMembersByAuthor: jest.fn()
+        }
+    }
 })
 
 const {memberHelper} = require("../../src/helpers/memberHelper.js");
@@ -72,17 +74,16 @@ describe('messageHelper', () => {
             ['2', 'hello', null, undefined],
             ['2', '--hello', null, undefined],
             ['2', 'hello', attachmentUrl, undefined],
-            ['2', '--hello', attachmentUrl,undefined],
+            ['2', '--hello', attachmentUrl, undefined],
             ['3', 'hello', null, {}],
             ['3', '--hello', null, {}],
             ['3', 'hello', attachmentUrl, {}],
-            ['3', '--hello', attachmentUrl,{}],
-        ])('ID %s with string %s returns correct proxy', async(specificAuthorId, content, attachmentUrl, expected) => {
+            ['3', '--hello', attachmentUrl, {}],
+        ])('ID %s with string %s returns correct proxy', async (specificAuthorId, content, attachmentUrl, expected) => {
             // Act
-            return messageHelper.parseProxyTags(specificAuthorId, content, attachmentUrl).then((res) => {
-                // Assert
-                expect(res).toEqual(expected);
-            })
+            const res = await messageHelper.parseProxyTags(specificAuthorId, content, attachmentUrl);
+            // Assert
+            expect(res).toEqual(expected);
         });
     })
 
