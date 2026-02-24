@@ -19,11 +19,21 @@ u.debounce = function(func, delay) {
  */
 u.checkImageFormatValidity = async function (imageUrl) {
     const acceptableImages = ['image/png', 'image/jpg', 'image/jpeg', 'image/webp'];
-    await fetch(imageUrl).then(r => r.blob()).then(blobFile => {
+    let response, blobFile;
+    try {
+        response = await fetch(imageUrl);
+    }
+    catch(e) {
+        throw new Error(`${enums.err.CANNOT_FETCH_RESOURCE}: {error.message}`);
+    }
+
+    try {
+        blobFile = response.blob();
         if (blobFile.size > 1000000 || !acceptableImages.includes(blobFile.type)) throw new Error(enums.err.PROPIC_FAILS_REQUIREMENTS);
-    }).catch((error) => {
+    }
+    catch(error) {
         throw new Error(`${enums.err.PROPIC_CANNOT_LOAD}: ${error.message}`);
-    });
+    }
 }
 
 export const utils = u;
