@@ -45,8 +45,12 @@ cmds.memberCommand = async function(message, args) {
         await message.reply({embeds: [reply]})
     }
     else if (typeof reply === 'object') {
-        const errorsText = reply.errors.length > 0 ? reply.errors.join('\n- ') : null;
-        return await message.reply({content: `${reply.success} ${errorsText ? `\n\n${enums.err.ERRORS_OCCURRED}\n` + errorsText : ""}`, embeds: [reply.embed]})
+        // The little dash is so that the errors print out in bullet points in Fluxer
+        const errorsText = reply.errors.length > 0 ? '- ' + reply.errors.join('\n- ') : null;
+        return await message.reply({
+            content: `${reply.success} ${errorsText ? `\n\n${enums.err.ERRORS_OCCURRED}\n` + errorsText : ""}`,
+            embeds: [reply.embed]
+        })
     }
 
 }

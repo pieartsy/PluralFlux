@@ -107,17 +107,19 @@ describe('commands', () => {
         const reply = {
             errors: ['error', 'error2'],
             success: 'success',
-            embed: {}
+            embed: {title: 'hi'}
         }
+        const expected = {
+            content: `success \n\n${enums.err.ERRORS_OCCURRED}\n- error\n- error2`,
+            embeds: [reply.embed]
+        }
+        console.log(expected)
         memberHelper.parseMemberCommand = jest.fn().mockResolvedValue(reply);
         // Act
         await commands.memberCommand(message, args);
         // Assert
         expect(message.reply).toHaveBeenCalledTimes(1);
-        expect(message.reply).toHaveBeenCalledWith({
-            content: `success\n\n${enums.err.ERRORS_OCCURRED}\n\nerror\nerror2`,
-            embeds: [reply.embed]
-        })
+        expect(message.reply).toHaveBeenCalledWith(expected)
     })
 
     describe('importCommand', () => {
