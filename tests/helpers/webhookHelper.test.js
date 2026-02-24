@@ -14,10 +14,44 @@ const {webhookHelper} = require("../../src/helpers/webhookHelper.js");
 const {enums} = require("../../src/enums");
 
 describe('webhookHelper', () => {
+    const channelId = '123';
+    const authorId = '456';
+    const guildId = '789';
+    const text = "hello";
+    let client, member, attachments, message, webhook;
 
     beforeEach(() => {
         jest.resetModules();
         jest.clearAllMocks();
+        client = {
+            channels: {
+                get: jest.fn().mockReturnValue(channelId)
+            }
+        }
+        member = {proxy: "--text", name: 'somePerson', displayname: "Some Person", propic: 'oya.png'};
+        attachments = {
+            size: 1,
+            first: () => {return channelId;}
+        };
+
+        message = {
+            client,
+            channelId: channelId,
+            content: text,
+            attachments: attachments,
+            author: {
+                id: authorId
+            },
+            guild: {
+                guildId: guildId
+            },
+            reply: jest.fn().mockResolvedValue(),
+            delete: jest.fn().mockResolvedValue()
+        }
+
+        webhook = {
+            send: async() => jest.fn().mockResolvedValue()
+        }
     })
 
     describe(`sendMessageAsMember`, () => {
@@ -137,38 +171,6 @@ describe('webhookHelper', () => {
     })
 
     describe(`replaceMessage`, () => {
-        const channelId = '123';
-        const authorId = '456';
-        const guildId = '789';
-        const text = "hello";
-        const client = {
-            channels: {
-                get: jest.fn().mockReturnValue(channelId)
-            }
-        }
-        const member = {proxy: "--text", name: 'somePerson', displayname: "Some Person", propic: 'oya.png'};
-        const attachments= {
-            size: 1,
-            first: () => {return channelId;}
-        };
-        const message = {
-            client,
-            channelId: channelId,
-            content: text,
-            attachments: attachments,
-            author: {
-                id: authorId
-            },
-            guild: {
-                guildId: guildId
-            },
-            reply: jest.fn().mockResolvedValue(),
-            delete: jest.fn().mockResolvedValue()
-        }
-
-        const webhook = {
-            send: async() => jest.fn().mockResolvedValue()
-        }
 
         test('does not call anything if text is 0 or message has no attachments', async() => {
             // Arrange
@@ -239,11 +241,63 @@ describe('webhookHelper', () => {
     })
 
     describe(`getOrCreateWebhook`, () => {
+        let channel;
 
+        beforeEach(async () => {
+            channel = {
+                createWebhook: jest.fn().mockResolvedValue()
+            }
+            jest.spyOn(webhookHelper, 'getWebhook').mockResolvedValue(webhook);
+        })
+
+        test('throws error if channel does not allow webhooks', async() => {
+            channel.createWebhook = false;
+
+            await expect(webhookHelper.getOrCreateWebhook(client, channel)).rejects.toThrow(enums.err.NO_WEBHOOKS_ALLOWED);
+        })
+
+        test('calls getWebhook if channel allows webhooks and returns webhook', async() => {
+            const res = await webhookHelper.getOrCreateWebhook(client, channel);
+            expect(webhookHelper.getWebhook).toHaveBeenCalledTimes(1);
+            expect(webhookHelper.getWebhook).toHaveBeenCalledWith(client, channel);
+            expect(res).toEqual(webhook);
+        })
+
+        test("calls createWebhook if getWebhook doesn't return webhook", async() => {
+            jest.spyOn(webhookHelper, 'getWebhook').mockResolvedValue();
+            await webhookHelper.getOrCreateWebhook(client, channel);
+            expect(channel.createWebhook).toHaveBeenCalledTimes(1);
+            expect(channel.createWebhook).toHaveBeenCalledWith({name: 'PluralFlux Proxy Webhook'});
+        })
     })
 
     describe(`getWebhook`, () => {
+        let webhook1, webhook2, channel;
+        beforeEach(() => {
+            webhook1 = {name: 'PluralFlux Proxy Webhook'};
+            webhook2 = {name: 'other webhook'};
+            channel = {
+                fetchWebhooks: jest.fn().mockResolvedValue([webhook1, webhook2])
+            }
+        })
 
+        test('calls fetchWebhooks and returns correct webhook', async() => {
+            // Act
+            const res = await webhookHelper.getWebhook(client, channel);
+            // Assert
+            expect(res).toEqual(webhook1);
+            expect(channel.fetchWebhooks).toHaveBeenCalledTimes(1);
+            expect(channel.fetchWebhooks).toHaveBeenCalledWith();
+        })
+
+        test('if fetchWebhooks returns no webhooks, return', async() => {
+            // Arrange
+            channel.fetchWebhooks = jest.fn().mockResolvedValue([]);
+            // Act
+            const res = await webhookHelper.getWebhook(client, channel);
+            // Assert
+            expect(res).toBeUndefined();
+        })
     })
 
 
