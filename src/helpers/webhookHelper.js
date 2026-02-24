@@ -45,8 +45,8 @@ wh.replaceMessage = async function(client, message, text, member) {
         const channel = client.channels.get(message.channelId);
         const webhook = await wh.getOrCreateWebhook(client, channel);
         const username = member.displayname ?? member.name;
-        if (text.length > 0 && text <= 2000) {
-                await webhook.send({content: text, username: username, avatar_url: member.propic})
+        if (text.length <= 2000) {
+            await webhook.send({content: text, username: username, avatar_url: member.propic})
         }
         else if (text.length > 2000) {
             const returnedBuffer = messageHelper.returnBufferFromText(text);
@@ -56,7 +56,6 @@ wh.replaceMessage = async function(client, message, text, member) {
         if (message.attachments.size > 0) {
             // Not implemented yet
         }
-
         await message.delete();
     }
 }
