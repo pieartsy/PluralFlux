@@ -65,6 +65,7 @@ const {webhookHelper} = require("../src/helpers/webhookHelper.js");
 
 const {utils} = require("../src/helpers/utils.js");
 let {handleMessageCreate, client} = require("../src/bot.js");
+const {login} = require("../src/bot");
 
 describe('bot', () => {
     beforeEach(() => {
@@ -290,9 +291,11 @@ describe('bot', () => {
         })
     })
 
-    test('calls client.login with correct argument', () => {
-        // Act
+    test('login calls client.login with correct argument', async() => {
+        // Arrange
         client.login = jest.fn().mockResolvedValue();
+        // Act
+        await login();
         // Assert
         expect(client.login).toHaveBeenCalledTimes(1);
         expect(client.login).toHaveBeenCalledWith(process.env.FLUXER_BOT_TOKEN)
