@@ -8,7 +8,7 @@ import {utils} from "./helpers/utils.js";
 
 env.config({path: './.env'});
 
-export const token = process.env.FLUXER_BOT_TOKEN;
+const token = process.env.FLUXER_BOT_TOKEN;
 
 if (!token) {
     console.error("Missing FLUXER_BOT_TOKEN environment variable.");
@@ -30,11 +30,10 @@ client.on(Events.MessageCreate, async (message) => {
  **/
 export const handleMessageCreate = async function(message) {
     try {
+        // Ignore bots
+        if (message.author.bot) return;
         // Parse command and arguments
         const content = message.content.trim();
-        // Ignore bots and messages without content
-        if (message.author.bot || content.length === 0) return;
-
         // If message doesn't start with the bot prefix, it could still be a message with a proxy tag. If it's not, return.
         if (!content.startsWith(messageHelper.prefix)) {
             return await webhookHelper.sendMessageAsMember(client, message);

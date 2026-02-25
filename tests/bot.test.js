@@ -87,19 +87,6 @@ describe('bot', () => {
             expect(res).toBeUndefined();
         })
 
-        test('on message creation, if message is empty, return', async () => {
-            // Arrange
-            const message = {
-                content: "            ",
-                author: {
-                    bot: false
-                }
-            }
-            // Act
-            const res = await handleMessageCreate(message);
-            expect(res).toBeUndefined();
-        })
-
         test("if message doesn't start with bot prefix, call sendMessageAsMember", async () => {
             // Arrange
             webhookHelper.sendMessageAsMember.mockResolvedValue();
