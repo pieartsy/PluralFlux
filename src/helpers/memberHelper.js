@@ -462,7 +462,7 @@ mh.getMemberInfo = function (member) {
 mh.getAllMembersInfo = async function (authorId, authorName) {
     const members = await mh.getMembersByAuthor(authorId);
     if (members.length === 0) throw Error(enums.err.USER_NO_MEMBERS);
-    const fields = [...members.entries()].map(([name, member]) => ({
+    const fields = [...members.entries()].map(([index, member]) => ({
         name: member.name, value: `(Proxy: \`${member.proxy ?? "unset"}\`)`, inline: true,
     }));
     return new EmbedBuilder()
