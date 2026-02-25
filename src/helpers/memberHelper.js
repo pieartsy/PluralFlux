@@ -356,7 +356,8 @@ mh.addFullMember = async function (authorId, memberName, displayName = null, pro
     let isValidProxy;
     if (proxy && proxy.length > 0) {
         try {
-            isValidProxy = await mh.checkIfProxyExists(authorId, proxy);
+            const proxyExists = await mh.checkIfProxyExists(authorId, proxy);
+            isValidProxy = !proxyExists;
         }
         catch(e) {
             errors.push(`Tried to set proxy to \"${proxy}\". ${e.message}. ${enums.err.SET_TO_NULL}`);
@@ -460,7 +461,7 @@ mh.getMemberInfo = function (member) {
  */
 mh.getAllMembersInfo = async function (authorId, authorName) {
     const members = await mh.getMembersByAuthor(authorId);
-    if (members == null) throw Error(enums.err.USER_NO_MEMBERS);
+    if (members.length === 0) throw Error(enums.err.USER_NO_MEMBERS);
     const fields = [...members.entries()].map(([name, member]) => ({
         name: member.name, value: `(Proxy: \`${member.proxy ?? "unset"}\`)`, inline: true,
     }));

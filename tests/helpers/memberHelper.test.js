@@ -527,7 +527,7 @@ describe('MemberHelper', () => {
 
         test('if proxy, call checkIfProxyExists', async () => {
             // Arrange
-            jest.spyOn(memberHelper, 'checkIfProxyExists').mockResolvedValue();
+            jest.spyOn(memberHelper, 'checkIfProxyExists').mockResolvedValue(true);
             const expectedMemberArgs = {
                 name: mockMember.name,
                 userid: authorId,
@@ -622,7 +622,7 @@ describe('MemberHelper', () => {
 
         test('if all values are valid, call database.members.create', async () => {
             // Arrange
-            jest.spyOn(memberHelper, 'checkIfProxyExists').mockResolvedValue(true);
+            jest.spyOn(memberHelper, 'checkIfProxyExists').mockResolvedValue(false);
             const expectedMemberArgs = {
                 name: mockMember.name,
                 userid: authorId,
