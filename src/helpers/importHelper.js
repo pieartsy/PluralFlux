@@ -45,7 +45,7 @@ ih.pluralKitImport = async function (authorId, attachmentUrl= null) {
             }
         }
         catch(e) {
-            errors.push(e);
+            errors.push(e.message);
         }
     }
     const aggregatedText = addedMembers.length > 0 ? `Successfully added members: ${addedMembers.join(', ')}` : `${enums.err.NO_MEMBERS_IMPORTED}`;
