@@ -30,7 +30,7 @@ u.checkImageFormatValidity = async function (imageUrl) {
 
     try {
         blobFile = await response.blob();
-        if (blobFile.size > 1000000 || !acceptableImages.includes(blobFile.type)) throw new Error(enums.err.PROPIC_FAILS_REQUIREMENTS);
+        if (blobFile.size > 10000000 || !acceptableImages.includes(blobFile.type)) throw new Error(enums.err.PROPIC_FAILS_REQUIREMENTS);
 
         return true;
     }
