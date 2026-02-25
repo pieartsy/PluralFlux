@@ -22,11 +22,11 @@ describe('messageHelper', () => {
 
     describe('parseCommandArgs', () => {
         test.each([
-            ['pk;member', ['']],
-            ['pk;member add somePerson "Some Person"', ['add', 'somePerson', 'Some Person']],
-            ['pk;member add \"Some Person\"', ['add', 'Some Person']],
-            ['pk;member add somePerson \'Some Person\'', ['add', 'somePerson', 'Some Person']],
-            ['pk;member add somePerson \"\'Some\' Person\"', ['add', 'somePerson', 'Some Person']],
+            ['pf;member', ['']],
+            ['pf;member add somePerson "Some Person"', ['add', 'somePerson', 'Some Person']],
+            ['pf;member add \"Some Person\"', ['add', 'Some Person']],
+            ['pf;member add somePerson \'Some Person\'', ['add', 'somePerson', 'Some Person']],
+            ['pf;member add somePerson \"\'Some\' Person\"', ['add', 'somePerson', 'Some Person']],
         ])('%s returns correct arguments', (content, expected) => {
             // Arrange
             const command = "member";
