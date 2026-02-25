@@ -34,4 +34,24 @@ u.checkImageFormatValidity = async function (imageUrl) {
     return true;
 }
 
+/**
+ * Sets the warning that a Fluxer-uploaded image will expire.
+ *
+ * @param {string | null} [imgUrl] - An image URL.
+ * @param {string | null} [expirationString] - An expiration date string.
+ * @returns {string | null} A description of the expiration, or null.
+ */
+u.setExpirationWarning = function (imgUrl = null, expirationString = null) {
+    if (imgUrl && imgUrl.startsWith(enums.misc.FLUXER_ATTACHMENT_URL)) {
+        return enums.misc.ATTACHMENT_EXPIRATION_WARNING;
+    }
+    else if (expirationString) {
+        let expirationDate = new Date(expirationString);
+        if (!isNaN(expirationDate.valueOf())) {
+            return `${enums.misc.ATTACHMENT_EXPIRATION_WARNING}. Expiration date: *${expirationString}*.`;
+        }
+    }
+    return null;
+}
+
 export const utils = u;

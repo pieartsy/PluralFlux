@@ -44,7 +44,10 @@ helperEnums.help = {
 }
 
 helperEnums.misc = {
-    ATTACHMENT_SENT_BY: "Attachment sent by:"
+    ATTACHMENT_SENT_BY: "Attachment sent by:",
+    ATTACHMENT_EXPIRATION_WARNING: "**NOTE:** Because this profile picture is hosted on Fluxer, it will expire. To avoid this, upload the picture to another website like <https://imgbb.com/> and link to it directly.",
+    FLUXER_ATTACHMENT_URL: "https://fluxerusercontent.com/attachments/"
+
 }
 
 export const enums = helperEnums;

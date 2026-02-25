@@ -283,8 +283,8 @@ mh.updatePropic = async function (authorId, memberName, values, attachmentUrl = 
     const imgUrl = values ?? attachmentUrl;
     // Throws error if invalid
     await utils.checkImageFormatValidity(imgUrl);
-
-    return await mh.updateMemberField(authorId, memberName, "propic", imgUrl, attachmentExpiration);
+    const expirationWarning = utils.setExpirationWarning(imgUrl, attachmentExpiration);
+    return await mh.updateMemberField(authorId, memberName, "propic", imgUrl, expirationWarning);
 }
 
 /**
@@ -369,15 +369,15 @@ mh.addFullMember = async function (authorId, memberName, displayName = null, pro
     if (propic && propic.length > 0) {
         try {
             isValidPropic = await utils.checkImageFormatValidity(propic);
-
         }
         catch(e) {
             errors.push(`Tried to set profile picture to \"${propic}\". ${e.message}. ${enums.err.SET_TO_NULL}`);
             isValidPropic = false;
         }
     }
-    if (isValidPropic && attachmentExpiration) {
-        errors.push(mh.setExpirationWarning(attachmentExpiration));
+    const expirationWarning = utils.setExpirationWarning(propic, attachmentExpiration);
+    if (expirationWarning) {
+        errors.push(expirationWarning);
     }
     const member = await database.members.create({
         name: memberName, userid: authorId, displayname: isValidDisplayName ? displayName : null, proxy: isValidProxy ? proxy : null, propic: isValidPropic ? propic : null
@@ -394,17 +394,11 @@ mh.addFullMember = async function (authorId, memberName, displayName = null, pro
  * @param {string} memberName - The member to update
  * @param {string} columnName - The column name to update.
  * @param {string} value - The value to update to.
- * @param {string | null} [attachmentExpiration] - The attachment expiration date (if any)
+ * @param {string | null} [expirationWarning] - The attachment expiration warning (if any)
  * @returns {Promise<string>} A successful update.
  * @throws {Error} When no member row was updated.
  */
-mh.updateMemberField = async function (authorId, memberName, columnName, value, attachmentExpiration = null) {
-    let fluxerPropicWarning;
-
-    // indicates that an attachment was uploaded on Fluxer directly
-    if (columnName === "propic" && attachmentExpiration) {
-        fluxerPropicWarning = mh.setExpirationWarning(value);
-    }
+mh.updateMemberField = async function (authorId, memberName, columnName, value, expirationWarning = null) {
     const res = await database.members.update({[columnName]: value}, {
         where: {
             name: {[Op.iLike]: memberName},
@@ -414,21 +408,7 @@ mh.updateMemberField = async function (authorId, memberName, columnName, value, 
     if (res[0] === 0) {
         throw new Error(`Can't update ${memberName}. ${enums.err.NO_MEMBER}.`);
     } else {
-        return `Updated ${columnName} for ${memberName} to ${value}${fluxerPropicWarning ?? ''}.`;
-    }
-}
-
-/**
- * Sets the warning for an expiration date.
- *
- * @param {string} expirationString - An expiration date string.
- * @returns {string} A description of the expiration, interpolating the expiration string.
- */
-mh.setExpirationWarning = function (expirationString) {
-    let expirationDate = new Date(expirationString);
-    if (!isNaN(expirationDate.valueOf())) {
-        expirationDate = expirationDate.toDateString();
-        return `\n**NOTE:** Because this profile picture was uploaded via Fluxer, it will currently expire on *${expirationDate}*. To avoid this, upload the picture to another website like <https://imgbb.com/> and link to it directly`
+        return `Updated ${columnName} for ${memberName} to ${value}${expirationWarning ? `. ${expirationWarning}.` : '.'}`;
     }
 }
 

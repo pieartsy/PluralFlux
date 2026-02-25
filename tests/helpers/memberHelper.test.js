@@ -39,7 +39,7 @@ describe('MemberHelper', () => {
         name: "somePerson",
         displayname: "Some Person",
         proxy: "--text",
-        propic: attachmentUrl
+        propic: 'ono.png'
     }
 
     beforeEach(() => {
@@ -446,14 +446,13 @@ describe('MemberHelper', () => {
 
     describe('updatePropic', () => {
         test.each([
-            [null, attachmentUrl, null, attachmentUrl],
-            [mockMember.propic, null, null, mockMember.propic],
-            [mockMember.propic, attachmentUrl, null, attachmentUrl],
-            [null, attachmentUrl, attachmentExpiration, attachmentUrl]
+            [null, attachmentUrl, undefined, attachmentUrl],
+            [mockMember.propic, null, undefined, mockMember.propic],
+            [mockMember.propic, attachmentUrl, undefined, mockMember.propic],
         ])('calls checkImageFormatValidity and updateMemberField and returns string', async (imgUrl, attachmentUrl, attachmentExpiration, expected) => {
             // Arrange
-
             jest.spyOn(memberHelper, 'updateMemberField').mockResolvedValue("Updated");
+            utils.setExpirationWarning = jest.fn().mockReturnValue(undefined);
             // Act
             const result = await memberHelper.updatePropic(authorId, mockMember.name, imgUrl, attachmentUrl, attachmentExpiration);
             // Assert
@@ -461,7 +460,21 @@ describe('MemberHelper', () => {
             expect(utils.checkImageFormatValidity).toHaveBeenCalledTimes(1);
             expect(utils.checkImageFormatValidity).toHaveBeenCalledWith(expected);
             expect(memberHelper.updateMemberField).toHaveBeenCalledTimes(1);
-            expect(memberHelper.updateMemberField).toHaveBeenCalledWith(authorId, mockMember.name, "propic", expected, attachmentExpiration);
+            expect(memberHelper.updateMemberField).toHaveBeenCalledWith(authorId, mockMember.name, "propic", expected, undefined);
+        })
+
+        test('calls setExpirationWarning', async() => {
+            // Arrange
+            jest.spyOn(memberHelper, 'updateMemberField').mockResolvedValue("Updated");
+            utils.setExpirationWarning = jest.fn().mockReturnValue(enums.misc.ATTACHMENT_EXPIRATION_WARNING);
+            // Act
+            const result = await memberHelper.updatePropic(authorId, mockMember.name, null, attachmentUrl, attachmentExpiration);
+            // Assert
+            expect(result).toEqual("Updated");
+            expect(utils.setExpirationWarning).toHaveBeenCalledTimes(1);
+            expect(utils.setExpirationWarning).toHaveBeenCalledWith(attachmentUrl, attachmentExpiration);
+            expect(memberHelper.updateMemberField).toHaveBeenCalledTimes(1);
+            expect(memberHelper.updateMemberField).toHaveBeenCalledWith(authorId, mockMember.name, "propic", attachmentUrl, enums.misc.ATTACHMENT_EXPIRATION_WARNING);
         })
     })
 
@@ -612,6 +625,17 @@ describe('MemberHelper', () => {
             expect(database.members.create).toHaveBeenCalledTimes(1);
         })
 
+        test('calls setExpirationWarning if attachmentExpiration exists', async () => {
+            // Arrange
+            utils.checkImageFormatValidity = jest.fn().mockResolvedValue(true);
+            jest.spyOn(memberHelper, 'setExpirationWarning').mockReturnValue(`${enums.misc.ATTACHMENT_EXPIRATION_WARNING}`);
+            // Act
+            await memberHelper.addFullMember(authorId, mockMember.name, null, null, mockMember.propic, attachmentExpiration)
+            // Assert
+            expect(memberHelper.setExpirationWarning).toHaveBeenCalledTimes(1);
+            expect(memberHelper.setExpirationWarning).toHaveBeenCalledWith(mockMember.propic, attachmentExpiration);
+        })
+
         test('if all values are valid, call database.members.create', async () => {
             // Arrange
             jest.spyOn(memberHelper, 'checkIfProxyExists').mockResolvedValue(false);
@@ -644,22 +668,18 @@ describe('MemberHelper', () => {
             };
         })
 
-        test('calls setExpirationWarning if attachmentExpiration', async () => {
-            await memberHelper.updateMemberField(authorId, mockMember.name, "propic", mockMember.propic, attachmentExpiration)
-            expect(memberHelper.setExpirationWarning).toHaveBeenCalledTimes(1);
-            expect(memberHelper.setExpirationWarning).toHaveBeenCalledWith(mockMember.propic);
-        })
-
         test.each([
-            ['name', mockMember.name, null, `Updated name for ${mockMember.name} to ${mockMember.name}`],
-            ['displayname', mockMember.displayname, null, `Updated name for ${mockMember.name} to ${mockMember.displayname}`],
-            ['proxy', mockMember.proxy, null, `Updated name for ${mockMember.name} to ${mockMember.proxy}`],
-            ['propic', mockMember.propic, null, `Updated name for ${mockMember.name} to ${mockMember.propic}`],
-            ['propic', mockMember.propic, attachmentExpiration, `Updated name for ${mockMember.name} to ${mockMember.propic} warning}`]
-        ])('calls database.members.update with correct column and value and return string', async (columnName, value, attachmentExpiration) => {
+            ['name', mockMember.name, undefined, `Updated name for ${mockMember.name} to ${mockMember.name}.`],
+            ['displayname', mockMember.displayname, undefined, `Updated displayname for ${mockMember.name} to ${mockMember.displayname}.`],
+            ['proxy', mockMember.proxy, undefined, `Updated proxy for ${mockMember.name} to ${mockMember.proxy}.`],
+            ['propic', mockMember.propic, undefined, `Updated propic for ${mockMember.name} to ${mockMember.propic}.`],
+            ['propic', mockMember.propic,
+                'warning', `Updated propic for ${mockMember.name} to ${mockMember.propic}. warning.`]
+        ])('calls database.members.update with correct column and value and return string', async (columnName, value, attachmentExpiration, expected) => {
             // Act
-            await memberHelper.updateMemberField(authorId, mockMember.name, columnName, value, attachmentExpiration)
+            const res = await memberHelper.updateMemberField(authorId, mockMember.name, columnName, value, attachmentExpiration)
             // Assert
+            expect(res).toEqual(expected);
             expect(database.members.update).toHaveBeenCalledTimes(1);
             expect(database.members.update).toHaveBeenCalledWith({[columnName]: value}, {
                 where: {

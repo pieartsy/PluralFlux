@@ -5,6 +5,7 @@ const {utils} = require("../../src/helpers/utils.js");
 describe('utils', () => {
 
     const attachmentUrl = 'oya.png';
+    const expirationString = new Date("2026-01-01").toDateString();
     let blob;
 
     beforeEach(() => {
@@ -58,6 +59,28 @@ describe('utils', () => {
             // Act & Assert
             await expect(utils.checkImageFormatValidity(attachmentUrl)).rejects.toThrow(enums.err.PROPIC_FAILS_REQUIREMENTS);
         })
+    })
+
+    describe('setExpirationWarning', () => {
+        test('sets warning if image Url starts with Fluxer host', () => {
+            // Act
+            const result = utils.setExpirationWarning(`${enums.misc.FLUXER_ATTACHMENT_URL}${attachmentUrl}`);
+            // Assert
+            expect(result).toEqual(enums.misc.ATTACHMENT_EXPIRATION_WARNING);
+        })
+
+        test('sets warning if expiration string exists', () => {
+            const result = utils.setExpirationWarning(null, expirationString);
+            // Assert
+            expect(result).toEqual(`${enums.misc.ATTACHMENT_EXPIRATION_WARNING}. Expiration date: *${expirationString}*.`);
+        })
+
+       test('returns null if img url does not start iwth fluxer host and no expiration', () => {
+           // Act
+           const result = utils.setExpirationWarning(attachmentUrl);
+           // Assert
+           expect(result).toBeNull();
+       })
     })
 
     afterEach(() => {
