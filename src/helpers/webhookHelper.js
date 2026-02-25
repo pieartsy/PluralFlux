@@ -90,13 +90,7 @@ wh.getWebhook = async function(client, channel) {
     if (channelWebhooks.length === 0) {
         return;
     }
-    let pf_webhook;
-    channelWebhooks.forEach((webhook) => {
-        if (webhook.name === name) {
-            pf_webhook = webhook;
-        }
-    })
-    return pf_webhook;
+    return channelWebhooks.find((webhook) => webhook.name === name);
 }
 
 export const webhookHelper = wh;
