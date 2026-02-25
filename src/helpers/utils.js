@@ -28,15 +28,10 @@ u.checkImageFormatValidity = async function (imageUrl) {
         throw new Error(`${enums.err.PROPIC_CANNOT_LOAD}: ${e.message}`);
     }
 
-    try {
-        blobFile = await response.blob();
-        if (blobFile.size > 10000000 || !acceptableImages.includes(blobFile.type)) throw new Error(enums.err.PROPIC_FAILS_REQUIREMENTS);
+    blobFile = await response.blob();
+    if (blobFile.size > 10000000 || !acceptableImages.includes(blobFile.type)) throw new Error(enums.err.PROPIC_FAILS_REQUIREMENTS);
 
-        return true;
-    }
-    catch(error) {
-        throw new Error(error.message);
-    }
+    return true;
 }
 
 export const utils = u;
