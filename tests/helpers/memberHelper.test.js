@@ -356,9 +356,7 @@ describe('MemberHelper', () => {
             const args = [];
             const memberObject = {name: args[1]}
             jest.spyOn(memberHelper, 'addFullMember').mockResolvedValue(memberObject);
-            jest.spyOn(memberHelper, 'getMemberInfo').mockImplementation(() => {
-                throw new Error('getMemberInfo error')
-            });
+            jest.spyOn(memberHelper, 'getMemberInfo').mockImplementation(() => {throw new Error('getMemberInfo error')});
             //Act
             await expect(memberHelper.addNewMember(authorId, mockMember.name, args)).rejects.toThrow('getMemberInfo error');
         })
@@ -367,9 +365,7 @@ describe('MemberHelper', () => {
             // Arrange
             const args = [];
             const expected = 'add full member error';
-            jest.spyOn(memberHelper, 'addFullMember').mockImplementation(() => {
-                throw new Error(expected)
-            });
+            jest.spyOn(memberHelper, 'addFullMember').mockRejectedValue(new Error(expected));
 
             //Act
             await expect(memberHelper.addNewMember(authorId, mockMember.name, args)).rejects.toThrow(expected)
@@ -550,9 +546,7 @@ describe('MemberHelper', () => {
 
         test('if checkProxyExists throws error, call database.member.create with null value', async () => {
             // Arrange
-            jest.spyOn(memberHelper, 'checkIfProxyExists').mockImplementation(() => {
-                throw new Error('error')
-            });
+            jest.spyOn(memberHelper, 'checkIfProxyExists').mockRejectedValue(new Error('error'));
             const expectedMemberArgs = {
                 name: mockMember.name,
                 userid: authorId,
@@ -597,9 +591,7 @@ describe('MemberHelper', () => {
 
         test('if checkImageFormatValidity throws error, call database.member.create with null value', async () => {
             // Arrange
-            utils.checkImageFormatValidity = jest.fn().mockImplementation(() => {
-                throw new Error("error")
-            })
+            utils.checkImageFormatValidity = jest.fn().mockRejectedValue(new Error("error"));
             const expectedMemberArgs = {
                 name: mockMember.name,
                 userid: authorId,

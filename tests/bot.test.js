@@ -105,17 +105,14 @@ describe('bot', () => {
 
         test("if sendMessageAsMember returns error, catch and log error", async () => {
             // Arrange
-            webhookHelper.sendMessageAsMember.mockImplementation(() => {
-                throw Error("error")
-            });
+            webhookHelper.sendMessageAsMember.mockRejectedValue(new Error("error"));
             const message = {
                 content: "hello",
                 author: {
                     bot: false
                 }
             }
-            jest.spyOn(global.console, 'error').mockImplementation(() => {
-            })
+            jest.spyOn(global.console, 'error').mockImplementation(() => {});
             // Act
             await handleMessageCreate(message);
             // Assert
@@ -242,9 +239,7 @@ describe('bot', () => {
             execute: jest.fn()
         }
         commands.commandsMap.get = jest.fn().mockReturnValue(command);
-        command.execute.mockImplementation(() => {
-            throw Error("error")
-        });
+        command.execute.mockRejectedValue(new Error("error"));
         const message = {
             content: "pf;member test",
             author: {

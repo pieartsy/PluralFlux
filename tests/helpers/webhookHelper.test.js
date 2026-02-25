@@ -160,9 +160,7 @@ describe('webhookHelper', () => {
             // Arrange
             message.guildId = '123';
             messageHelper.parseProxyTags.mockResolvedValue(proxyMessage);
-            jest.spyOn(webhookHelper, 'replaceMessage').mockImplementation(() => {
-                throw new Error("error")
-            });
+            jest.spyOn(webhookHelper, 'replaceMessage').mockRejectedValue(new Error("error"));
             // Act
             await expect(webhookHelper.sendMessageAsMember(client, message)).rejects.toThrow("error");
             // Assert

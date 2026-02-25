@@ -32,7 +32,7 @@ describe('utils', () => {
 
         test('throws error if fetch returns error', async() => {
             // Arrange
-            global.fetch = jest.fn().mockImplementation(() =>{throw Error('error');});
+            global.fetch = jest.fn().mockRejectedValue(new Error('error'));
             // Act & Assert
             await expect(utils.checkImageFormatValidity(attachmentUrl)).rejects.toThrow(`${enums.err.PROPIC_CANNOT_LOAD}: error`);
         })

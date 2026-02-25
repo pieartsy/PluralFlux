@@ -82,9 +82,7 @@ describe('commands', () => {
 
     test('if parseMemberCommand returns error, log error and reply with error', async () => {
         // Arrange
-        memberHelper.parseMemberCommand = jest.fn().mockImplementation(() => {
-            throw new Error('error')
-        });
+        memberHelper.parseMemberCommand = jest.fn().mockRejectedValue(new Error('error'));
         // Act
         await commands.memberCommand(message, args)
         // Assert
@@ -167,9 +165,7 @@ describe('commands', () => {
             // Arrange
             const args = [""];
             message.content = 'pf;import'
-            importHelper.pluralKitImport = jest.fn().mockImplementation(() => {
-                throw new AggregateError(['error1', 'error2'], 'errors')
-            });
+            importHelper.pluralKitImport = jest.fn().mockRejectedValue(new AggregateError(['error1', 'error2'], 'errors'));
             // Act
             await commands.importCommand(message, args);
             // Assert
@@ -185,9 +181,7 @@ describe('commands', () => {
             const returnedBuffer = {text: 'bbbb', file: file};
             const expected = {content: returnedBuffer.text, files: [{name: 'text.txt', data: returnedBuffer.file}]};
 
-            importHelper.pluralKitImport = jest.fn().mockImplementation(() => {
-                throw new AggregateError([text, 'error2'], 'errors')
-            });
+            importHelper.pluralKitImport = jest.fn().mockRejectedValue(new AggregateError([text, 'error2'], 'errors'));
             messageHelper.returnBufferFromText = jest.fn().mockReturnValue(returnedBuffer);
             // Act
             await commands.importCommand(message, args);
@@ -198,9 +192,7 @@ describe('commands', () => {
 
         test('if pluralKitImport returns one error, reply with error and log it', async () => {
             // Arrange
-            importHelper.pluralKitImport = jest.fn().mockImplementation(() => {
-                throw new Error('error');
-            });
+            importHelper.pluralKitImport = jest.fn().mockRejectedValue(new Error('error'));
             jest.spyOn(global.console, 'error').mockImplementation(() => {})
             // Act
             await commands.importCommand(message, args);
