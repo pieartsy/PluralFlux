@@ -35,7 +35,7 @@ cmds.memberCommand = async function(message, args) {
         reply = await memberHelper.parseMemberCommand(message.author.id, authorFull, args, attachmentUrl, attachmentExpires)
     }
     catch(e) {
-        await message.reply(e.message);
+        return await message.reply(e.message);
     }
 
     if (typeof reply === 'string') {
