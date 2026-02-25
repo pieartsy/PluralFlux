@@ -186,6 +186,8 @@ mh.memberCommandHandler = async function(authorId, command, memberName, values, 
             return await mh.updateProxy(authorId, memberName, values[0]);
         case 'propic':
             return await mh.updatePropic(authorId, memberName, values[0], attachmentUrl, attachmentExpiration);
+        default:
+            throw new Error(enums.err.COMMAND_NOT_RECOGNIZED);
     }
 }
 
