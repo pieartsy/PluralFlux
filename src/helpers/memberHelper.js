@@ -463,7 +463,7 @@ mh.getAllMembersInfo = async function (authorId, authorName) {
         name: member.name, value: `(Proxy: \`${member.proxy ?? "unset"}\`)`, inline: true,
     }));
     return new EmbedBuilder()
-        .setTitle(`${fields > 25 ? "First 25 m" : "M"}embers for ${authorName}`)
+        .setTitle(`${fields.length > 25 ? "First 25 m" : "M"}embers for ${authorName}`)
         .addFields(...fields);
 }
 
