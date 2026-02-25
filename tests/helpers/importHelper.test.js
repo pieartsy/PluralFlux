@@ -81,8 +81,8 @@ describe('importHelper', () => {
             await expect(importHelper.pluralKitImport(authorId, attachmentUrl)).rejects.toThrow(([], enums.err.NO_MEMBERS_IMPORTED));
         })
 
-        test('if addFullMember returns nothing and throws error, catch and return error', async() => {
-            memberHelper.addFullMember.mockResolvedValue(new Error('error'));
+        test('if addFullMember throws error, catch and return error', async() => {
+            memberHelper.addFullMember.mockImplementation(() => {new Error('error')});
             await expect(importHelper.pluralKitImport(authorId, attachmentUrl)).rejects.toThrow(([new Error('error')], enums.err.NO_MEMBERS_IMPORTED));
         })
 
