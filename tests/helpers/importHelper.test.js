@@ -48,11 +48,11 @@ describe('importHelper', () => {
 
     describe('pluralKitImport', () => {
 
-        test('if no attachment URL, throws error', async() => {
+        test('if no attachment URL, throws error', async () => {
             await expect(importHelper.pluralKitImport(authorId)).rejects.toThrow(enums.err.NOT_JSON_FILE);
         })
 
-        test('if attachment URL, calls fetch and addFullMember and returns value', async() => {
+        test('if attachment URL, calls fetch and addFullMember and returns value', async () => {
             memberHelper.addFullMember.mockResolvedValue(mockAddReturn);
             const result = await importHelper.pluralKitImport(authorId, attachmentUrl);
 
@@ -63,12 +63,12 @@ describe('importHelper', () => {
         })
 
 
-        test('if fetch fails, throws error', async() => {
+        test('if fetch fails, throws error', async () => {
             global.fetch = jest.fn().mockRejectedValue("can't get");
             await expect(importHelper.pluralKitImport(authorId, attachmentUrl)).rejects.toThrow(enums.err.CANNOT_FETCH_RESOURCE, "can't get file");
         })
 
-        test('if json conversion fails, throws error', async() => {
+        test('if json conversion fails, throws error', async () => {
             global.fetch = jest.fn().mockResolvedValue({
                 ok: true,
                 json: () => Promise.reject("not json")
@@ -78,23 +78,23 @@ describe('importHelper', () => {
 
         test('if addFullMember returns nothing, return correct enum', async () => {
             memberHelper.addFullMember.mockResolvedValue();
-            await expect(importHelper.pluralKitImport(authorId, attachmentUrl)).rejects.toThrow(([], enums.err.NO_MEMBERS_IMPORTED));
+            const promise = importHelper.pluralKitImport(authorId, attachmentUrl);
+            await expect(promise).rejects.toBeInstanceOf(AggregateError);
+            await expect(promise).rejects.toMatchObject(AggregateError([], enums.err.NO_MEMBERS_IMPORTED));
         })
 
-        test('if addFullMember throws error, catch and return error', async() => {
+        test('if addFullMember throws error, catch and return error', async () => {
             memberHelper.addFullMember.mockRejectedValue(new Error('error'));
-            await expect(importHelper.pluralKitImport(authorId, attachmentUrl)).rejects.toThrow(([new Error('error')], enums.err.NO_MEMBERS_IMPORTED));
-        })
+            await expect(importHelper.pluralKitImport(authorId, attachmentUrl)).rejects.toMatchObject(new AggregateError(['error'], enums.err.NO_MEMBERS_IMPORTED));
+        });
 
         test('if addFullMember returns member but also contains error, return member and error', async () => {
             // Arrange
             const memberObj = {errors: ['error'], member: mockAddReturnMember};
             memberHelper.addFullMember.mockResolvedValue(memberObj);
-            // Act & Assert
-            await expect(importHelper.pluralKitImport(authorId, attachmentUrl)).rejects.toThrow((['error'], `Successfully added members: ${mockAddReturnMember.name}`));
-        })
-
-    })
+            await expect(importHelper.pluralKitImport(authorId, attachmentUrl)).rejects.toMatchObject(new AggregateError(['error'], `Successfully added members: ${mockAddReturnMember.name}`));
+        });
+    });
 
     afterEach(() => {
         // restore the spy created with spyOn
