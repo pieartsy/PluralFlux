@@ -6,7 +6,7 @@ env.config();
 const password = process.env.POSTGRES_PASSWORD;
 
 if (!password) {
-    console.error("Missing POSTGRES_PWD environment variable.");
+    console.error("Missing POSTGRES_PASSWORD environment variable.");
     process.exit(1);
 }
 
