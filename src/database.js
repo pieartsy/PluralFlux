@@ -6,7 +6,7 @@ env.config();
 const password = process.env.POSTGRES_PASSWORD;
 
 if (!password) {
-    console.error("Missing POSTGRES_PWD environment variable.");
+    console.error("Missing POSTGRES_PASSWORD environment variable.");
     process.exit(1);
 }
 
@@ -59,26 +59,28 @@ db.systems = sequelize.define('System', {
 /**
  * Checks Sequelize database connection.
  */
-db.check_connection = async function() {
-        await sequelize.authenticate().then(async () => {
-            console.log('Connection has been established successfully.');
-            await syncModels();
-        }).catch(err => {
-            console.error('Unable to connect to the database:', err);
-            process.exit(1);
-        });
+db.check_connection = async function () {
+    try {
+        await sequelize.authenticate();
+        console.log('Connection has been established successfully.');
+        await syncModels();
+    } catch (err) {
+        console.error('Unable to connect to the database:', err);
+        process.exit(1);
+    }
 }
 
 /**
  * Syncs Sequelize models.
  */
 async function syncModels() {
-    await sequelize.sync().then(() => {
+    try {
+        await sequelize.sync()
         console.log('Models synced successfully.');
-    }).catch((err) => {
+    } catch(err) {
         console.error('Syncing models did not work', err);
         process.exit(1);
-    });
+    }
 }
 
 export const database = db;

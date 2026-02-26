@@ -15,7 +15,7 @@ const name = 'PluralFlux Proxy Webhook';
  */
 wh.sendMessageAsMember = async function(client, message) {
     const attachmentUrl = message.attachments.size > 0 ? message.attachments.first().url : null;
-    const proxyMatch = await messageHelper.parseProxyTags(message.author.id, message.content, attachmentUrl).catch(e =>{throw e});
+    const proxyMatch = await messageHelper.parseProxyTags(message.author.id, message.content, attachmentUrl);
     // If the message doesn't match a proxy, just return.
     if (!proxyMatch || !proxyMatch.member || (proxyMatch.message.length === 0 && !proxyMatch.hasAttachment) ) {
         return;
@@ -27,7 +27,7 @@ wh.sendMessageAsMember = async function(client, message) {
     if (proxyMatch.hasAttachment) {
         return await message.reply(`${enums.misc.ATTACHMENT_SENT_BY} ${proxyMatch.member.displayname ?? proxyMatch.member.name}`)
     }
-    await wh.replaceMessage(client, message, proxyMatch.message, proxyMatch.member).catch(e =>{throw e});
+    await wh.replaceMessage(client, message, proxyMatch.message, proxyMatch.member);
 }
 
 /**
@@ -43,20 +43,19 @@ wh.replaceMessage = async function(client, message, text, member) {
     // attachment logic is not relevant yet, text length will always be over 0 right now
     if (text.length > 0 || message.attachments.size > 0) {
         const channel = client.channels.get(message.channelId);
-        const webhook = await wh.getOrCreateWebhook(client, channel).catch((e) =>{throw e});
+        const webhook = await wh.getOrCreateWebhook(client, channel);
         const username = member.displayname ?? member.name;
-        if (text.length > 0) {
-            await webhook.send({content: text, username: username, avatar_url: member.propic}).catch(async(e) => {
-                const returnedBuffer = messageHelper.returnBufferFromText(text);
-                await webhook.send({content: returnedBuffer.text, username: username, avatar_url: member.propic, files: [{ name: 'text.txt', data: returnedBuffer.file }]
-                })
-                console.error(e);
-            });
+        if (text.length <= 2000) {
+            await webhook.send({content: text, username: username, avatar_url: member.propic})
+        }
+        else if (text.length > 2000) {
+            const returnedBuffer = messageHelper.returnBufferFromText(text);
+            await webhook.send({content: returnedBuffer.text, username: username, avatar_url: member.propic, files: [{ name: 'text.txt', data: returnedBuffer.file }]
+            })
         }
         if (message.attachments.size > 0) {
             // Not implemented yet
         }
-
         await message.delete();
     }
 }
@@ -72,7 +71,7 @@ wh.replaceMessage = async function(client, message, text, member) {
 wh.getOrCreateWebhook = async function(client, channel) {
     // If channel doesn't allow webhooks
     if (!channel?.createWebhook) throw new Error(enums.err.NO_WEBHOOKS_ALLOWED);
-    let webhook = await wh.getWebhook(client, channel).catch((e) =>{throw e});
+    let webhook = await wh.getWebhook(client, channel)
     if (!webhook) {
         webhook = await channel.createWebhook({name: name});
     }
@@ -91,13 +90,7 @@ wh.getWebhook = async function(client, channel) {
     if (channelWebhooks.length === 0) {
         return;
     }
-    let pf_webhook;
-    channelWebhooks.forEach((webhook) => {
-        if (webhook.name === name) {
-            pf_webhook = webhook;
-        }
-    })
-    return pf_webhook;
+    return channelWebhooks.find((webhook) => webhook.name === name);
 }
 
 export const webhookHelper = wh;

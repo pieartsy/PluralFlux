@@ -39,7 +39,7 @@ describe('MemberHelper', () => {
         name: "somePerson",
         displayname: "Some Person",
         proxy: "--text",
-        propic: attachmentUrl
+        propic: 'ono.png'
     }
 
     beforeEach(() => {
@@ -63,12 +63,11 @@ describe('MemberHelper', () => {
             [[]]
         ])('%s calls getMemberCommandInfo and returns expected result', async (args) => {
             // Act
-            return memberHelper.parseMemberCommand(authorId, authorFull, args).then((result) => {
-                // Assert
-                expect(result).toEqual("member command info");
-                expect(memberHelper.getMemberCommandInfo).toHaveBeenCalledTimes(1);
-                expect(memberHelper.getMemberCommandInfo).toHaveBeenCalledWith();
-            });
+            const result = await memberHelper.parseMemberCommand(authorId, authorFull, args);
+            // Assert
+            expect(result).toEqual("member command info");
+            expect(memberHelper.getMemberCommandInfo).toHaveBeenCalledTimes(1);
+            expect(memberHelper.getMemberCommandInfo).toHaveBeenCalledWith();
         });
 
         test.each([
@@ -92,12 +91,12 @@ describe('MemberHelper', () => {
             [[mockMember.name, 'remove', 'test'], null, null, 'remove', false, mockMember.name],
             [[mockMember.name, 'new'], null, null, 'new', false, mockMember.name],
             [[mockMember.name, 'new', mockMember.displayname], null, null, 'new', false, mockMember.name],
-            [[mockMember.name, 'new',  mockMember.displayname, mockMember.proxy], null, null, 'new', false, mockMember.name],
-            [[mockMember.name, 'new', mockMember.displayname, mockMember.proxy,mockMember.propic], null, null, 'new', false, mockMember.name],
-            [[mockMember.name, 'new',mockMember.displayname, mockMember.proxy, null], mockMember.propic, null, 'new', false, mockMember.name],
+            [[mockMember.name, 'new', mockMember.displayname, mockMember.proxy], null, null, 'new', false, mockMember.name],
+            [[mockMember.name, 'new', mockMember.displayname, mockMember.proxy, mockMember.propic], null, null, 'new', false, mockMember.name],
+            [[mockMember.name, 'new', mockMember.displayname, mockMember.proxy, null], mockMember.propic, null, 'new', false, mockMember.name],
             [[mockMember.name, 'new', mockMember.displayname, mockMember.proxy, null], mockMember.propic, attachmentExpiration, 'new', false, mockMember.name],
             [[mockMember.name, 'name', mockMember.name], null, null, 'name', false, mockMember.name],
-            [[mockMember.name, 'new',  '', mockMember.proxy], null, null, 'new', false, mockMember.name],
+            [[mockMember.name, 'new', '', mockMember.proxy], null, null, 'new', false, mockMember.name],
             [[mockMember.name, 'new', '', '', mockMember.propic], null, null, 'new', false, mockMember.name],
             [[mockMember.name, 'new', '', '', null], mockMember.propic, null, 'new', false, mockMember.name],
             [[mockMember.name, 'new', '', '', null], mockMember.propic, attachmentExpiration, 'new', false, mockMember.name],
@@ -115,7 +114,7 @@ describe('MemberHelper', () => {
             [['new', mockMember.name, mockMember.displayname, mockMember.proxy, mockMember.propic], null, null, 'new', false, mockMember.name],
             [['new', mockMember.name, undefined, mockMember.displayname, mockMember.proxy, undefined], mockMember.propic, null, 'new', false, mockMember.name],
             [['new', mockMember.name, undefined, mockMember.displayname, mockMember.proxy, undefined], mockMember.propic, attachmentExpiration, 'new', false, mockMember.name],
-            [['new',mockMember.name,  '', mockMember.proxy], null, null, 'new', false, mockMember.name],
+            [['new', mockMember.name, '', mockMember.proxy], null, null, 'new', false, mockMember.name],
             [['new', mockMember.name, '', '', mockMember.propic], null, null, 'new', false, mockMember.name],
             [['new', mockMember.name, '', '', null], mockMember.propic, null, 'new', false, mockMember.name],
             [['new', mockMember.name, '', '', null], mockMember.propic, attachmentExpiration, 'new', false, mockMember.name],
@@ -126,15 +125,14 @@ describe('MemberHelper', () => {
             [['propic', mockMember.name, mockMember.name, mockMember.displayname, mockMember.proxy, mockMember.propic], null, null, 'propic', false, mockMember.name],
             [['propic', mockMember.name, undefined, mockMember.name, mockMember.displayname, mockMember.proxy, undefined], mockMember.propic, null, 'propic', false, mockMember.name],
             [['propic', mockMember.name, undefined, mockMember.name, mockMember.displayname, mockMember.proxy, undefined], mockMember.propic, attachmentExpiration, 'propic', false, mockMember.name]
-        ])('%s args with attachmentURL %s and attachment expiration %s calls memberCommandHandler with correct values', (args, attachmentUrl, attachmentExpiration, command, isHelp, memberName) => {
+        ])('%s args with attachmentURL %s and attachment expiration %s calls memberCommandHandler with correct values', async (args, attachmentUrl, attachmentExpiration, command, isHelp, memberName) => {
             console.log(args, command, isHelp)
             // Act
-            return memberHelper.parseMemberCommand(authorId, authorFull, args, attachmentUrl, attachmentExpiration).then((result) => {
-                // Assert
-                expect(result).toEqual("handled argument");
-                expect(memberHelper.memberArgumentHandler).toHaveBeenCalledTimes(1);
-                expect(memberHelper.memberArgumentHandler).toHaveBeenCalledWith(authorId, authorFull, isHelp, command, memberName, args, attachmentUrl, attachmentExpiration);
-            });
+            const result = await memberHelper.parseMemberCommand(authorId, authorFull, args, attachmentUrl, attachmentExpiration);
+            // Assert
+            expect(result).toEqual("handled argument");
+            expect(memberHelper.memberArgumentHandler).toHaveBeenCalledTimes(1);
+            expect(memberHelper.memberArgumentHandler).toHaveBeenCalledWith(authorId, authorFull, isHelp, command, memberName, args, attachmentUrl, attachmentExpiration);
         })
     });
 
@@ -146,12 +144,10 @@ describe('MemberHelper', () => {
             jest.spyOn(memberHelper, 'sendHelpEnum').mockReturnValue("help enum");
         })
 
-        test('when all values are null should return command not recognized enum', () => {
+        test('when all values are null should throw command not recognized enum', async () => {
             // Arrange
-            return memberHelper.memberArgumentHandler(authorId, authorFull, false, null, null, []).catch((result) => {
-                // Assert
-                expect(result).toEqual(new Error(enums.err.COMMAND_NOT_RECOGNIZED));
-            });
+            await expect(memberHelper.memberArgumentHandler(authorId, authorFull, false, null, null, [])).rejects.toThrow(enums.err.COMMAND_NOT_RECOGNIZED);
+
         })
 
         test.each([
@@ -161,12 +157,9 @@ describe('MemberHelper', () => {
             ['displayname'],
             ['proxy'],
             ['propic'],
-        ])('when %s is present but other values are null, should return no member enum', (command) => {
+        ])('when %s is present but other values are null, should throw no member enum', async (command) => {
             // Arrange
-            return memberHelper.memberArgumentHandler(authorId, authorFull, false, command, null, []).catch((result) => {
-                // Assert
-                expect(result).toEqual(new Error(enums.err.NO_MEMBER));
-            });
+            await expect(memberHelper.memberArgumentHandler(authorId, authorFull, false, command, null, [])).rejects.toThrow(enums.err.NO_MEMBER);
         })
 
 
@@ -178,24 +171,22 @@ describe('MemberHelper', () => {
             ['displayname'],
             ['proxy'],
             ['propic'],
-        ])('%s calls sendHelpEnum', (command) => {
+        ])('%s calls sendHelpEnum', async (command) => {
             // Arrange
-            return memberHelper.memberArgumentHandler(authorId, authorFull, true, command, mockMember.name, []).then((result) => {
-                // Assert
-                expect(result).toEqual("help enum");
-                expect(memberHelper.sendHelpEnum).toHaveBeenCalledTimes(1);
-                expect(memberHelper.sendHelpEnum).toHaveBeenCalledWith(command);
-            });
+            const result = await memberHelper.memberArgumentHandler(authorId, authorFull, true, command, mockMember.name, []);
+            // Assert
+            expect(result).toEqual("help enum");
+            expect(memberHelper.sendHelpEnum).toHaveBeenCalledTimes(1);
+            expect(memberHelper.sendHelpEnum).toHaveBeenCalledWith(command);
         })
 
-        test('list should call getAllMembersInfo', () => {
+        test('list should call getAllMembersInfo', async () => {
             // Arrange
-            return memberHelper.memberArgumentHandler(authorId, authorFull, false, 'list', mockMember.name, []).then((result) => {
-                // Assert
-                expect(result).toEqual("all member info");
-                expect(memberHelper.getAllMembersInfo).toHaveBeenCalledTimes(1);
-                expect(memberHelper.getAllMembersInfo).toHaveBeenCalledWith(authorId, authorFull);
-            });
+            const result = await memberHelper.memberArgumentHandler(authorId, authorFull, false, 'list', mockMember.name, []);
+            // Assert
+            expect(result).toEqual("all member info");
+            expect(memberHelper.getAllMembersInfo).toHaveBeenCalledTimes(1);
+            expect(memberHelper.getAllMembersInfo).toHaveBeenCalledWith(authorId, authorFull);
         })
 
         test.each([
@@ -203,14 +194,14 @@ describe('MemberHelper', () => {
             [[mockMember.name, 'remove', 'test'], null, null, 'remove'],
             [[mockMember.name, 'new'], null, null, 'new'],
             [[mockMember.name, 'new', mockMember.displayname], null, null, 'new'],
-            [[mockMember.name, 'new',  mockMember.displayname, mockMember.proxy], null, null, 'new'],
-            [[mockMember.name, 'new', mockMember.displayname, mockMember.proxy,mockMember.propic], null, null, 'new'],
-            [[mockMember.name, 'new',mockMember.displayname, mockMember.proxy, null], mockMember.propic, null, 'new'],
+            [[mockMember.name, 'new', mockMember.displayname, mockMember.proxy], null, null, 'new'],
+            [[mockMember.name, 'new', mockMember.displayname, mockMember.proxy, mockMember.propic], null, null, 'new'],
+            [[mockMember.name, 'new', mockMember.displayname, mockMember.proxy, null], mockMember.propic, null, 'new'],
             [[mockMember.name, 'new', mockMember.displayname, mockMember.proxy, null], mockMember.propic, attachmentExpiration, 'new'],
             [[mockMember.name, 'name', mockMember.name], null, null, 'name'],
             [[mockMember.name, 'displayname', mockMember.displayname], null, null, 'displayname'],
             [[mockMember.name, 'new', mockMember.displayname], null, null, 'new'],
-            [[mockMember.name, 'new',  '', mockMember.proxy], null, null, 'new'],
+            [[mockMember.name, 'new', '', mockMember.proxy], null, null, 'new'],
             [[mockMember.name, 'new', '', '', mockMember.propic], null, null, 'new'],
             [[mockMember.name, 'new', '', '', undefined], mockMember.propic, null, 'new'],
             [[mockMember.name, 'new', '', '', undefined], mockMember.propic, attachmentExpiration, 'new'],
@@ -230,7 +221,7 @@ describe('MemberHelper', () => {
             [['new', mockMember.name, mockMember.displayname, mockMember.proxy, mockMember.propic], null, null, 'new'],
             [['new', mockMember.name, undefined, mockMember.displayname, mockMember.proxy, undefined], mockMember.propic, null, 'new'],
             [['new', mockMember.name, undefined, mockMember.displayname, mockMember.proxy, undefined], mockMember.propic, attachmentExpiration, 'new'],
-            [['new', mockMember.name,  '', mockMember.proxy], null, null, 'new'],
+            [['new', mockMember.name, '', mockMember.proxy], null, null, 'new'],
             [['new', mockMember.name, '', '', mockMember.propic], null, null, 'new'],
             [['new', mockMember.name, '', '', undefined], mockMember.propic, null, 'new'],
             [['new', mockMember.name, '', '', undefined], mockMember.propic, attachmentExpiration, 'new'],
@@ -242,16 +233,16 @@ describe('MemberHelper', () => {
             [['propic', mockMember.name, mockMember.name, mockMember.displayname, mockMember.proxy, mockMember.propic], null, null, 'propic'],
             [['propic', mockMember.name, undefined, mockMember.name, mockMember.displayname, mockMember.proxy, undefined], mockMember.propic, null, 'propic'],
             [['propic', mockMember.name, undefined, mockMember.name, mockMember.displayname, mockMember.proxy, undefined], mockMember.propic, attachmentExpiration, 'propic']
-        ])('%s args with attachmentURL %s and attachment expiration %s calls memberCommandHandler', (args, attachmentUrl, attachmentExpiration, command) => {
+        ])('%s args with attachmentURL %s and attachment expiration %s calls memberCommandHandler', async (args, attachmentUrl, attachmentExpiration, command) => {
             // Arrange
             let values = args.slice(2);
 
-            return memberHelper.memberArgumentHandler(authorId, authorFull, false, command, mockMember.name, args, attachmentUrl, attachmentExpiration).then((result) => {
-                // Assert
-                expect(result).toEqual("handled command");
-                expect(memberHelper.memberCommandHandler).toHaveBeenCalledTimes(1);
-                expect(memberHelper.memberCommandHandler).toHaveBeenCalledWith(authorId, command, mockMember.name, values, attachmentUrl, attachmentExpiration);
-            });
+            const result = await memberHelper.memberArgumentHandler(authorId, authorFull, false, command, mockMember.name, args, attachmentUrl, attachmentExpiration);
+            // Assert
+            expect(result).toEqual("handled command");
+            expect(memberHelper.memberCommandHandler).toHaveBeenCalledTimes(1);
+            expect(memberHelper.memberCommandHandler).toHaveBeenCalledWith(authorId, command, mockMember.name, values, attachmentUrl, attachmentExpiration);
+
         })
 
         test.each([
@@ -260,16 +251,14 @@ describe('MemberHelper', () => {
             ['displayname'],
             ['proxy'],
             ['propic'],
-        ])('%s calls sendCurrentValue', (command) => {
-            return memberHelper.memberArgumentHandler(authorId, authorFull, false, command, mockMember.name, []).then((result) => {
-                // Assert
-                expect(result).toEqual("current value");
-                expect(memberHelper.sendCurrentValue).toHaveBeenCalledTimes(1);
-                expect(memberHelper.sendCurrentValue).toHaveBeenCalledWith(authorId,mockMember.name, command);
-            });
+        ])('%s calls sendCurrentValue', async (command) => {
+            const result = await memberHelper.memberArgumentHandler(authorId, authorFull, false, command, mockMember.name, []);
+            // Assert
+            expect(result).toEqual("current value");
+            expect(memberHelper.sendCurrentValue).toHaveBeenCalledTimes(1);
+            expect(memberHelper.sendCurrentValue).toHaveBeenCalledWith(authorId, mockMember.name, command);
+
         })
-
-
     });
 
     describe('sendCurrentValue', () => {
@@ -279,88 +268,87 @@ describe('MemberHelper', () => {
             ['displayname', `The display name for ${mockMember.name} is \"${mockMember.displayname}\".`],
             ['proxy', `The proxy for ${mockMember.name} is \"${mockMember.proxy}\".`],
             ['propic', `The profile picture for ${mockMember.name} is \"${mockMember.propic}\".`],
-        ])('%s calls getMemberByName and returns value', (command, expected) => {
+        ])('%s calls getMemberByName and returns value', async (command, expected) => {
             // Arrange
             jest.spyOn(memberHelper, 'getMemberByName').mockResolvedValue(mockMember);
             // Act
-            return memberHelper.sendCurrentValue(authorId, mockMember.name, command).then((result) => {
-                // Assert
-                expect(result).toEqual(expected);
-                expect(memberHelper.getMemberByName).toHaveBeenCalledTimes(1);
-                expect(memberHelper.getMemberByName).toHaveBeenCalledWith(authorId,mockMember.name);
-            });
+            const result = await memberHelper.sendCurrentValue(authorId, mockMember.name, command);
+            // Assert
+            expect(result).toEqual(expected);
+            expect(memberHelper.getMemberByName).toHaveBeenCalledTimes(1);
+            expect(memberHelper.getMemberByName).toHaveBeenCalledWith(authorId, mockMember.name);
+
         })
 
-        test('returns error if no member found', () => {
+        test('returns error if no member found', async () => {
             // Arrange
             jest.spyOn(memberHelper, 'getMemberByName').mockResolvedValue(null);
             // Act
-            return memberHelper.sendCurrentValue(authorId, mockMember.name, 'name').catch((result) => {
-                // Assert
-                expect(result).toEqual(new Error(enums.err.NO_MEMBER));
-                expect(memberHelper.getMemberByName).toHaveBeenCalledTimes(1);
-                expect(memberHelper.getMemberByName).toHaveBeenCalledWith(authorId,mockMember.name);
-            });
-        })
+            await expect(memberHelper.sendCurrentValue(authorId, mockMember.name, 'name')).rejects.toThrow(enums.err.NO_MEMBER);
+            // Assert
+            expect(memberHelper.getMemberByName).toHaveBeenCalledTimes(1);
+            expect(memberHelper.getMemberByName).toHaveBeenCalledWith(authorId, mockMember.name);
+        });
 
-        test('calls getMemberInfo with member if no command present', () => {
+        test('calls getMemberInfo with member if no command present', async () => {
             // Arrange
             jest.spyOn(memberHelper, 'getMemberByName').mockResolvedValue(mockMember);
             jest.spyOn(memberHelper, 'getMemberInfo').mockResolvedValue('member info');
             // Act
-            return memberHelper.sendCurrentValue(authorId, mockMember.name, null).then((result) => {
-                // Assert
-                expect(result).toEqual('member info');
-                expect(memberHelper.getMemberInfo).toHaveBeenCalledTimes(1);
-                expect(memberHelper.getMemberInfo).toHaveBeenCalledWith(mockMember);
-            });
+            const result = await memberHelper.sendCurrentValue(authorId, mockMember.name, null);
+            // Assert
+            expect(result).toEqual('member info');
+            expect(memberHelper.getMemberInfo).toHaveBeenCalledTimes(1);
+            expect(memberHelper.getMemberInfo).toHaveBeenCalledWith(mockMember);
         })
 
         test.each([
             ['displayname', `Display name ${enums.err.NO_VALUE}`],
             ['proxy', `Proxy ${enums.err.NO_VALUE}`],
             ['propic', `Propic ${enums.err.NO_VALUE}`],
-        ])('returns null message if no member found', (command, expected) => {
+        ])('returns null message if no value found', async (command, expected) => {
             // Arrange
             const empty = {name: mockMember.name, displayname: null, proxy: null, propic: null}
             jest.spyOn(memberHelper, 'getMemberByName').mockResolvedValue(empty);
             // Act
-            return memberHelper.sendCurrentValue(authorId, mockMember.name, command).then((result) => {
-                // Assert
-                expect(result).toEqual(expected);
-                expect(memberHelper.getMemberByName).toHaveBeenCalledTimes(1);
-                expect(memberHelper.getMemberByName).toHaveBeenCalledWith(authorId,mockMember.name);
-            });
+            const result = await memberHelper.sendCurrentValue(authorId, mockMember.name, command);
+            // Assert
+            expect(result).toEqual(expected);
+            expect(memberHelper.getMemberByName).toHaveBeenCalledTimes(1);
+            expect(memberHelper.getMemberByName).toHaveBeenCalledWith(authorId, mockMember.name);
         })
     })
 
     describe('addNewMember', () => {
-        test('calls addFullMember with correct arguments', async() => {
+        test('calls addFullMember with correct arguments', async () => {
             // Arrange
             const args = [mockMember.displayname, mockMember.proxy, mockMember.propic];
             jest.spyOn(memberHelper, 'addFullMember').mockResolvedValue(mockMember);
             jest.spyOn(memberHelper, 'getMemberInfo').mockResolvedValue();
             // Act
-            return memberHelper.addNewMember(authorId, mockMember.name, args, attachmentUrl, attachmentExpiration).then(() => {
-                expect(memberHelper.addFullMember).toHaveBeenCalledTimes(1);
-                expect(memberHelper.addFullMember).toHaveBeenCalledWith(authorId, mockMember.name, mockMember.displayname, mockMember.proxy, mockMember.propic, attachmentExpiration);
-            })
+            const result = await memberHelper.addNewMember(authorId, mockMember.name, args, attachmentUrl, attachmentExpiration);
+            // Assert
+            expect(memberHelper.addFullMember).toHaveBeenCalledTimes(1);
+            expect(memberHelper.addFullMember).toHaveBeenCalledWith(authorId, mockMember.name, mockMember.displayname, mockMember.proxy, mockMember.propic, attachmentExpiration);
         })
 
         test('calls getMemberInfo when successful and returns result', async () => {
             // Arrange
             const args = [mockMember.displayname, mockMember.proxy, mockMember.propic];
             const fullMemberResponse = {member: mockMember, errors: []}
-            const expected = {embed: mockMember, errors: [],  success: `${mockMember.name} has been added successfully.`};
+            const expected = {
+                embed: mockMember,
+                errors: [],
+                success: `${mockMember.name} has been added successfully.`
+            };
             jest.spyOn(memberHelper, 'addFullMember').mockResolvedValue(fullMemberResponse);
             jest.spyOn(memberHelper, 'getMemberInfo').mockReturnValue(mockMember);
             //Act
-            return memberHelper.addNewMember(authorId, mockMember.name, args, attachmentUrl, attachmentExpiration).then((result) => {
-                // Assert
-                expect(result).toEqual(expected);
-                expect(memberHelper.getMemberInfo).toHaveBeenCalledTimes(1);
-                expect(memberHelper.getMemberInfo).toHaveBeenCalledWith(mockMember);
-            })
+            const result = await memberHelper.addNewMember(authorId, mockMember.name, args, attachmentUrl, attachmentExpiration);
+            // Assert
+            expect(result).toEqual(expected);
+            expect(memberHelper.getMemberInfo).toHaveBeenCalledTimes(1);
+            expect(memberHelper.getMemberInfo).toHaveBeenCalledWith(mockMember);
         })
 
         test('throws expected error when getMemberInfo throws error', async () => {
@@ -368,29 +356,19 @@ describe('MemberHelper', () => {
             const args = [];
             const memberObject = {name: args[1]}
             jest.spyOn(memberHelper, 'addFullMember').mockResolvedValue(memberObject);
-            jest.spyOn(memberHelper, 'getMemberInfo').mockImplementation(() => {
-                throw new Error('getMemberInfo error')
-            });
+            jest.spyOn(memberHelper, 'getMemberInfo').mockImplementation(() => {throw new Error('getMemberInfo error')});
             //Act
-            return memberHelper.addNewMember(authorId, mockMember.name, args).catch((result) => {
-                // Assert
-                expect(result).toEqual(new Error('getMemberInfo error'));
-            })
+            await expect(memberHelper.addNewMember(authorId, mockMember.name, args)).rejects.toThrow('getMemberInfo error');
         })
 
         test('throws expected error when addFullMember throws error', async () => {
             // Arrange
             const args = [];
             const expected = 'add full member error';
-            jest.spyOn(memberHelper, 'addFullMember').mockImplementation(() => {
-                throw new Error(expected)
-            });
+            jest.spyOn(memberHelper, 'addFullMember').mockRejectedValue(new Error(expected));
 
             //Act
-            return memberHelper.addNewMember(authorId, mockMember.name, args).catch((result) => {
-                // Assert
-                expect(result).toEqual(new Error(expected));
-            })
+            await expect(memberHelper.addNewMember(authorId, mockMember.name, args)).rejects.toThrow(expected)
         })
     })
 
@@ -400,23 +378,20 @@ describe('MemberHelper', () => {
             // Arrange;
             jest.spyOn(memberHelper, 'updateMemberField').mockResolvedValue("Updated");
             // Act
-            return memberHelper.updateName(authorId, mockMember.name, "   somePerson   ").then((result) => {
-                // Assert
-                expect(result).toEqual("Updated");
-                expect(memberHelper.updateMemberField).toHaveBeenCalledTimes(1);
-                expect(memberHelper.updateMemberField).toHaveBeenCalledWith(authorId, mockMember.name, "name", "somePerson");
-            })
+            const result = await memberHelper.updateName(authorId, mockMember.name, "   somePerson   ")
+            // Assert
+            expect(result).toEqual("Updated");
+            expect(memberHelper.updateMemberField).toHaveBeenCalledTimes(1);
+            expect(memberHelper.updateMemberField).toHaveBeenCalledWith(authorId, mockMember.name, "name", "somePerson");
         })
 
         test('throws error when name is blank', async () => {
             // Arrange;
             jest.spyOn(memberHelper, 'updateMemberField').mockResolvedValue("Updated");
-            // Act
-            return memberHelper.updateName(authorId, mockMember.name, "        ").catch((result) => {
-                // Assert
-                expect(result).toEqual(new RangeError("Name " + enums.err.NO_VALUE));
-                expect(memberHelper.updateMemberField).not.toHaveBeenCalled();
-            })
+            // Act & Assert
+            await expect(memberHelper.updateName(authorId, mockMember.name, "        ")).rejects.toThrow('Name ' + enums.err.NO_VALUE);
+            // Assert
+            expect(memberHelper.updateMemberField).not.toHaveBeenCalled();
         })
     })
 
@@ -425,109 +400,113 @@ describe('MemberHelper', () => {
         test('throws error when displayname is blank', async () => {
             // Arrange
             jest.spyOn(memberHelper, 'updateMemberField').mockResolvedValue();
-            // Act
-            return memberHelper.updateDisplayName(authorId, mockMember.name, mockMember.displayname).catch((result) => {
-                // Assert
-                expect(result).toEqual(new Error(`Display name ${enums.err.NO_VALUE}`));
-                expect(memberHelper.updateMemberField).not.toHaveBeenCalled();
-            })
+            // Act & Assert
+            await expect(memberHelper.updateDisplayName(authorId, mockMember.name, "           ")).rejects.toThrow("Display name " + enums.err.NO_VALUE);
+            // Assert
+            expect(memberHelper.updateMemberField).not.toHaveBeenCalled();
         })
 
         test('Sends error when display name is too long', async () => {
             // Arrange
             const tooLongDisplayName = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
             jest.spyOn(memberHelper, 'updateMemberField').mockResolvedValue();
-            // Act
-            return memberHelper.updateDisplayName(authorId, mockMember.name, tooLongDisplayName).catch((result) => {
-                // Assert
-                expect(result).toEqual(new RangeError(enums.err.DISPLAY_NAME_TOO_LONG));
-                expect(memberHelper.updateMemberField).not.toHaveBeenCalled();
-            })
+            // Act & Assert
+            await expect(memberHelper.updateDisplayName(authorId, mockMember.name, tooLongDisplayName)).rejects.toThrow(enums.err.DISPLAY_NAME_TOO_LONG);
+            // Assert
+            expect(memberHelper.updateMemberField).not.toHaveBeenCalled();
         })
 
         test('call updateMemberField with correct arguments when displayname passed in correctly and returns string', async () => {
             // Arrange
             jest.spyOn(memberHelper, 'updateMemberField').mockResolvedValue("Updated");
             // Act
-            return memberHelper.updateDisplayName(authorId, mockMember.name, "      Some Person ").then((result) => {
-                // Assert
-                expect(result).toEqual("Updated");
-                expect(memberHelper.updateMemberField).toHaveBeenCalledWith(authorId, mockMember.name, "displayname", mockMember.displayname);
-                expect(memberHelper.updateMemberField).toHaveBeenCalledTimes(1);
-            })
+            const result = await memberHelper.updateDisplayName(authorId, mockMember.name, "      Some Person ");
+            // Assert
+            expect(result).toEqual("Updated");
+            expect(memberHelper.updateMemberField).toHaveBeenCalledWith(authorId, mockMember.name, "displayname", mockMember.displayname);
+            expect(memberHelper.updateMemberField).toHaveBeenCalledTimes(1);
         })
     })
 
     describe('updateProxy', () => {
-        test('calls checkIfProxyExists and updateMemberField and returns string', async() => {
+        test('calls checkIfProxyExists and updateMemberField and returns string', async () => {
             // Arrange
             jest.spyOn(memberHelper, 'checkIfProxyExists').mockResolvedValue();
             jest.spyOn(memberHelper, 'updateMemberField').mockResolvedValue("Updated");
             // Act
-            return memberHelper.updateProxy(authorId, mockMember.name, "--text").then((result) => {
-                expect(result).toEqual("Updated");
-                expect(memberHelper.checkIfProxyExists).toHaveBeenCalledTimes(1);
-                expect(memberHelper.checkIfProxyExists).toHaveBeenCalledWith(authorId, mockMember.proxy);
-                expect(memberHelper.updateMemberField).toHaveBeenCalledTimes(1);
-                expect(memberHelper.updateMemberField).toHaveBeenCalledWith(authorId, mockMember.name, "proxy", mockMember.proxy);
-            });
+            const result = await memberHelper.updateProxy(authorId, mockMember.name, "--text");
+            // Assert
+            expect(result).toEqual("Updated");
+            expect(memberHelper.checkIfProxyExists).toHaveBeenCalledTimes(1);
+            expect(memberHelper.checkIfProxyExists).toHaveBeenCalledWith(authorId, mockMember.proxy);
+            expect(memberHelper.updateMemberField).toHaveBeenCalledTimes(1);
+            expect(memberHelper.updateMemberField).toHaveBeenCalledWith(authorId, mockMember.name, "proxy", mockMember.proxy);
         })
     })
 
     describe('updatePropic', () => {
         test.each([
-            [null, attachmentUrl, null, attachmentUrl],
-            [mockMember.propic, null, null, mockMember.propic],
-            [mockMember.propic, attachmentUrl, null, attachmentUrl],
-            [null, attachmentUrl, attachmentExpiration, attachmentUrl]
-        ])('calls checkImageFormatValidity and updateMemberField and returns string', async(imgUrl, attachmentUrl, attachmentExpiration, expected) => {
+            [null, attachmentUrl, undefined, attachmentUrl],
+            [mockMember.propic, null, undefined, mockMember.propic],
+            [mockMember.propic, attachmentUrl, undefined, mockMember.propic],
+        ])('calls checkImageFormatValidity and updateMemberField and returns string', async (imgUrl, attachmentUrl, attachmentExpiration, expected) => {
             // Arrange
-
             jest.spyOn(memberHelper, 'updateMemberField').mockResolvedValue("Updated");
+            utils.setExpirationWarning = jest.fn().mockReturnValue(undefined);
             // Act
-            return memberHelper.updatePropic(authorId, mockMember.name, imgUrl, attachmentUrl, attachmentExpiration).then((result) => {
-                expect(result).toEqual("Updated");
-                expect(utils.checkImageFormatValidity).toHaveBeenCalledTimes(1);
-                expect(utils.checkImageFormatValidity).toHaveBeenCalledWith(expected);
-                expect(memberHelper.updateMemberField).toHaveBeenCalledTimes(1);
-                expect(memberHelper.updateMemberField).toHaveBeenCalledWith(authorId, mockMember.name, "propic", expected, attachmentExpiration);
-            });
+            const result = await memberHelper.updatePropic(authorId, mockMember.name, imgUrl, attachmentUrl, attachmentExpiration);
+            // Assert
+            expect(result).toEqual("Updated");
+            expect(utils.checkImageFormatValidity).toHaveBeenCalledTimes(1);
+            expect(utils.checkImageFormatValidity).toHaveBeenCalledWith(expected);
+            expect(memberHelper.updateMemberField).toHaveBeenCalledTimes(1);
+            expect(memberHelper.updateMemberField).toHaveBeenCalledWith(authorId, mockMember.name, "propic", expected, undefined);
+        })
+
+        test('calls setExpirationWarning', async() => {
+            // Arrange
+            jest.spyOn(memberHelper, 'updateMemberField').mockResolvedValue("Updated");
+            utils.setExpirationWarning = jest.fn().mockReturnValue(enums.misc.ATTACHMENT_EXPIRATION_WARNING);
+            // Act
+            const result = await memberHelper.updatePropic(authorId, mockMember.name, null, attachmentUrl, attachmentExpiration);
+            // Assert
+            expect(result).toEqual("Updated");
+            expect(utils.setExpirationWarning).toHaveBeenCalledTimes(1);
+            expect(utils.setExpirationWarning).toHaveBeenCalledWith(attachmentUrl, attachmentExpiration);
+            expect(memberHelper.updateMemberField).toHaveBeenCalledTimes(1);
+            expect(memberHelper.updateMemberField).toHaveBeenCalledWith(authorId, mockMember.name, "propic", attachmentUrl, enums.misc.ATTACHMENT_EXPIRATION_WARNING);
         })
     })
 
     describe('addFullMember', () => {
-        const { database} = require('../../src/database.js');
+        const {database} = require('../../src/database.js');
         beforeEach(() => {
             jest.spyOn(memberHelper, 'getMemberByName').mockResolvedValue();
         })
 
         test('calls getMemberByName', async () => {
             // Act
-            return await memberHelper.addFullMember(authorId, mockMember.name).then(() => {
-                // Assert
-                expect(memberHelper.getMemberByName).toHaveBeenCalledWith(authorId, mockMember.name);
-                expect(memberHelper.getMemberByName).toHaveBeenCalledTimes(1);
-            })
+            await memberHelper.addFullMember(authorId, mockMember.name)
+            // Assert
+            expect(memberHelper.getMemberByName).toHaveBeenCalledWith(authorId, mockMember.name);
+            expect(memberHelper.getMemberByName).toHaveBeenCalledTimes(1);
         })
 
         test('if getMemberByName returns member, throw error', async () => {
+            // Arrange
             memberHelper.getMemberByName.mockResolvedValue({name: mockMember.name});
-            // Act
-            return await memberHelper.addFullMember(authorId, mockMember.name).catch((e) => {
-                // Assert
-                expect(e).toEqual(new Error(`Can't add ${mockMember.name}. ${enums.err.MEMBER_EXISTS}`))
-                expect(database.members.create).not.toHaveBeenCalled();
-            })
+            // Act & Assert
+            await expect(memberHelper.addFullMember(authorId, mockMember.name)).rejects.toThrow(`Can't add ${mockMember.name}. ${enums.err.MEMBER_EXISTS}`)
+            // Assert
+            expect(database.members.create).not.toHaveBeenCalled();
         })
 
 
         test('if name is not filled out, throw error', async () => {
-            // Act
-            return await memberHelper.addFullMember(authorId, "       ").catch((e) => {
-                // Assert
-                expect(e).toEqual(new Error(`Name ${enums.err.NO_VALUE}. ${enums.err.NAME_REQUIRED}`))
-                expect(database.members.create).not.toHaveBeenCalled();
-            })
+            // Act & Assert
+            await expect(memberHelper.addFullMember(authorId, "       ")).rejects.toThrow(`Name ${enums.err.NO_VALUE}. ${enums.err.NAME_REQUIRED}`);
+            // Assert
+            expect(database.members.create).not.toHaveBeenCalled();
         })
 
         test('if displayname is over 32 characters, call database.member.create with null value', async () => {
@@ -548,43 +527,39 @@ describe('MemberHelper', () => {
             }
 
             // Act
-            return await memberHelper.addFullMember(authorId, mockMember.name, tooLongDisplayName, null, null).then((res) => {
-                // Assert
-                expect(res).toEqual(expectedReturn);
-                expect(database.members.create).toHaveBeenCalledWith(expectedMemberArgs);
-                expect(database.members.create).toHaveBeenCalledTimes(1);
-            })
+            const res = await memberHelper.addFullMember(authorId, mockMember.name, tooLongDisplayName, null, null);
+            // Assert
+            expect(res).toEqual(expectedReturn);
+            expect(database.members.create).toHaveBeenCalledWith(expectedMemberArgs);
+            expect(database.members.create).toHaveBeenCalledTimes(1);
         })
 
         test('if proxy, call checkIfProxyExists', async () => {
             // Arrange
-            jest.spyOn(memberHelper, 'checkIfProxyExists').mockResolvedValue();
+            jest.spyOn(memberHelper, 'checkIfProxyExists').mockResolvedValue(true);
             const expectedMemberArgs = {
                 name: mockMember.name,
                 userid: authorId,
                 displayname: null,
-                proxy: mockMember.proxy,
+                proxy: null,
                 propic: null
             }
             database.members.create = jest.fn().mockResolvedValue(expectedMemberArgs);
             const expectedReturn = {member: expectedMemberArgs, errors: []}
 
             // Act
-            return await memberHelper.addFullMember(authorId, mockMember.name, null, mockMember.proxy).then((res) => {
-                // Assert
-                expect(res).toEqual(expectedReturn);
-                expect(memberHelper.checkIfProxyExists).toHaveBeenCalledWith(authorId, mockMember.proxy);
-                expect(memberHelper.checkIfProxyExists).toHaveBeenCalledTimes(1);
-                expect(database.members.create).toHaveBeenCalledWith(expectedMemberArgs);
-                expect(database.members.create).toHaveBeenCalledTimes(1);
-            })
+            const res = await memberHelper.addFullMember(authorId, mockMember.name, null, mockMember.proxy)
+            // Assert
+            expect(res).toEqual(expectedReturn);
+            expect(memberHelper.checkIfProxyExists).toHaveBeenCalledWith(authorId, mockMember.proxy);
+            expect(memberHelper.checkIfProxyExists).toHaveBeenCalledTimes(1);
+            expect(database.members.create).toHaveBeenCalledWith(expectedMemberArgs);
+            expect(database.members.create).toHaveBeenCalledTimes(1);
         })
 
         test('if checkProxyExists throws error, call database.member.create with null value', async () => {
             // Arrange
-            jest.spyOn(memberHelper, 'checkIfProxyExists').mockImplementation(() => {
-                throw new Error('error')
-            });
+            jest.spyOn(memberHelper, 'checkIfProxyExists').mockRejectedValue(new Error('error'));
             const expectedMemberArgs = {
                 name: mockMember.name,
                 userid: authorId,
@@ -599,12 +574,11 @@ describe('MemberHelper', () => {
             }
 
             // Act
-            return await memberHelper.addFullMember(authorId, mockMember.name, null, mockMember.proxy, null).then((res) => {
-                // Assert
-                expect(res).toEqual(expectedReturn);
-                expect(database.members.create).toHaveBeenCalledWith(expectedMemberArgs);
-                expect(database.members.create).toHaveBeenCalledTimes(1);
-            })
+            const res = await memberHelper.addFullMember(authorId, mockMember.name, null, mockMember.proxy, null)
+            // Assert
+            expect(res).toEqual(expectedReturn);
+            expect(database.members.create).toHaveBeenCalledWith(expectedMemberArgs);
+            expect(database.members.create).toHaveBeenCalledTimes(1);
         })
 
         test('if propic, call checkImageFormatValidity', async () => {
@@ -614,24 +588,23 @@ describe('MemberHelper', () => {
                 userid: authorId,
                 displayname: null,
                 proxy: null,
-                propic: mockMember.propic
+                propic: null
             }
             database.members.create = jest.fn().mockResolvedValue(expectedMemberArgs);
             const expectedReturn = {member: expectedMemberArgs, errors: []}
             // Act
-            return await memberHelper.addFullMember(authorId, mockMember.name, null, null, mockMember.propic).then((res) => {
-                // Assert
-                expect(res).toEqual(expectedReturn);
-                expect(utils.checkImageFormatValidity).toHaveBeenCalledWith(mockMember.propic);
-                expect(utils.checkImageFormatValidity).toHaveBeenCalledTimes(1);
-                expect(database.members.create).toHaveBeenCalledWith(expectedMemberArgs);
-                expect(database.members.create).toHaveBeenCalledTimes(1);
-            })
+            const res = await memberHelper.addFullMember(authorId, mockMember.name, null, null, mockMember.propic);
+            // Assert
+            expect(res).toEqual(expectedReturn);
+            expect(utils.checkImageFormatValidity).toHaveBeenCalledWith(mockMember.propic);
+            expect(utils.checkImageFormatValidity).toHaveBeenCalledTimes(1);
+            expect(database.members.create).toHaveBeenCalledWith(expectedMemberArgs);
+            expect(database.members.create).toHaveBeenCalledTimes(1);
         })
 
         test('if checkImageFormatValidity throws error, call database.member.create with null value', async () => {
             // Arrange
-            utils.checkImageFormatValidity = jest.fn().mockImplementation(() => {throw new Error("error")})
+            utils.checkImageFormatValidity = jest.fn().mockRejectedValue(new Error("error"));
             const expectedMemberArgs = {
                 name: mockMember.name,
                 userid: authorId,
@@ -645,17 +618,27 @@ describe('MemberHelper', () => {
                 errors: [`Tried to set profile picture to \"${mockMember.propic}\". error. ${enums.err.SET_TO_NULL}`]
             }
             // Act
-            return await memberHelper.addFullMember(authorId, mockMember.name, null, null, mockMember.propic).then((res) => {
-                // Assert
-                expect(res).toEqual(expectedReturn);
-                expect(database.members.create).toHaveBeenCalledWith(expectedMemberArgs);
-                expect(database.members.create).toHaveBeenCalledTimes(1);
-            })
+            const res = await memberHelper.addFullMember(authorId, mockMember.name, null, null, mockMember.propic);
+            // Assert
+            expect(res).toEqual(expectedReturn);
+            expect(database.members.create).toHaveBeenCalledWith(expectedMemberArgs);
+            expect(database.members.create).toHaveBeenCalledTimes(1);
+        })
+
+        test('calls setExpirationWarning if attachmentExpiration exists', async () => {
+            // Arrange
+            utils.checkImageFormatValidity = jest.fn().mockResolvedValue(true);
+            jest.spyOn(memberHelper, 'setExpirationWarning').mockReturnValue(`${enums.misc.ATTACHMENT_EXPIRATION_WARNING}`);
+            // Act
+            await memberHelper.addFullMember(authorId, mockMember.name, null, null, mockMember.propic, attachmentExpiration)
+            // Assert
+            expect(memberHelper.setExpirationWarning).toHaveBeenCalledTimes(1);
+            expect(memberHelper.setExpirationWarning).toHaveBeenCalledWith(mockMember.propic, attachmentExpiration);
         })
 
         test('if all values are valid, call database.members.create', async () => {
             // Arrange
-            jest.spyOn(memberHelper, 'checkIfProxyExists').mockResolvedValue();
+            jest.spyOn(memberHelper, 'checkIfProxyExists').mockResolvedValue(false);
             const expectedMemberArgs = {
                 name: mockMember.name,
                 userid: authorId,
@@ -664,15 +647,14 @@ describe('MemberHelper', () => {
                 propic: mockMember.propic
             }
             database.members.create = jest.fn().mockResolvedValue(expectedMemberArgs);
-            utils.checkImageFormatValidity = jest.fn().mockResolvedValue();
+            utils.checkImageFormatValidity = jest.fn().mockResolvedValue(true);
             const expectedReturn = {member: expectedMemberArgs, errors: []}
             // Act
-            return await memberHelper.addFullMember(authorId, mockMember.name, mockMember.displayname, mockMember.proxy, mockMember.propic).then((res) => {
-                // Assert
-                expect(res).toEqual(expectedReturn);
-                expect(database.members.create).toHaveBeenCalledWith(expectedMemberArgs);
-                expect(database.members.create).toHaveBeenCalledTimes(1);
-            })
+            const res = await memberHelper.addFullMember(authorId, mockMember.name, mockMember.displayname, mockMember.proxy, mockMember.propic);
+            // Assert
+            expect(res).toEqual(expectedReturn);
+            expect(database.members.create).toHaveBeenCalledWith(expectedMemberArgs);
+            expect(database.members.create).toHaveBeenCalledTimes(1);
         })
 
     })
@@ -686,42 +668,34 @@ describe('MemberHelper', () => {
             };
         })
 
-        test('calls setExpirationWarning if attachmentExpiration', async () => {
-            return memberHelper.updateMemberField(authorId, mockMember.name, "propic", mockMember.propic, attachmentExpiration).then((res) => {
-                expect(memberHelper.setExpirationWarning).toHaveBeenCalledTimes(1);
-                expect(memberHelper.setExpirationWarning).toHaveBeenCalledWith(mockMember.propic);
-            })
-        })
-
         test.each([
-            ['name', mockMember.name, null, `Updated name for ${mockMember.name} to ${mockMember.name}`],
-            ['displayname', mockMember.displayname, null, `Updated name for ${mockMember.name} to ${mockMember.displayname}`],
-            ['proxy', mockMember.proxy, null, `Updated name for ${mockMember.name} to ${mockMember.proxy}`],
-            ['propic', mockMember.propic, null, `Updated name for ${mockMember.name} to ${mockMember.propic}`],
-            ['propic', mockMember.propic, attachmentExpiration, `Updated name for ${mockMember.name} to ${mockMember.propic} warning}`]
-        ])('calls database.members.update with correct column and value and return string', async (columnName, value, attachmentExpiration) => {
-            // Arrange
-            return memberHelper.updateMemberField(authorId, mockMember.name, columnName, value, attachmentExpiration).then((res) => {
-                // Act
-                expect(database.members.update).toHaveBeenCalledTimes(1);
-                expect(database.members.update).toHaveBeenCalledWith({[columnName]: value}, {
-                    where: {
-                        name: {[Op.iLike]: mockMember.name},
-                        userid: authorId
-                    }
-                })
+            ['name', mockMember.name, undefined, `Updated name for ${mockMember.name} to ${mockMember.name}.`],
+            ['displayname', mockMember.displayname, undefined, `Updated displayname for ${mockMember.name} to ${mockMember.displayname}.`],
+            ['proxy', mockMember.proxy, undefined, `Updated proxy for ${mockMember.name} to ${mockMember.proxy}.`],
+            ['propic', mockMember.propic, undefined, `Updated propic for ${mockMember.name} to ${mockMember.propic}.`],
+            ['propic', mockMember.propic,
+                'warning', `Updated propic for ${mockMember.name} to ${mockMember.propic}. warning.`]
+        ])('calls database.members.update with correct column and value and return string', async (columnName, value, attachmentExpiration, expected) => {
+            // Act
+            const res = await memberHelper.updateMemberField(authorId, mockMember.name, columnName, value, attachmentExpiration)
+            // Assert
+            expect(res).toEqual(expected);
+            expect(database.members.update).toHaveBeenCalledTimes(1);
+            expect(database.members.update).toHaveBeenCalledWith({[columnName]: value}, {
+                where: {
+                    name: {[Op.iLike]: mockMember.name},
+                    userid: authorId
+                }
             })
         })
 
-        test('if database.members.update returns 0 rows changed, throw error', () => {
+        test('if database.members.update returns 0 rows changed, throw error', async () => {
             // Arrange
             database.members = {
                 update: jest.fn().mockResolvedValue([0])
             };
             // Act
-            return memberHelper.updateMemberField(authorId, mockMember.name, "displayname", mockMember.displayname).catch((res) => {
-                expect(res).toEqual(new Error(`Can't update ${mockMember.name}. ${enums.err.NO_MEMBER}.`))
-            })
+            await expect(memberHelper.updateMemberField(authorId, mockMember.name, "displayname", mockMember.displayname)).rejects.toThrow(`Can't update ${mockMember.name}. ${enums.err.NO_MEMBER}.`);
         })
     })
 
@@ -742,32 +716,30 @@ describe('MemberHelper', () => {
             ['SP: text'],
             ['text --SP'],
         ])('%s should call getMembersByAuthor and return false', async (proxy) => {
-            return memberHelper.checkIfProxyExists(authorId, proxy).then((res) => {
-                expect(res).toEqual(false)
-                expect(memberHelper.getMembersByAuthor).toHaveBeenCalledTimes(1);
-                expect(memberHelper.getMembersByAuthor).toHaveBeenCalledWith(authorId);
-            })
+            // Act
+            const res = await memberHelper.checkIfProxyExists(authorId, proxy)
+            // Assert
+            expect(res).toEqual(false)
+            expect(memberHelper.getMembersByAuthor).toHaveBeenCalledTimes(1);
+            expect(memberHelper.getMembersByAuthor).toHaveBeenCalledWith(authorId);
         })
 
         test.each([
             ['--', enums.err.NO_TEXT_FOR_PROXY, false],
             ['      ', enums.err.NO_TEXT_FOR_PROXY, false],
             ['text', enums.err.NO_PROXY_WRAPPER, false],
-            ['--text', enums.err.PROXY_EXISTS, true]
-        ])('%s returns correct error and calls getMembersByAuthor if appropriate', async (proxy, error, shouldCall) => {
-            return memberHelper.checkIfProxyExists(authorId, proxy).catch((res) => {
-                expect(res).toEqual(new Error(error))
-                if (shouldCall) {
-                    expect(memberHelper.getMembersByAuthor).toHaveBeenCalledTimes(1);
-                    expect(memberHelper.getMembersByAuthor).toHaveBeenCalledWith(authorId);
-                }
-                else {
-                    expect(memberHelper.getMembersByAuthor).not.toHaveBeenCalled();
-                }
-            })
+        ])('%s returns correct error and does not call getMemberByAuthor', async (proxy, error, shouldCall) => {
+            // Act & Assert
+            await expect(memberHelper.checkIfProxyExists(authorId, proxy)).rejects.toThrow(error);
+
+            expect(memberHelper.getMembersByAuthor).not.toHaveBeenCalled();
         })
 
-
+        test('--text returns correct error and calls getMemberByAuthor', async () => {
+            await expect(memberHelper.checkIfProxyExists(authorId, "--text")).rejects.toThrow(enums.err.PROXY_EXISTS);
+            expect(memberHelper.getMembersByAuthor).toHaveBeenCalledTimes(1);
+            expect(memberHelper.getMembersByAuthor).toHaveBeenCalledWith(authorId);
+        })
     })
 
     afterEach(() => {

@@ -8,7 +8,7 @@ import {utils} from "./helpers/utils.js";
 
 env.config({path: './.env'});
 
-export const token = process.env.FLUXER_BOT_TOKEN;
+const token = process.env.FLUXER_BOT_TOKEN;
 
 if (!token) {
     console.error("Missing FLUXER_BOT_TOKEN environment variable.");
@@ -30,17 +30,13 @@ client.on(Events.MessageCreate, async (message) => {
  **/
 export const handleMessageCreate = async function(message) {
     try {
+        // Ignore bots
+        if (message.author.bot) return;
         // Parse command and arguments
         const content = message.content.trim();
-        // Ignore bots and messages without content
-        if (message.author.bot || content.length === 0) return;
-
         // If message doesn't start with the bot prefix, it could still be a message with a proxy tag. If it's not, return.
         if (!content.startsWith(messageHelper.prefix)) {
-            await webhookHelper.sendMessageAsMember(client, message).catch((e) => {
-                throw e
-            });
-            return;
+            return await webhookHelper.sendMessageAsMember(client, message);
         }
 
         const commandName = content.slice(messageHelper.prefix.length).split(" ")[0];
@@ -57,9 +53,7 @@ export const handleMessageCreate = async function(message) {
         }
 
         if (command) {
-            await command.execute(message, args).catch(e => {
-                throw e
-            });
+            await command.execute(message, args);
         }
         else {
             await message.reply(enums.err.COMMAND_NOT_RECOGNIZED);
@@ -67,7 +61,6 @@ export const handleMessageCreate = async function(message) {
     }
     catch(error) {
         console.error(error);
-        // return await message.reply(error.message);
     }
 }
 
@@ -88,13 +81,19 @@ function printGuilds() {
 const debouncePrintGuilds  = utils.debounce(printGuilds, 2000);
 export const debounceLogin  = utils.debounce(client.login, 60000);
 
-(async () => {
+export const login = async function() {
     try {
-
         await client.login(token);
         // await db.check_connection();
     } catch (err) {
         console.error('Login failed:', err);
         process.exit(1);
     }
-})();
+}
+
+function main()
+{
+    login();
+}
+
+main();

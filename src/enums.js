@@ -22,7 +22,8 @@ helperEnums.err = {
     NO_MEMBERS_IMPORTED: 'No members were imported.',
     ERRORS_OCCURRED: "These errors occurred:",
     COMMAND_NOT_RECOGNIZED: "Command not recognized. Try typing `pf;help` for command list.",
-    SET_TO_NULL: "It has been set to null instead."
+    SET_TO_NULL: "It has been set to null instead.",
+    CANNOT_FETCH_RESOURCE: "Could not download the file at this time."
 }
 
 helperEnums.help = {
@@ -43,7 +44,10 @@ helperEnums.help = {
 }
 
 helperEnums.misc = {
-    ATTACHMENT_SENT_BY: "Attachment sent by:"
+    ATTACHMENT_SENT_BY: "Attachment sent by:",
+    ATTACHMENT_EXPIRATION_WARNING: "**NOTE:** Because this profile picture is hosted on Fluxer, it will expire. To avoid this, upload the picture to another website like <https://imgbb.com/> and link to it directly.",
+    FLUXER_ATTACHMENT_URL: "https://fluxerusercontent.com/attachments/"
+
 }
 
 export const enums = helperEnums;
