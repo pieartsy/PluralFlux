@@ -1,6 +1,6 @@
 services:
   main:
-    image: engineering.sanya.gay/pluralflux/pluralflux-dev
+    image: engineering.sanya.gay/pluralflux/pluralflux
     container_name: pluralflux
     restart: unless-stopped
     networks:
