@@ -1,46 +1,27 @@
 services:
   main:
-    build: .
+    image: engineering.sanya.gay/pluralflux/pluralflux
     container_name: pluralflux
     restart: unless-stopped
-    networks:
-      - pluralflux-net
+    env_file: "variables.env"
   postgres:
     image: postgres:latest
-    container_name: pluralflux-postgres
-    environment:
-      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_pwd
-    secrets:
-      - postgres_pwd
+    env_file: "variables.env"
     volumes:
       - pgdata:/var/lib/postgresql
-    ports:
-      - "5432:5432"
-    networks:
-      - pluralflux-net
+      - ./pgBackup:/mnt/pgBackup
   pgadmin:
     image: dpage/pgadmin4:latest
-    container_name: pluralflux-pgadmin
     ports:
       - "5050:80"
-    environment:
-      PGADMIN_DEFAULT_EMAIL: code@asterfialla.com
-      PGADMIN_DEFAULT_PASSWORD_FILE: /run/secrets/postgres_pwd
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
-    secrets:
-      - postgres_pwd
+    env_file: "variables.env"
     depends_on:
       - postgres
-    networks:
-      - pluralflux-net
-
-networks:
-  pluralflux-net:
+    volumes:
+      - pgadmindata:/var/lib/pgadmin
+      #- ./pgBackup:/mnt/host
+      # uncomment the above line if you plan to restore / backup dump files from PGAdmin UI
 
 volumes:
   pgdata:
-
-secrets:
-  postgres_pwd:
-    file: ./secrets/postgres-password.txt
+  pgadmindata:
