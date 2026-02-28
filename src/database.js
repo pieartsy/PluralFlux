@@ -1,5 +1,5 @@
-import {DataTypes, Sequelize} from 'sequelize';
-import * as env from 'dotenv';
+const env = require('dotenv')
+const {Sequelize, DataTypes} = require('sequelize');
 
 env.config();
 
@@ -10,7 +10,7 @@ if (!password) {
     process.exit(1);
 }
 
-const db = {};
+const database = {};
 
 const sequelize = new Sequelize('postgres', 'postgres', password, {
     host: 'localhost',
@@ -18,10 +18,10 @@ const sequelize = new Sequelize('postgres', 'postgres', password, {
     dialect: 'postgres'
 });
 
-db.sequelize = sequelize;
-db.Sequelize = Sequelize;
+database.sequelize = sequelize;
+database.Sequelize = Sequelize;
 
-db.members = sequelize.define('Member', {
+database.members = sequelize.define('Member', {
     userid: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -41,7 +41,7 @@ db.members = sequelize.define('Member', {
     }
 });
 
-db.systems = sequelize.define('System', {
+database.systems = sequelize.define('System', {
     userid: {
         type: DataTypes.STRING,
     },
@@ -59,7 +59,7 @@ db.systems = sequelize.define('System', {
 /**
  * Checks Sequelize database connection.
  */
-db.check_connection = async function () {
+database.check_connection = async function () {
     try {
         await sequelize.authenticate();
         console.log('Connection has been established successfully.');
@@ -83,4 +83,4 @@ async function syncModels() {
     }
 }
 
-export const database = db;
+module.exports = database;
