@@ -1,5 +1,5 @@
-const enums = require("../enums.js");
-const memberHelper = require("./memberHelper.js");
+const {enums} = require("../enums.js");
+const {memberHelper} = require("./memberHelper.js");
 
 const importHelper = {};
 
@@ -55,4 +55,4 @@ importHelper.pluralKitImport = async function (authorId, attachmentUrl= null) {
     return aggregatedText;
 }
 
-module.exports = importHelper;
+exports.importHelper = importHelper;

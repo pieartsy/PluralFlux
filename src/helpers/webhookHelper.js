@@ -93,4 +93,4 @@ webhookHelper.getWebhook = async function(client, channel) {
     return channelWebhooks.find((webhook) => webhook.name === name);
 }
 
-module.exports = webhookHelper;
+module.exports.webhookHelper = webhookHelper;

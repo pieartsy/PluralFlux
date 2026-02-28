@@ -1,8 +1,8 @@
-const memberHelper = require('./memberHelper.js');
+const {memberHelper} = require('./memberHelper.js');
 
-const messageHelper = {};
+const msgh = {};
 
-messageHelper.prefix = "pf;"
+msgh.prefix = "pf;"
 
 /**
  * Parses and slices up message arguments, retaining quoted strings.
@@ -11,8 +11,8 @@ messageHelper.prefix = "pf;"
  * @param {string} commandName - The command name.
  * @returns {string[]} An array of arguments.
  */
-messageHelper.parseCommandArgs = function(content, commandName) {
-    const message = content.slice(messageHelper.prefix.length + commandName.length).trim();
+msgh.parseCommandArgs = function(content, commandName) {
+    const message = content.slice(msgh.prefix.length + commandName.length).trim();
 
     return message.match(/\\?.|^$/g).reduce((accumulator, chara) => {
         if (chara === '\"' || chara === '\'') {
@@ -38,7 +38,7 @@ messageHelper.parseCommandArgs = function(content, commandName) {
  * @param {string | null} [attachmentUrl] - The url for an attachment to the message, if any exists.
  * @returns {Promise<{model, string, bool}>} The proxy message object.
  */
-messageHelper.parseProxyTags = async function (authorId, content, attachmentUrl = null){
+msgh.parseProxyTags = async function (authorId, content, attachmentUrl = null){
     const members = await memberHelper.getMembersByAuthor(authorId);
     // If an author has no members, no sense in searching for proxy
     if (members.length === 0) {
@@ -70,7 +70,7 @@ messageHelper.parseProxyTags = async function (authorId, content, attachmentUrl 
  * @returns {{text: string, file: Buffer<ArrayBuffer> | undefined}} The text and buffer object
  *
  */
-messageHelper.returnBufferFromText = function (text) {
+msgh.returnBufferFromText = function (text) {
     if (text.length > 2000) {
         const truncated = text.substring(0, 2000);
         const restOfText = text.substring(2000);
@@ -80,4 +80,4 @@ messageHelper.returnBufferFromText = function (text) {
     return {text: text, file: undefined}
 }
 
-module.exports = messageHelper;
+module.exports.messageHelper = msgh;

@@ -50,4 +50,4 @@ enums.misc = {
 
 }
 
-module.exports = enums;
+module.exports.enums = enums;
