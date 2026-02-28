@@ -1,8 +1,8 @@
-const database = require('../database.js');
-const enums = require("../enums.js");
+const {database} = require('../database.js');
+const {enums} = require("../enums.js");
 const {Op} = require("sequelize");
 const {EmbedBuilder} = require("@fluxerjs/core");
-const utils = require("./utils.js");
+const {utils} = require("./utils.js");
 
 const memberHelper = {};
 
@@ -365,20 +365,21 @@ memberHelper.addFullMember = async function (authorId, memberName, displayName =
         }
     }
 
-    let isValidPropic;
+    let isValidPropic, expirationWarning;
     if (propic && propic.length > 0) {
         try {
             isValidPropic = await utils.checkImageFormatValidity(propic);
+            expirationWarning = utils.setExpirationWarning(propic, attachmentExpiration);
+            if (expirationWarning) {
+                errors.push(expirationWarning);
+            }
         }
         catch(e) {
             errors.push(`Tried to set profile picture to \"${propic}\". ${e.message}. ${enums.err.SET_TO_NULL}`);
             isValidPropic = false;
         }
     }
-    const expirationWarning = utils.setExpirationWarning(propic, attachmentExpiration);
-    if (expirationWarning) {
-        errors.push(expirationWarning);
-    }
+
     const member = await database.members.create({
         name: memberName, userid: authorId, displayname: isValidDisplayName ? displayName : null, proxy: isValidProxy ? proxy : null, propic: isValidPropic ? propic : null
     });
@@ -516,4 +517,4 @@ memberHelper.getMemberCommandInfo = function() {
 }
 
 
-module.exports = memberHelper;
+module.exports.memberHelper = memberHelper;

@@ -1,8 +1,8 @@
-const messageHelper = require("./helpers/messageHelper.js");
-const enums = require("./enums.js");
-const memberHelper = require("./helpers/memberHelper.js");
+const {messageHelper} = require("./helpers/messageHelper.js");
+const {enums} = require("./enums.js");
+const {memberHelper} = require("./helpers/memberHelper.js");
 const {EmbedBuilder} = require("@fluxerjs/core");
-const importHelper = require("./helpers/importHelper.js");
+const {importHelper} = require("./helpers/importHelper.js");
 
 const commands = {
     commandsMap: new Map(),
@@ -119,4 +119,4 @@ commands.importCommand = async function (message, args) {
 
 }
 
-module.exports = commands;
+module.exports.commands = commands;

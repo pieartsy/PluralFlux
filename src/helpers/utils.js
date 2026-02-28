@@ -1,4 +1,4 @@
-const enums = require('../enums');
+const {enums} = require('../enums');
 
 const utils = {};
 
@@ -54,4 +54,4 @@ utils.setExpirationWarning = function (imgUrl = null, expirationString = null) {
     return null;
 }
 
-module.exports = utils;
+module.exports.utils = utils;

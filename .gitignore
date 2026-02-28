@@ -6,3 +6,5 @@ coverage
 log.txt
 .env
 oya.png
+variables.env
+.env.production

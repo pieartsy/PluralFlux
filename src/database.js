@@ -83,4 +83,4 @@ async function syncModels() {
     }
 }
 
-module.exports = database;
+module.exports.database = database;

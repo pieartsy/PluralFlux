@@ -1,10 +1,10 @@
 const {Client, Events, Message} = require('@fluxerjs/core');
-const messageHelper = require("./helpers/messageHelper.js");
-const enums = require("./enums.js");
-const commands = require("./commands.js");
-const webhookHelper = require("./helpers/webhookHelper.js");
+const {messageHelper} = require("./helpers/messageHelper.js");
+const {enums} = require("./enums.js");
+const {commands} = require("./commands.js");
+const {webhookHelper} = require("./helpers/webhookHelper.js");
 const env = require('dotenv');
-const utils = require("./helpers/utils.js");
+const {utils} = require("./helpers/utils.js");
 
 env.config();
 
@@ -15,7 +15,9 @@ if (!token) {
     process.exit(1);
 }
 
-const client = new Client({ intents: 0 });
+client = new Client({ intents: 0 });
+
+module.exports.client = client;
 
 client.on(Events.MessageCreate, async (message) => {
     await handleMessageCreate(message);
@@ -28,7 +30,7 @@ client.on(Events.MessageCreate, async (message) => {
  * @param {Message} message - The message object
  *
  **/
-exports.handleMessageCreate = async function(message) {
+module.exports.handleMessageCreate = async function(message) {
     try {
         // Ignore bots
         if (message.author.bot) return;
@@ -81,7 +83,7 @@ function printGuilds() {
 const debouncePrintGuilds  = utils.debounce(printGuilds, 2000);
 // export const debounceLogin  = utils.debounce(client.login, 60000);
 
-exports.login = async function() {
+module.exports.login = async function() {
     try {
         await client.login(token);
         // await db.check_connection();

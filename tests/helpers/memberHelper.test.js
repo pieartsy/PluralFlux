@@ -590,6 +590,7 @@ describe('MemberHelper', () => {
                 proxy: null,
                 propic: null
             }
+            utils.setExpirationWarning = jest.fn().mockReturnValue();
             database.members.create = jest.fn().mockResolvedValue(expectedMemberArgs);
             const expectedReturn = {member: expectedMemberArgs, errors: []}
             // Act
@@ -628,12 +629,12 @@ describe('MemberHelper', () => {
         test('calls setExpirationWarning if attachmentExpiration exists', async () => {
             // Arrange
             utils.checkImageFormatValidity = jest.fn().mockResolvedValue(true);
-            jest.spyOn(memberHelper, 'setExpirationWarning').mockReturnValue(`${enums.misc.ATTACHMENT_EXPIRATION_WARNING}`);
+            utils.setExpirationWarning = jest.fn().mockReturnValue(`${enums.misc.ATTACHMENT_EXPIRATION_WARNING}`);
             // Act
             await memberHelper.addFullMember(authorId, mockMember.name, null, null, mockMember.propic, attachmentExpiration)
             // Assert
-            expect(memberHelper.setExpirationWarning).toHaveBeenCalledTimes(1);
-            expect(memberHelper.setExpirationWarning).toHaveBeenCalledWith(mockMember.propic, attachmentExpiration);
+            expect(utils.setExpirationWarning).toHaveBeenCalledTimes(1);
+            expect(utils.setExpirationWarning).toHaveBeenCalledWith(mockMember.propic, attachmentExpiration);
         })
 
         test('if all values are valid, call database.members.create', async () => {
@@ -648,6 +649,7 @@ describe('MemberHelper', () => {
             }
             database.members.create = jest.fn().mockResolvedValue(expectedMemberArgs);
             utils.checkImageFormatValidity = jest.fn().mockResolvedValue(true);
+            utils.setExpirationWarning = jest.fn().mockReturnValue();
             const expectedReturn = {member: expectedMemberArgs, errors: []}
             // Act
             const res = await memberHelper.addFullMember(authorId, mockMember.name, mockMember.displayname, mockMember.proxy, mockMember.propic);
@@ -662,7 +664,7 @@ describe('MemberHelper', () => {
     describe('updateMemberField', () => {
         const {database} = require('../../src/database.js');
         beforeEach(() => {
-            jest.spyOn(memberHelper, "setExpirationWarning").mockReturnValue(' warning');
+            utils.setExpirationWarning = jest.fn().mockReturnValue(`warning`);
             database.members = {
                 update: jest.fn().mockResolvedValue([1])
             };
