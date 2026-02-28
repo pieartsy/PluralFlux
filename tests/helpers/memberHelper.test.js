@@ -590,6 +590,7 @@ describe('MemberHelper', () => {
                 proxy: null,
                 propic: null
             }
+            utils.setExpirationWarning = jest.fn().mockReturnValue();
             database.members.create = jest.fn().mockResolvedValue(expectedMemberArgs);
             const expectedReturn = {member: expectedMemberArgs, errors: []}
             // Act
@@ -648,6 +649,7 @@ describe('MemberHelper', () => {
             }
             database.members.create = jest.fn().mockResolvedValue(expectedMemberArgs);
             utils.checkImageFormatValidity = jest.fn().mockResolvedValue(true);
+            utils.setExpirationWarning = jest.fn().mockReturnValue();
             const expectedReturn = {member: expectedMemberArgs, errors: []}
             // Act
             const res = await memberHelper.addFullMember(authorId, mockMember.name, mockMember.displayname, mockMember.proxy, mockMember.propic);
