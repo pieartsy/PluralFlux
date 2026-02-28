@@ -7,6 +7,7 @@
     "type": "git",
     "url": "https://github.com/pieartsy/PluralFlux.git"
   },
+  "type": "commonjs",
   "private": true,
   "dependencies": {
     "@fluxerjs/core": "^1.2.2",

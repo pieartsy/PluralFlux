@@ -1,8 +1,8 @@
-import {memberHelper} from "./memberHelper.js";
+const memberHelper = require('./memberHelper.js');
 
-const msgh = {};
+const messageHelper = {};
 
-msgh.prefix = "pf;"
+messageHelper.prefix = "pf;"
 
 /**
  * Parses and slices up message arguments, retaining quoted strings.
@@ -11,8 +11,8 @@ msgh.prefix = "pf;"
  * @param {string} commandName - The command name.
  * @returns {string[]} An array of arguments.
  */
-msgh.parseCommandArgs = function(content, commandName) {
-    const message = content.slice(msgh.prefix.length + commandName.length).trim();
+messageHelper.parseCommandArgs = function(content, commandName) {
+    const message = content.slice(messageHelper.prefix.length + commandName.length).trim();
 
     return message.match(/\\?.|^$/g).reduce((accumulator, chara) => {
         if (chara === '\"' || chara === '\'') {
@@ -38,7 +38,7 @@ msgh.parseCommandArgs = function(content, commandName) {
  * @param {string | null} [attachmentUrl] - The url for an attachment to the message, if any exists.
  * @returns {Promise<{model, string, bool}>} The proxy message object.
  */
-msgh.parseProxyTags = async function (authorId, content, attachmentUrl = null){
+messageHelper.parseProxyTags = async function (authorId, content, attachmentUrl = null){
     const members = await memberHelper.getMembersByAuthor(authorId);
     // If an author has no members, no sense in searching for proxy
     if (members.length === 0) {
@@ -70,7 +70,7 @@ msgh.parseProxyTags = async function (authorId, content, attachmentUrl = null){
  * @returns {{text: string, file: Buffer<ArrayBuffer> | undefined}} The text and buffer object
  *
  */
-msgh.returnBufferFromText = function (text) {
+messageHelper.returnBufferFromText = function (text) {
     if (text.length > 2000) {
         const truncated = text.substring(0, 2000);
         const restOfText = text.substring(2000);
@@ -80,4 +80,4 @@ msgh.returnBufferFromText = function (text) {
     return {text: text, file: undefined}
 }
 
-export const messageHelper = msgh;
+module.exports = messageHelper;
