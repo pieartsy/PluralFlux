@@ -7,4 +7,5 @@ module.exports = {
     transform: {
         "^.+\\.[t|j]sx?$":  require.resolve('babel-jest')
     },
+    testPathIgnorePatterns: ["**/node_modules/**", "**/database/**"],
 };
