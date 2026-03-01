@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column } from "typeorm"
 
-@Entity()
-export class Member {
+@Entity({synchronize: true})
+export class Members {
 
     @PrimaryGeneratedColumn()
     id: number
@@ -9,15 +9,32 @@ export class Member {
     @Column()
     userid: string
 
-    @Column()
+    @Column({
+        length: 100
+    })
     name: string
 
-    @Column()
+    @Column({
+        nullable: true,
+    })
     displayname: number
 
-    @Column()
+    @Column({
+        nullable: true,
+    })
     proxy: number
 
-    @Column()
+    @Column({
+        nullable: true,
+    })
     propic: number
+
+    @Column()
+    createdAt: Date
+
+    @Column()
+    updatedAt: Date
+
+    @Column()
+    systemid: string
 }

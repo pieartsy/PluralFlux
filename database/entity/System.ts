@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column } from "typeorm"
 
 @Entity()
-export class System {
+export class Systems {
 
     @PrimaryGeneratedColumn()
     id: number
@@ -17,4 +17,10 @@ export class System {
 
     @Column()
     autoproxy: boolean
+
+    @Column()
+    createdAt: Date
+
+    @Column()
+    updatedAt: Date
 }
