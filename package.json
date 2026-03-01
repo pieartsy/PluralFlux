@@ -35,7 +35,6 @@
   "scripts": {
     "test": "jest",
     "start": "ts-node src/bot.js",
-    "start-db": "ts-node database/index.ts",
     "build-db": "tsc",
     "generate-db": "typeorm-ts-node-commonjs migration:generate -d database/data-source.ts database/migrations/update",
     "run-migration": "typeorm-ts-node-commonjs migration:run -d database/data-source.ts"
