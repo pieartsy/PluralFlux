@@ -10,18 +10,18 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql
       - ./pgBackup:/mnt/pgBackup
+    ports:
+      - "5432:5432"
   pgadmin:
     image: dpage/pgadmin4:latest
     ports:
       - "5050:80"
     env_file: "variables.env"
+    secrets:
+      - postgres_pwd
     depends_on:
       - postgres
     volumes:
       - pgadmindata:/var/lib/pgadmin
-      #- ./pgBackup:/mnt/host
-      # uncomment the above line if you plan to restore / backup dump files from PGAdmin UI
-
 volumes:
   pgdata:
-  pgadmindata:
