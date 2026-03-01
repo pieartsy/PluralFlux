@@ -1,7 +1,7 @@
 const {enums} = require("../enums.js");
 const {EmbedBuilder} = require("@fluxerjs/core");
 const {utils} = require("./utils.js");
-const {memberRepo} = require("../repositories/memberRepository");
+const {memberRepo} = require("../repositories/memberRepository.js");
 
 const memberHelper = {};
 
@@ -376,7 +376,7 @@ memberHelper.addFullMember = async function (authorId, memberName, displayName =
         name: memberName, userid: authorId, displayname: isValidDisplayName ? displayName : null, proxy: isValidProxy ? proxy : null, propic: isValidPropic ? propic : null
     });
 
-    return {member: member.generatedMaps, errors: errors};
+    return {member: member, errors: errors};
 }
 
 /**

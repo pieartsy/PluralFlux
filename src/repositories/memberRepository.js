@@ -1,8 +1,7 @@
-const {Member} = require("../../database/entity/Member");
-const { dataSource } = require("../../database/index");
+const Member = require("../../database/entity/Member");
+const { AppDataSource } = require("../../database/data-source");
 const {ILike} = require("typeorm");
-
-const members = dataSource.getRepository(Member)
+const members = AppDataSource.getRepository(Member.Members)
 
 const memberRepo = {};
 
