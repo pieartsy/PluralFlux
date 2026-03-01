@@ -5,7 +5,7 @@ import * as path from "path";
 
 env.config();
 
-export default new DataSource({
+export const AppDataSource = new DataSource({
     type: "postgres",
     host: "localhost",
     port: 5432,
@@ -24,4 +24,4 @@ export default new DataSource({
         null: "sql-null",
         undefined: "throw",
     },
-})
+});
