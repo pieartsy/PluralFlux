@@ -1,7 +1,5 @@
 import "reflect-metadata"
 import { DataSource } from "typeorm"
-import { Member } from "./entity/Member"
-import { System } from "./entity/System"
 import * as env from 'dotenv';
 
 env.config();
@@ -13,9 +11,12 @@ export const AppDataSource = new DataSource({
     username: "postgres",
     password: process.env.POSTGRES_PASSWORD,
     database: "postgres",
-    synchronize: true,
+    synchronize: false,
     logging: false,
-    entities: [Member, System],
-    migrations: [],
-    subscribers: [],
+    migrations: [__dirname + '/migration/**/*{.js,.ts}'],
+    entities: ["dist/entities/**/*.js"], // Point to compiled JS files
+    subscribers: ["dist/subscribers/**/*.js"],
+    migrationsRun: true,
+    migrationsTableName: 'migrations',
+    migrationsTransactionMode: 'all'
 })

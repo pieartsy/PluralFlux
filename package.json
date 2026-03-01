@@ -37,6 +37,7 @@
     "start": "node src/bot.js",
     "start-db": "ts-node database/index.ts",
     "build-db": "tsc",
-    "dev-db": "ts-node --watch database/index.ts"
+    "generate-db": "typeorm migration:generate -d database/build/data-source.js -o",
+    "run-migration": "typeorm-ts-node-commonjs migration:run -d database/data-source.ts"
   }
 }
