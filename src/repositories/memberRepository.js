@@ -1,21 +1,19 @@
 const Member = require("../../database/entity/Member");
 const { AppDataSource } = require("../../database/data-source");
 const {ILike} = require("typeorm");
-const members = AppDataSource.getRepository(Member.Members)
+const members = AppDataSource.getRepository(Member.Member)
 
 const memberRepo = {};
-
 /**
  * Gets a member based on the author and proxy tag.
  *
  * @async
  * @param {string} authorId - The author of the message.
  * @param {string} memberName - The member's name.
- * @returns {Promise<ObjectLiteral[] | null>} The member object or null if not found.
+ * @returns {Promise<Member | null>} The member object or null if not found.
  */
 memberRepo.getMemberByName = async function (authorId, memberName) {
-    const member = await members.findOneBy({where: {userid: authorId, name: ILike(`%${memberName}%`)}});
-    return member.generatedMaps;
+    return await members.findOne({where: {userid: authorId, name: ILike(`%${memberName}%`)}});
 }
 
 /**
@@ -23,7 +21,7 @@ memberRepo.getMemberByName = async function (authorId, memberName) {
  *
  * @async
  * @param {string} authorId - The author of the message
- * @returns {Promise<Entity[]>} The member object array.
+ * @returns {Promise<Member[]>} The member object array.
  */
 memberRepo.getMembersByAuthor = async function (authorId) {
     return await members.findBy({userid: authorId});
@@ -53,14 +51,13 @@ memberRepo.removeMember = async function (authorId, memberName) {
  *
  * @async
  * @param {{name: string, userid: string, displayname: (string|null), proxy: (string|null), propic: (string|null)}} createObj - Object with parameters in it
- * @returns {Promise<ObjectLiteral[]>} A successful inserted object.
+ * @returns {Promise<Member>} A successful inserted object.
  * @throws {Error}  When the member already exists, there are validation errors, or adding a member doesn't work.
  */
 memberRepo.createMember = async function (createObj) {
-    const member = members.insert({
+    return members.insert({
         name: createObj.name, userid: createObj.authorId, displayname: createObj.displayName, proxy: createObj.proxy, propic: createObj.propic
     });
-    return member.generatedMaps;
 }
 
 /**
@@ -75,7 +72,7 @@ memberRepo.createMember = async function (createObj) {
  * @throws {Error} When no member row was updated.
  */
 memberRepo.updateMemberValue = async function (authorId, memberName, columnName, value) {
-    const updated = members.update({columnName: value}, {
+    const updated = await members.update({[columnName]: value}, {
         where: {
             name: ILike(`%${memberName}%`),
             userid: authorId

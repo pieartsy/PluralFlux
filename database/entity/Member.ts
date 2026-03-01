@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column } from "typeorm"
 
-@Entity({synchronize: true})
-export class Members {
+@Entity({name: "Member", synchronize: true})
+export class Member {
 
     @PrimaryGeneratedColumn()
     id: number
