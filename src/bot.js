@@ -5,7 +5,7 @@ const {commands} = require("./commands.js");
 const {webhookHelper} = require("./helpers/webhookHelper.js");
 const env = require('dotenv');
 const {utils} = require("./helpers/utils.js");
-const {AppDataSource} = require("../database/data-source");
+const { AppDataSource } = require("../database/data-source");
 
 env.config();
 

@@ -205,7 +205,7 @@ memberHelper.addNewMember = async function (authorId, memberName, values, attach
     const propic = values[2] ?? attachmentUrl;
 
     const memberObj = await memberHelper.addFullMember(authorId, memberName, displayName, proxy, propic, attachmentExpiration);
-    const memberInfoEmbed = memberHelper.getMemberInfo(memberObj);
+    const memberInfoEmbed = memberHelper.getMemberInfo(memberObj.member);
     return {embed: memberInfoEmbed, errors: memberObj.errors, success: `${memberName} has been added successfully.`}
 }
 
@@ -314,11 +314,11 @@ memberHelper.removeMember = async function (authorId, memberName) {
  * @param {string | null} [proxy] - The proxy tag of the member.
  * @param {string | null} [propic] - The profile picture URL of the member.
  * @param {string | null} [attachmentExpiration] - The expiration date of an uploaded profile picture.
- * @returns {Promise<{ObjectLiteral[], string[]}>} A successful addition object, including errors if there are any.
+ * @returns {Promise<{Members, string[]}>} A successful addition object, including errors if there are any.
  * @throws {Error}  When the member already exists, there are validation errors, or adding a member doesn't work.
  */
 memberHelper.addFullMember = async function (authorId, memberName, displayName = null, proxy = null, propic = null, attachmentExpiration = null) {
-    const existingMember = await memberHelper.getMemberByName(authorId, memberName);
+    const existingMember = await memberRepo.getMemberByName(authorId, memberName);
     if (existingMember) {
         throw new Error(`Can't add ${memberName}. ${enums.err.MEMBER_EXISTS}`);
     }
@@ -403,7 +403,7 @@ memberHelper.updateMemberField = async function (authorId, memberName, columnNam
 /**
  * Gets the details for a member.
  *
- * @param {{ObjectLiteral, string[]}} member - The member object
+ * @param {{Members, string[]}} member - The member object
  * @returns {EmbedBuilder} The member's info.
  */
 memberHelper.getMemberInfo = function (member) {
@@ -451,7 +451,7 @@ memberHelper.checkIfProxyExists = async function (authorId, proxy) {
     if (splitProxy.length < 2) throw new Error(enums.err.NO_TEXT_FOR_PROXY);
     if (!splitProxy[0] && !splitProxy[1]) throw new Error(enums.err.NO_PROXY_WRAPPER);
 
-    const memberList = await memberHelper.getMembersByAuthor(authorId);
+    const memberList = await memberRepo.getMembersByAuthor(authorId);
     const proxyExists = memberList.some(member => member.proxy === proxy);
     if (proxyExists) {
         throw new Error(enums.err.PROXY_EXISTS);
