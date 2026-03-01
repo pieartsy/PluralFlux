@@ -15,26 +15,25 @@ export class Members {
     name: string
 
     @Column({
+        type: "varchar",
         nullable: true,
+        length: 100
     })
-    displayname: number
+    displayname: string
 
     @Column({
         nullable: true,
     })
-    proxy: number
+    proxy: string
 
     @Column({
         nullable: true,
     })
-    propic: number
+    propic: string
 
     @Column()
     createdAt: Date
 
     @Column()
     updatedAt: Date
-
-    @Column()
-    systemid: string
 }
