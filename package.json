@@ -33,6 +33,10 @@
     "typescript": "^5.9.3"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "start": "node src/bot.js",
+    "start-db": "ts-node database/index.ts",
+    "build-db": "tsc",
+    "dev-db": "ts-node --watch database/index.ts"
   }
 }

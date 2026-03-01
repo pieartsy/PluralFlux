@@ -7,6 +7,8 @@
       "module": "commonjs",
       "moduleResolution": "node",
       "outDir": "./build",
+      "rootDir": "./database",
+      "esModuleInterop": true,
       "emitDecoratorMetadata": true,
       "experimentalDecorators": true,
       "sourceMap": true
