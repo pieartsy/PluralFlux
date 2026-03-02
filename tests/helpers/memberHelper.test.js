@@ -659,7 +659,7 @@ describe('MemberHelper', () => {
     describe('updateMemberField', () => {
         beforeEach(() => {
             utils.setExpirationWarning = jest.fn().mockReturnValue(`warning`);
-            memberRepo.updateMemberValue = jest.fn().mockResolvedValue([1]);
+            memberRepo.updateMemberField = jest.fn().mockResolvedValue([1]);
         })
 
         test.each([
@@ -680,7 +680,7 @@ describe('MemberHelper', () => {
 
         test('if database.members.update returns 0 rows changed, throw error', async () => {
             // Arrange
-            memberRepo.updateMemberValue = jest.fn().mockResolvedValue(0);
+            memberRepo.updateMemberField = jest.fn().mockResolvedValue(0);
             // Act
             await expect(memberHelper.updateMemberField(authorId, mockMember.name, "displayname", mockMember.displayname)).rejects.toThrow(`Can't update ${mockMember.name}. ${enums.err.NO_MEMBER}.`);
         })
