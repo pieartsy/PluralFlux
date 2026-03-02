@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column } from "typeorm"
 
-@Entity({name: "Systems", synchronize: true})
+@Entity({name: "System", synchronize: true})
 export class System {
 
     @PrimaryGeneratedColumn()
