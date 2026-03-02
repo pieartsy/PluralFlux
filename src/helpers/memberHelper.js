@@ -51,7 +51,7 @@ memberHelper.parseMemberCommand = async function (authorId, authorFull, args, at
         isHelp = true;
     }
 
-    return memberHelper.memberArgumentHandler(authorId, authorFull, isHelp, command, memberName, args, attachmentUrl, attachmentExpiration);
+    return await memberHelper.memberArgumentHandler(authorId, authorFull, isHelp, command, memberName, args, attachmentUrl, attachmentExpiration);
 }
 
 /**
@@ -70,7 +70,7 @@ memberHelper.parseMemberCommand = async function (authorId, authorFull, args, at
  * @returns {Promise <EmbedBuilder>} A list of 25 members as an embed.
  * @returns {Promise <EmbedBuilder>} A list of member commands and descriptions.
  * @returns {Promise<{EmbedBuilder, [string], string}>} A member info embed + info/errors.
- * @returns {string} - A help message
+ * @returns {Promise<string>} - A help message
  * @throws {Error} When there's no member or a command is not recognized.
  */
 memberHelper.memberArgumentHandler = async function(authorId, authorFull, isHelp, command = null, memberName = null, args = [], attachmentUrl = null, attachmentExpiration = null) {
