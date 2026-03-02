@@ -392,7 +392,7 @@ memberHelper.addFullMember = async function (authorId, memberName, displayName =
  * @throws {Error} When no member row was updated.
  */
 memberHelper.updateMemberField = async function (authorId, memberName, columnName, value, expirationWarning = null) {
-    const res = await memberRepo.updateMemberValue(authorId, memberName, columnName, value);
+    const res = await memberRepo.updateMemberField(authorId, memberName, columnName, value);
     if (res === 0) {
         throw new Error(`Can't update ${memberName}. ${enums.err.NO_MEMBER}.`);
     } else {

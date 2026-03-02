@@ -9,7 +9,7 @@ jest.mock('../../src/repositories/memberRepo.js', () => {
                 getMembersByAuthor: jest.fn().mockResolvedValue(),
                 removeMember: jest.fn().mockResolvedValue(),
                 createMember: jest.fn().mockResolvedValue(),
-                updateMemberValue: jest.fn().mockResolvedValue(),
+                updateMemberField: jest.fn().mockResolvedValue(),
             }
     }
 });
@@ -674,8 +674,8 @@ describe('MemberHelper', () => {
             const res = await memberHelper.updateMemberField(authorId, mockMember.name, columnName, value, attachmentExpiration)
             // Assert
             expect(res).toEqual(expected);
-            expect(memberRepo.updateMemberValue).toHaveBeenCalledTimes(1);
-            expect(memberRepo.updateMemberValue).toHaveBeenCalledWith(authorId, mockMember.name, columnName, value)
+            expect(memberRepo.updateMemberField).toHaveBeenCalledTimes(1);
+            expect(memberRepo.updateMemberField).toHaveBeenCalledWith(authorId, mockMember.name, columnName, value)
         })
 
         test('if database.members.update returns 0 rows changed, throw error', async () => {

@@ -71,7 +71,7 @@ memberRepo.createMember = async function (createObj) {
  * @returns {Promise<number>} A successful update.
  * @throws {Error} When no member row was updated.
  */
-memberRepo.updateMemberValue = async function (authorId, memberName, columnName, value) {
+memberRepo.updateMemberField = async function (authorId, memberName, columnName, value) {
     const updated = await members.update({[columnName]: value}, {
         where: {
             name: ILike(`%${memberName}%`),
