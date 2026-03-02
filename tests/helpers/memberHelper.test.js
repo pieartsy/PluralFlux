@@ -2,17 +2,15 @@ const {enums} = require('../../src/enums.js');
 const {utils} = require("../../src/helpers/utils.js");
 
 jest.mock('@fluxerjs/core', () => jest.fn());
-jest.mock('../../src/database.js', () => {
+jest.mock('../../src/repositories/memberRepo.js', () => {
     return {
-        database: {
-            members: {
-                create: jest.fn().mockResolvedValue(),
-                update: jest.fn().mockResolvedValue(),
-                destroy: jest.fn().mockResolvedValue(),
-                findOne: jest.fn().mockResolvedValue(),
-                findAll: jest.fn().mockResolvedValue(),
+        memberRepo: {
+                getMemberByName: jest.fn().mockResolvedValue(),
+                getMembersByAuthor: jest.fn().mockResolvedValue(),
+                removeMember: jest.fn().mockResolvedValue(),
+                createMember: jest.fn().mockResolvedValue(),
+                updateMemberField: jest.fn().mockResolvedValue(),
             }
-        }
     }
 });
 
@@ -25,10 +23,8 @@ jest.mock("../../src/helpers/utils.js", () => {
     }
 });
 
-const {Op} = require('sequelize');
-
 const {memberHelper} = require("../../src/helpers/memberHelper.js");
-const {database} = require("../../src/database");
+const {memberRepo} = require("../../src/repositories/memberRepo.js");
 
 describe('MemberHelper', () => {
     const authorId = "0001";
@@ -270,29 +266,29 @@ describe('MemberHelper', () => {
             ['propic', `The profile picture for ${mockMember.name} is \"${mockMember.propic}\".`],
         ])('%s calls getMemberByName and returns value', async (command, expected) => {
             // Arrange
-            jest.spyOn(memberHelper, 'getMemberByName').mockResolvedValue(mockMember);
+            memberRepo.getMemberByName.mockResolvedValue(mockMember);
             // Act
             const result = await memberHelper.sendCurrentValue(authorId, mockMember.name, command);
             // Assert
             expect(result).toEqual(expected);
-            expect(memberHelper.getMemberByName).toHaveBeenCalledTimes(1);
-            expect(memberHelper.getMemberByName).toHaveBeenCalledWith(authorId, mockMember.name);
+            expect(memberRepo.getMemberByName).toHaveBeenCalledTimes(1);
+            expect(memberRepo.getMemberByName).toHaveBeenCalledWith(authorId, mockMember.name);
 
         })
 
         test('returns error if no member found', async () => {
             // Arrange
-            jest.spyOn(memberHelper, 'getMemberByName').mockResolvedValue(null);
+            memberRepo.getMemberByName.mockResolvedValue(null);
             // Act
             await expect(memberHelper.sendCurrentValue(authorId, mockMember.name, 'name')).rejects.toThrow(enums.err.NO_MEMBER);
             // Assert
-            expect(memberHelper.getMemberByName).toHaveBeenCalledTimes(1);
-            expect(memberHelper.getMemberByName).toHaveBeenCalledWith(authorId, mockMember.name);
+            expect(memberRepo.getMemberByName).toHaveBeenCalledTimes(1);
+            expect(memberRepo.getMemberByName).toHaveBeenCalledWith(authorId, mockMember.name);
         });
 
         test('calls getMemberInfo with member if no command present', async () => {
             // Arrange
-            jest.spyOn(memberHelper, 'getMemberByName').mockResolvedValue(mockMember);
+            memberRepo.getMemberByName.mockResolvedValue(mockMember);
             jest.spyOn(memberHelper, 'getMemberInfo').mockResolvedValue('member info');
             // Act
             const result = await memberHelper.sendCurrentValue(authorId, mockMember.name, null);
@@ -309,13 +305,13 @@ describe('MemberHelper', () => {
         ])('returns null message if no value found', async (command, expected) => {
             // Arrange
             const empty = {name: mockMember.name, displayname: null, proxy: null, propic: null}
-            jest.spyOn(memberHelper, 'getMemberByName').mockResolvedValue(empty);
+            memberRepo.getMemberByName.mockResolvedValue(empty);
             // Act
             const result = await memberHelper.sendCurrentValue(authorId, mockMember.name, command);
             // Assert
             expect(result).toEqual(expected);
-            expect(memberHelper.getMemberByName).toHaveBeenCalledTimes(1);
-            expect(memberHelper.getMemberByName).toHaveBeenCalledWith(authorId, mockMember.name);
+            expect(memberRepo.getMemberByName).toHaveBeenCalledTimes(1);
+            expect(memberRepo.getMemberByName).toHaveBeenCalledWith(authorId, mockMember.name);
         })
     })
 
@@ -479,39 +475,38 @@ describe('MemberHelper', () => {
     })
 
     describe('addFullMember', () => {
-        const {database} = require('../../src/database.js');
-        beforeEach(() => {
-            jest.spyOn(memberHelper, 'getMemberByName').mockResolvedValue();
-        })
-
         test('calls getMemberByName', async () => {
+            // Arrange
+            memberRepo.getMemberByName.mockResolvedValue();
             // Act
             await memberHelper.addFullMember(authorId, mockMember.name)
             // Assert
-            expect(memberHelper.getMemberByName).toHaveBeenCalledWith(authorId, mockMember.name);
-            expect(memberHelper.getMemberByName).toHaveBeenCalledTimes(1);
+            expect(memberRepo.getMemberByName).toHaveBeenCalledWith(authorId, mockMember.name);
+            expect(memberRepo.getMemberByName).toHaveBeenCalledTimes(1);
         })
 
         test('if getMemberByName returns member, throw error', async () => {
             // Arrange
-            memberHelper.getMemberByName.mockResolvedValue({name: mockMember.name});
+            memberRepo.getMemberByName.mockResolvedValue({name: mockMember.name});
             // Act & Assert
             await expect(memberHelper.addFullMember(authorId, mockMember.name)).rejects.toThrow(`Can't add ${mockMember.name}. ${enums.err.MEMBER_EXISTS}`)
             // Assert
-            expect(database.members.create).not.toHaveBeenCalled();
+            expect(memberRepo.createMember).not.toHaveBeenCalled();
         })
 
 
         test('if name is not filled out, throw error', async () => {
-            // Act & Assert
+            // Arrange
+            memberRepo.getMemberByName.mockResolvedValue();
+            // Act
             await expect(memberHelper.addFullMember(authorId, "       ")).rejects.toThrow(`Name ${enums.err.NO_VALUE}. ${enums.err.NAME_REQUIRED}`);
             // Assert
-            expect(database.members.create).not.toHaveBeenCalled();
+            expect(memberRepo.createMember).not.toHaveBeenCalled();
         })
 
-        test('if displayname is over 32 characters, call database.member.create with null value', async () => {
+        test('if displayname is over 32 characters, call memberRepo.createMember with null value', async () => {
             // Arrange
-            memberHelper.getMemberByName.mockResolvedValue();
+            memberRepo.getMemberByName.mockResolvedValue();
             const tooLongDisplayName = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
             const expectedMemberArgs = {
                 name: mockMember.name,
@@ -520,7 +515,7 @@ describe('MemberHelper', () => {
                 proxy: null,
                 propic: null
             }
-            database.members.create = jest.fn().mockResolvedValue(expectedMemberArgs);
+            memberRepo.createMember = jest.fn().mockResolvedValue(expectedMemberArgs);
             const expectedReturn = {
                 member: expectedMemberArgs,
                 errors: [`Tried to set displayname to \"${tooLongDisplayName}\". ${enums.err.DISPLAY_NAME_TOO_LONG}. ${enums.err.SET_TO_NULL}`]
@@ -530,8 +525,8 @@ describe('MemberHelper', () => {
             const res = await memberHelper.addFullMember(authorId, mockMember.name, tooLongDisplayName, null, null);
             // Assert
             expect(res).toEqual(expectedReturn);
-            expect(database.members.create).toHaveBeenCalledWith(expectedMemberArgs);
-            expect(database.members.create).toHaveBeenCalledTimes(1);
+            expect(memberRepo.createMember).toHaveBeenCalledWith(expectedMemberArgs);
+            expect(memberRepo.createMember).toHaveBeenCalledTimes(1);
         })
 
         test('if proxy, call checkIfProxyExists', async () => {
@@ -544,7 +539,7 @@ describe('MemberHelper', () => {
                 proxy: null,
                 propic: null
             }
-            database.members.create = jest.fn().mockResolvedValue(expectedMemberArgs);
+            memberRepo.createMember = jest.fn().mockResolvedValue(expectedMemberArgs);
             const expectedReturn = {member: expectedMemberArgs, errors: []}
 
             // Act
@@ -553,8 +548,8 @@ describe('MemberHelper', () => {
             expect(res).toEqual(expectedReturn);
             expect(memberHelper.checkIfProxyExists).toHaveBeenCalledWith(authorId, mockMember.proxy);
             expect(memberHelper.checkIfProxyExists).toHaveBeenCalledTimes(1);
-            expect(database.members.create).toHaveBeenCalledWith(expectedMemberArgs);
-            expect(database.members.create).toHaveBeenCalledTimes(1);
+            expect(memberRepo.createMember).toHaveBeenCalledWith(expectedMemberArgs);
+            expect(memberRepo.createMember).toHaveBeenCalledTimes(1);
         })
 
         test('if checkProxyExists throws error, call database.member.create with null value', async () => {
@@ -567,7 +562,7 @@ describe('MemberHelper', () => {
                 proxy: null,
                 propic: null
             }
-            database.members.create = jest.fn().mockResolvedValue(expectedMemberArgs);
+            memberRepo.createMember = jest.fn().mockResolvedValue(expectedMemberArgs);
             const expectedReturn = {
                 member: expectedMemberArgs,
                 errors: [`Tried to set proxy to \"${mockMember.proxy}\". error. ${enums.err.SET_TO_NULL}`]
@@ -577,8 +572,8 @@ describe('MemberHelper', () => {
             const res = await memberHelper.addFullMember(authorId, mockMember.name, null, mockMember.proxy, null)
             // Assert
             expect(res).toEqual(expectedReturn);
-            expect(database.members.create).toHaveBeenCalledWith(expectedMemberArgs);
-            expect(database.members.create).toHaveBeenCalledTimes(1);
+            expect(memberRepo.createMember).toHaveBeenCalledWith(expectedMemberArgs);
+            expect(memberRepo.createMember).toHaveBeenCalledTimes(1);
         })
 
         test('if propic, call checkImageFormatValidity', async () => {
@@ -591,7 +586,7 @@ describe('MemberHelper', () => {
                 propic: null
             }
             utils.setExpirationWarning = jest.fn().mockReturnValue();
-            database.members.create = jest.fn().mockResolvedValue(expectedMemberArgs);
+            memberRepo.createMember = jest.fn().mockResolvedValue(expectedMemberArgs);
             const expectedReturn = {member: expectedMemberArgs, errors: []}
             // Act
             const res = await memberHelper.addFullMember(authorId, mockMember.name, null, null, mockMember.propic);
@@ -599,8 +594,8 @@ describe('MemberHelper', () => {
             expect(res).toEqual(expectedReturn);
             expect(utils.checkImageFormatValidity).toHaveBeenCalledWith(mockMember.propic);
             expect(utils.checkImageFormatValidity).toHaveBeenCalledTimes(1);
-            expect(database.members.create).toHaveBeenCalledWith(expectedMemberArgs);
-            expect(database.members.create).toHaveBeenCalledTimes(1);
+            expect(memberRepo.createMember).toHaveBeenCalledWith(expectedMemberArgs);
+            expect(memberRepo.createMember).toHaveBeenCalledTimes(1);
         })
 
         test('if checkImageFormatValidity throws error, call database.member.create with null value', async () => {
@@ -613,7 +608,7 @@ describe('MemberHelper', () => {
                 proxy: null,
                 propic: null
             }
-            database.members.create = jest.fn().mockResolvedValue(expectedMemberArgs);
+            memberRepo.createMember = jest.fn().mockResolvedValue(expectedMemberArgs);
             const expectedReturn = {
                 member: expectedMemberArgs,
                 errors: [`Tried to set profile picture to \"${mockMember.propic}\". error. ${enums.err.SET_TO_NULL}`]
@@ -622,8 +617,8 @@ describe('MemberHelper', () => {
             const res = await memberHelper.addFullMember(authorId, mockMember.name, null, null, mockMember.propic);
             // Assert
             expect(res).toEqual(expectedReturn);
-            expect(database.members.create).toHaveBeenCalledWith(expectedMemberArgs);
-            expect(database.members.create).toHaveBeenCalledTimes(1);
+            expect(memberRepo.createMember).toHaveBeenCalledWith(expectedMemberArgs);
+            expect(memberRepo.createMember).toHaveBeenCalledTimes(1);
         })
 
         test('calls setExpirationWarning if attachmentExpiration exists', async () => {
@@ -647,7 +642,7 @@ describe('MemberHelper', () => {
                 proxy: mockMember.proxy,
                 propic: mockMember.propic
             }
-            database.members.create = jest.fn().mockResolvedValue(expectedMemberArgs);
+            memberRepo.createMember = jest.fn().mockResolvedValue(expectedMemberArgs);
             utils.checkImageFormatValidity = jest.fn().mockResolvedValue(true);
             utils.setExpirationWarning = jest.fn().mockReturnValue();
             const expectedReturn = {member: expectedMemberArgs, errors: []}
@@ -655,19 +650,16 @@ describe('MemberHelper', () => {
             const res = await memberHelper.addFullMember(authorId, mockMember.name, mockMember.displayname, mockMember.proxy, mockMember.propic);
             // Assert
             expect(res).toEqual(expectedReturn);
-            expect(database.members.create).toHaveBeenCalledWith(expectedMemberArgs);
-            expect(database.members.create).toHaveBeenCalledTimes(1);
+            expect(memberRepo.createMember).toHaveBeenCalledWith(expectedMemberArgs);
+            expect(memberRepo.createMember).toHaveBeenCalledTimes(1);
         })
 
     })
 
     describe('updateMemberField', () => {
-        const {database} = require('../../src/database.js');
         beforeEach(() => {
             utils.setExpirationWarning = jest.fn().mockReturnValue(`warning`);
-            database.members = {
-                update: jest.fn().mockResolvedValue([1])
-            };
+            memberRepo.updateMemberField = jest.fn().mockResolvedValue([1]);
         })
 
         test.each([
@@ -682,20 +674,13 @@ describe('MemberHelper', () => {
             const res = await memberHelper.updateMemberField(authorId, mockMember.name, columnName, value, attachmentExpiration)
             // Assert
             expect(res).toEqual(expected);
-            expect(database.members.update).toHaveBeenCalledTimes(1);
-            expect(database.members.update).toHaveBeenCalledWith({[columnName]: value}, {
-                where: {
-                    name: {[Op.iLike]: mockMember.name},
-                    userid: authorId
-                }
-            })
+            expect(memberRepo.updateMemberField).toHaveBeenCalledTimes(1);
+            expect(memberRepo.updateMemberField).toHaveBeenCalledWith(authorId, mockMember.name, columnName, value)
         })
 
         test('if database.members.update returns 0 rows changed, throw error', async () => {
             // Arrange
-            database.members = {
-                update: jest.fn().mockResolvedValue([0])
-            };
+            memberRepo.updateMemberField = jest.fn().mockResolvedValue(0);
             // Act
             await expect(memberHelper.updateMemberField(authorId, mockMember.name, "displayname", mockMember.displayname)).rejects.toThrow(`Can't update ${mockMember.name}. ${enums.err.NO_MEMBER}.`);
         })
@@ -704,7 +689,7 @@ describe('MemberHelper', () => {
     describe('checkIfProxyExists', () => {
 
         beforeEach(() => {
-            jest.spyOn(memberHelper, "getMembersByAuthor").mockResolvedValue([mockMember]);
+            memberRepo.getMembersByAuthor.mockResolvedValue([mockMember]);
         })
 
         test.each([
@@ -722,8 +707,8 @@ describe('MemberHelper', () => {
             const res = await memberHelper.checkIfProxyExists(authorId, proxy)
             // Assert
             expect(res).toEqual(false)
-            expect(memberHelper.getMembersByAuthor).toHaveBeenCalledTimes(1);
-            expect(memberHelper.getMembersByAuthor).toHaveBeenCalledWith(authorId);
+            expect(memberRepo.getMembersByAuthor).toHaveBeenCalledTimes(1);
+            expect(memberRepo.getMembersByAuthor).toHaveBeenCalledWith(authorId);
         })
 
         test.each([
@@ -734,13 +719,13 @@ describe('MemberHelper', () => {
             // Act & Assert
             await expect(memberHelper.checkIfProxyExists(authorId, proxy)).rejects.toThrow(error);
 
-            expect(memberHelper.getMembersByAuthor).not.toHaveBeenCalled();
+            expect(memberRepo.getMembersByAuthor).not.toHaveBeenCalled();
         })
 
         test('--text returns correct error and calls getMemberByAuthor', async () => {
             await expect(memberHelper.checkIfProxyExists(authorId, "--text")).rejects.toThrow(enums.err.PROXY_EXISTS);
-            expect(memberHelper.getMembersByAuthor).toHaveBeenCalledTimes(1);
-            expect(memberHelper.getMembersByAuthor).toHaveBeenCalledWith(authorId);
+            expect(memberRepo.getMembersByAuthor).toHaveBeenCalledTimes(1);
+            expect(memberRepo.getMembersByAuthor).toHaveBeenCalledWith(authorId);
         })
     })
 

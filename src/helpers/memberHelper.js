@@ -1,8 +1,7 @@
-const {database} = require('../database.js');
 const {enums} = require("../enums.js");
-const {Op} = require("sequelize");
 const {EmbedBuilder} = require("@fluxerjs/core");
 const {utils} = require("./utils.js");
+const {memberRepo} = require("../repositories/memberRepo.js");
 
 const memberHelper = {};
 
@@ -52,7 +51,7 @@ memberHelper.parseMemberCommand = async function (authorId, authorFull, args, at
         isHelp = true;
     }
 
-    return await memberHelper.memberArgumentHandler(authorId, authorFull, isHelp, command, memberName, args, attachmentUrl, attachmentExpiration)
+    return await memberHelper.memberArgumentHandler(authorId, authorFull, isHelp, command, memberName, args, attachmentUrl, attachmentExpiration);
 }
 
 /**
@@ -71,6 +70,7 @@ memberHelper.parseMemberCommand = async function (authorId, authorFull, args, at
  * @returns {Promise <EmbedBuilder>} A list of 25 members as an embed.
  * @returns {Promise <EmbedBuilder>} A list of member commands and descriptions.
  * @returns {Promise<{EmbedBuilder, [string], string}>} A member info embed + info/errors.
+ * @returns {Promise<string>} - A help message
  * @throws {Error} When there's no member or a command is not recognized.
  */
 memberHelper.memberArgumentHandler = async function(authorId, authorFull, isHelp, command = null, memberName = null, args = [], attachmentUrl = null, attachmentExpiration = null) {
@@ -113,7 +113,7 @@ memberHelper.memberArgumentHandler = async function(authorId, authorFull, isHelp
  * @throws {Error} When there's no member
  */
 memberHelper.sendCurrentValue = async function(authorId, memberName, command= null) {
-    const member = await memberHelper.getMemberByName(authorId, memberName);
+    const member = await memberRepo.getMemberByName(authorId, memberName);
     if (!member) throw new Error(enums.err.NO_MEMBER);
 
     if (!command) {
@@ -167,10 +167,7 @@ memberHelper.sendHelpEnum = function(command) {
  * @param {string[]} values - The values to be passed in. Only includes the values after member name and command name.
  * @param {string | null} attachmentUrl - The attachment URL, if any
  * @param {string | null} attachmentExpiration - The attachment expiry date, if any
- * @returns {Promise<string>} A success message.
- * @returns {Promise <EmbedBuilder>} A list of 25 members as an embed.
- * @returns {Promise <EmbedBuilder>} A list of member commands and descriptions.
- * @returns {Promise<{EmbedBuilder, [string], string}>} A member info embed + info/errors.
+ * @returns {Promise<string> | Promise <EmbedBuilder> | Promise<{EmbedBuilder, [string], string}>}
  */
 memberHelper.memberCommandHandler = async function(authorId, command, memberName, values, attachmentUrl = null, attachmentExpiration = null) {
     switch (command) {
@@ -297,12 +294,7 @@ memberHelper.updatePropic = async function (authorId, memberName, values, attach
  * @throws {Error} When there is no member to remove.
  */
 memberHelper.removeMember = async function (authorId, memberName) {
-    const destroyed = await database.members.destroy({
-        where: {
-            name: {[Op.iLike]: memberName},
-            userid: authorId
-        }
-    })
+    const destroyed = await memberRepo.removeMember(authorId, memberName);
     if (destroyed > 0) {
         return `Member "${memberName}" has been deleted.`;
     } else {
@@ -322,11 +314,11 @@ memberHelper.removeMember = async function (authorId, memberName) {
  * @param {string | null} [proxy] - The proxy tag of the member.
  * @param {string | null} [propic] - The profile picture URL of the member.
  * @param {string | null} [attachmentExpiration] - The expiration date of an uploaded profile picture.
- * @returns {Promise<{model, string[]}>} A successful addition object, including errors if there are any.
+ * @returns {Promise<{Members, string[]}>} A successful addition object, including errors if there are any.
  * @throws {Error}  When the member already exists, there are validation errors, or adding a member doesn't work.
  */
 memberHelper.addFullMember = async function (authorId, memberName, displayName = null, proxy = null, propic = null, attachmentExpiration = null) {
-    const existingMember = await memberHelper.getMemberByName(authorId, memberName);
+    const existingMember = await memberRepo.getMemberByName(authorId, memberName);
     if (existingMember) {
         throw new Error(`Can't add ${memberName}. ${enums.err.MEMBER_EXISTS}`);
     }
@@ -380,7 +372,7 @@ memberHelper.addFullMember = async function (authorId, memberName, displayName =
         }
     }
 
-    const member = await database.members.create({
+    const member = await memberRepo.createMember({
         name: memberName, userid: authorId, displayname: isValidDisplayName ? displayName : null, proxy: isValidProxy ? proxy : null, propic: isValidPropic ? propic : null
     });
 
@@ -400,13 +392,8 @@ memberHelper.addFullMember = async function (authorId, memberName, displayName =
  * @throws {Error} When no member row was updated.
  */
 memberHelper.updateMemberField = async function (authorId, memberName, columnName, value, expirationWarning = null) {
-    const res = await database.members.update({[columnName]: value}, {
-        where: {
-            name: {[Op.iLike]: memberName},
-            userid: authorId
-        }
-    })
-    if (res[0] === 0) {
+    const res = await memberRepo.updateMemberField(authorId, memberName, columnName, value);
+    if (res === 0) {
         throw new Error(`Can't update ${memberName}. ${enums.err.NO_MEMBER}.`);
     } else {
         return `Updated ${columnName} for ${memberName} to ${value}${expirationWarning ? `. ${expirationWarning}.` : '.'}`;
@@ -416,7 +403,7 @@ memberHelper.updateMemberField = async function (authorId, memberName, columnNam
 /**
  * Gets the details for a member.
  *
- * @param {model} member - The member object
+ * @param {{Members, string[]}} member - The member object
  * @returns {EmbedBuilder} The member's info.
  */
 memberHelper.getMemberInfo = function (member) {
@@ -441,7 +428,7 @@ memberHelper.getMemberInfo = function (member) {
  * @throws {Error} When there are no members for an author.
  */
 memberHelper.getAllMembersInfo = async function (authorId, authorName) {
-    const members = await memberHelper.getMembersByAuthor(authorId);
+    const members = await memberRepo.getMembersByAuthor(authorId);
     if (members.length === 0) throw Error(enums.err.USER_NO_MEMBERS);
     const fields = [...members.entries()].map(([index, member]) => ({
         name: member.name, value: `(Proxy: \`${member.proxy ?? "unset"}\`)`, inline: true,
@@ -449,29 +436,6 @@ memberHelper.getAllMembersInfo = async function (authorId, authorName) {
     return new EmbedBuilder()
         .setTitle(`${fields.length > 25 ? "First 25 m" : "M"}embers for ${authorName}`)
         .addFields(...fields);
-}
-
-/**
- * Gets a member based on the author and proxy tag.
- *
- * @async
- * @param {string} authorId - The author of the message.
- * @param {string} memberName - The member's name.
- * @returns {Promise<model>} The member object.
- */
-memberHelper.getMemberByName = async function (authorId, memberName) {
-    return await database.members.findOne({where: {userid: authorId, name: {[Op.iLike]: memberName}}});
-}
-
-/**
- * Gets all members belonging to the author.
- *
- * @async
- * @param {string} authorId - The author of the message
- * @returns {Promise<model[] | null>} The member object array.
- */
-memberHelper.getMembersByAuthor = async function (authorId) {
-    return await database.members.findAll({where: {userid: authorId}});
 }
 
 /**
@@ -487,7 +451,7 @@ memberHelper.checkIfProxyExists = async function (authorId, proxy) {
     if (splitProxy.length < 2) throw new Error(enums.err.NO_TEXT_FOR_PROXY);
     if (!splitProxy[0] && !splitProxy[1]) throw new Error(enums.err.NO_PROXY_WRAPPER);
 
-    const memberList = await memberHelper.getMembersByAuthor(authorId);
+    const memberList = await memberRepo.getMembersByAuthor(authorId);
     const proxyExists = memberList.some(member => member.proxy === proxy);
     if (proxyExists) {
         throw new Error(enums.err.PROXY_EXISTS);

@@ -10,6 +10,8 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql
       - ./pgBackup:/mnt/pgBackup
+    ports:
+      - "5432:5432"
   pgadmin:
     image: dpage/pgadmin4:latest
     ports:
@@ -19,9 +21,5 @@ services:
       - postgres
     volumes:
       - pgadmindata:/var/lib/pgadmin
-      #- ./pgBackup:/mnt/host
-      # uncomment the above line if you plan to restore / backup dump files from PGAdmin UI
-
 volumes:
   pgdata:
-  pgadmindata:

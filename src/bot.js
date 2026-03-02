@@ -5,6 +5,7 @@ const {commands} = require("./commands.js");
 const {webhookHelper} = require("./helpers/webhookHelper.js");
 const env = require('dotenv');
 const {utils} = require("./helpers/utils.js");
+const { AppDataSource } = require("../database/data-source");
 
 env.config();
 
@@ -20,7 +21,7 @@ client = new Client({ intents: 0 });
 module.exports.client = client;
 
 client.on(Events.MessageCreate, async (message) => {
-    await handleMessageCreate(message);
+    await module.exports.handleMessageCreate(message);
 });
 
 /**
@@ -85,8 +86,10 @@ const debouncePrintGuilds  = utils.debounce(printGuilds, 2000);
 
 module.exports.login = async function() {
     try {
+        if (!AppDataSource.isInitialized) {
+            await AppDataSource.initialize();
+        }
         await client.login(token);
-        // await db.check_connection();
     } catch (err) {
         console.error('Login failed:', err);
         process.exit(1);
