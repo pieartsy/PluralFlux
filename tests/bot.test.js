@@ -59,7 +59,7 @@ jest.mock("../src/commands.js", () => {
 jest.mock('../database/data-source.ts', () => {
     return {
         AppDataSource: {
-            IsInitialized: false,
+            isInitialized: false,
             initialize: jest.fn().mockResolvedValue()
         }
     }
