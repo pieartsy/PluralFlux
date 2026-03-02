@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm"
+import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn} from "typeorm"
 
 @Entity({name: "Member", synchronize: true})
 export class Member {
@@ -31,9 +31,9 @@ export class Member {
     })
     propic: string
 
-    @Column()
+    @CreateDateColumn({ type: 'timestamptz' })
     createdAt: Date
 
-    @Column()
+    @UpdateDateColumn({ type: 'timestamptz' })
     updatedAt: Date
 }
