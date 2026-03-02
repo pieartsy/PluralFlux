@@ -2,7 +2,7 @@ const {enums} = require('../../src/enums.js');
 const {utils} = require("../../src/helpers/utils.js");
 
 jest.mock('@fluxerjs/core', () => jest.fn());
-jest.mock('../../src/repositories/memberRepository.js', () => {
+jest.mock('../../src/repositories/memberRepo.js', () => {
     return {
         memberRepo: {
                 getMemberByName: jest.fn().mockResolvedValue(),
@@ -24,7 +24,7 @@ jest.mock("../../src/helpers/utils.js", () => {
 });
 
 const {memberHelper} = require("../../src/helpers/memberHelper.js");
-const {memberRepo} = require("../../src/repositories/memberRepository.js");
+const {memberRepo} = require("../../src/repositories/memberRepo.js");
 
 describe('MemberHelper', () => {
     const authorId = "0001";

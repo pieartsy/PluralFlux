@@ -1,7 +1,7 @@
 const {enums} = require("../enums.js");
 const {EmbedBuilder} = require("@fluxerjs/core");
 const {utils} = require("./utils.js");
-const {memberRepo} = require("../repositories/memberRepository.js");
+const {memberRepo} = require("../repositories/memberRepo.js");
 
 const memberHelper = {};
 
