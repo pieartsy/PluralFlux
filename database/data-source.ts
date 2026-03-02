@@ -13,7 +13,7 @@ export const AppDataSource = new DataSource({
     password: process.env.POSTGRES_PASSWORD,
     database: "postgres",
     synchronize: false,
-    logging: true,
+    logging: false,
     entities: [path.join(__dirname, "./entity/*.{ts,js}")],
     migrations: [path.join(__dirname, "./migrations/*.{ts,js}")],
     migrationsRun: true,
