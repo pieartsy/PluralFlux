@@ -1,4 +1,4 @@
-const {memberHelper} = require('./memberHelper.js');
+const {memberRepo} = require('../repositories/memberRepo.js');
 
 const msgh = {};
 
@@ -39,7 +39,7 @@ msgh.parseCommandArgs = function(content, commandName) {
  * @returns {Promise<{model, string, bool}>} The proxy message object.
  */
 msgh.parseProxyTags = async function (authorId, content, attachmentUrl = null){
-    const members = await memberHelper.getMembersByAuthor(authorId);
+    const members = await memberRepo.getMembersByAuthor(authorId);
     // If an author has no members, no sense in searching for proxy
     if (members.length === 0) {
         return;
