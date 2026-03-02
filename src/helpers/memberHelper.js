@@ -428,7 +428,7 @@ memberHelper.getMemberInfo = function (member) {
  * @throws {Error} When there are no members for an author.
  */
 memberHelper.getAllMembersInfo = async function (authorId, authorName) {
-    const members = await memberHelper.getMembersByAuthor(authorId);
+    const members = await memberRepo.getMembersByAuthor(authorId);
     if (members.length === 0) throw Error(enums.err.USER_NO_MEMBERS);
     const fields = [...members.entries()].map(([index, member]) => ({
         name: member.name, value: `(Proxy: \`${member.proxy ?? "unset"}\`)`, inline: true,
