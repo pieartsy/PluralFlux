@@ -13,7 +13,7 @@ const memberRepo = {};
  * @returns {Promise<Member | null>} The member object or null if not found.
  */
 memberRepo.getMemberByName = async function (authorId, memberName) {
-    return await members.findOne({where: {userid: authorId, name: ILike(`%${memberName}%`)}});
+    return await members.findOne({where: {userid: authorId, name: ILike(memberName)}});
 }
 
 /**
@@ -38,7 +38,7 @@ memberRepo.getMembersByAuthor = async function (authorId) {
 memberRepo.removeMember = async function (authorId, memberName) {
     const deleted = await members.delete({
         where: {
-            name: ILike(`%${memberName}%`),
+            name: ILike(memberName),
             userid: authorId
         }
     })
@@ -71,7 +71,7 @@ memberRepo.createMember = async function (createObj) {
 memberRepo.updateMemberField = async function (authorId, memberName, columnName, value) {
     const updated = await members.update({[columnName]: value}, {
         where: {
-            name: ILike(`%${memberName}%`),
+            name: ILike(memberName),
             userid: authorId
         }
     })
