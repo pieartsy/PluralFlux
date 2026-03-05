@@ -7,7 +7,7 @@ env.config();
 
 export const AppDataSource = new DataSource({
     type: "postgres",
-    host: "localhost",
+    host: process.env.POSTGRES_ENDPOINT,
     port: 5432,
     username: "postgres",
     password: process.env.POSTGRES_PASSWORD,
