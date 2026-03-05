@@ -1,0 +1,26 @@
+name: Auto-Sync from Mirror
+on:
+  push:
+    repository: "Pluralflux/Pluralflux"
+    branches: [main,develop]
+
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest 
+    steps:
+      - name: Checkout Fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITEA_TOKEN }}
+
+      - name: Pull from Mirror
+        run: |
+          git remote add upstream https://engineering.sanya.gay/PluralFlux/PluralFlux.git
+          git fetch upstream --prune
+          git reset --hard origin/main
+          git push origin "refs/remotes/upstream/*:refs/heads/*" --force-with-lease
+          git merge upstream/main -m "Syncing from github"
+          git push origin main
