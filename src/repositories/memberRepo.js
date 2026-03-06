@@ -48,7 +48,7 @@ memberRepo.removeMember = async function (authorId, memberName) {
  * @returns {Promise<Member>} A successful inserted object.
  */
 memberRepo.createMember = async function (createObj) {
-    return members.insert({
+    return await members.save({
         name: createObj.name, userid: createObj.userid, displayname: createObj.displayname, proxy: createObj.proxy, propic: createObj.propic
     });
 }
