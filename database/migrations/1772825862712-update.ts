@@ -4,11 +4,11 @@ export class Update1772825862712 implements MigrationInterface {
     name = 'Update1772825862712'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`CREATE UNIQUE INDEX "IDX_d700ba02bb0e251101b04e1d05" ON "Member" ("userid", "name") `);
+        await queryRunner.query(`CREATE UNIQUE INDEX "UQ_Member_userid_name" ON "Member" ("userid", "name") `);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DROP INDEX "public"."IDX_d700ba02bb0e251101b04e1d05"`);
+        await queryRunner.query(`DROP INDEX "public"."UQ_Member_userid_name"`);
     }
 
 }
