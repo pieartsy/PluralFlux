@@ -1,7 +1,7 @@
-import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index} from "typeorm"
+import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Unique} from "typeorm"
 
 @Entity({name: "Member", synchronize: true})
-@Index(['userid', 'name'], { unique: true }) // Here
+@Unique("UQ_Member_userid_name", ['userid', 'name']) // Here
 export class Member {
 
     @PrimaryGeneratedColumn()
