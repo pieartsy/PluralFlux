@@ -403,7 +403,7 @@ memberHelper.updateMemberField = async function (authorId, memberName, columnNam
 /**
  * Gets the details for a member.
  *
- * @param {{Members, string[]}} member - The member object
+ * @param {{Member, string[]}} member - The member object
  * @returns {EmbedBuilder} The member's info.
  */
 memberHelper.getMemberInfo = function (member) {

@@ -36,12 +36,7 @@ memberRepo.getMembersByAuthor = async function (authorId) {
  * @returns {Promise<number>} Number of results removed.
  */
 memberRepo.removeMember = async function (authorId, memberName) {
-    const deleted = await members.delete({
-        where: {
-            name: ILike(memberName),
-            userid: authorId
-        }
-    })
+    const deleted = await members.delete({ name: ILike(memberName), userid: authorId })
     return deleted.affected;
 }
 
@@ -53,7 +48,7 @@ memberRepo.removeMember = async function (authorId, memberName) {
  * @returns {Promise<Member>} A successful inserted object.
  */
 memberRepo.createMember = async function (createObj) {
-    return members.insert({
+    return await members.save({
         name: createObj.name, userid: createObj.userid, displayname: createObj.displayname, proxy: createObj.proxy, propic: createObj.propic
     });
 }
@@ -69,12 +64,10 @@ memberRepo.createMember = async function (createObj) {
  * @returns {Promise<number>} A successful update.
  */
 memberRepo.updateMemberField = async function (authorId, memberName, columnName, value) {
-    const updated = await members.update({[columnName]: value}, {
-        where: {
-            name: ILike(memberName),
-            userid: authorId
-        }
-    })
+    const updated = await members.update({
+        name: ILike(memberName),
+        userid: authorId
+    }, {[columnName]: value})
     return updated.affected;
 }
 
