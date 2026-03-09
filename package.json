@@ -7,26 +7,36 @@
     "type": "git",
     "url": "https://github.com/pieartsy/PluralFlux.git"
   },
+  "type": "commonjs",
   "private": true,
   "dependencies": {
     "@fluxerjs/core": "^1.2.2",
     "dotenv": "^17.3.1",
-    "pg": "^8.18.0",
+    "pg": "^8.19.0",
     "pg-hstore": "^2.3.4",
     "pm2": "^6.0.14",
-    "sequelize": "^6.37.7",
-    "tmp": "^0.2.5"
+    "psql": "^0.0.1",
+    "reflect-metadata": "^0.2.2",
+    "tmp": "^0.2.5",
+    "typeorm": "^0.3.28"
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",
     "@babel/plugin-transform-modules-commonjs": "^7.28.6",
     "@babel/preset-env": "^7.29.0",
     "@fetch-mock/jest": "^0.2.20",
+    "@types/node": "^25.3.3",
     "babel-jest": "^30.2.0",
     "fetch-mock": "^12.6.0",
-    "jest": "^30.2.0"
+    "jest": "^30.2.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "start": "ts-node src/bot.js",
+    "new-migration": "typeorm-ts-node-commonjs migration:create database/migrations/update",
+    "generate-db": "typeorm-ts-node-commonjs migration:generate -d database/data-source.ts database/migrations/update",
+    "run-migration": "typeorm-ts-node-commonjs migration:run -d database/data-source.ts"
   }
 }

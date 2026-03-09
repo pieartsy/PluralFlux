@@ -1,8 +1,13 @@
-node_modules
+node_modules/
+build/
+tmp/
+temp/
 .idea
 secrets/
-config.json
 coverage
+config.json
 log.txt
 .env
 oya.png
+variables.env
+.env.production

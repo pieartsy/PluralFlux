@@ -1,8 +1,8 @@
-import {messageHelper} from "./messageHelper.js";
-import {Webhook, Channel, Message, Client} from '@fluxerjs/core';
-import {enums} from "../enums.js";
+const {messageHelper} = require("./messageHelper.js");
+const {Webhook, Channel, Message, Client} = require('@fluxerjs/core');
+const {enums} = require("../enums.js");
 
-const wh = {};
+const webhookHelper = {};
 
 const name = 'PluralFlux Proxy Webhook';
 
@@ -13,7 +13,7 @@ const name = 'PluralFlux Proxy Webhook';
  * @param {Message} message - The full message object.
  * @throws {Error} When the proxy message is not in a server.
  */
-wh.sendMessageAsMember = async function(client, message) {
+webhookHelper.sendMessageAsMember = async function(client, message) {
     const attachmentUrl = message.attachments.size > 0 ? message.attachments.first().url : null;
     const proxyMatch = await messageHelper.parseProxyTags(message.author.id, message.content, attachmentUrl);
     // If the message doesn't match a proxy, just return.
@@ -27,7 +27,7 @@ wh.sendMessageAsMember = async function(client, message) {
     if (proxyMatch.hasAttachment) {
         return await message.reply(`${enums.misc.ATTACHMENT_SENT_BY} ${proxyMatch.member.displayname ?? proxyMatch.member.name}`)
     }
-    await wh.replaceMessage(client, message, proxyMatch.message, proxyMatch.member);
+    await webhookHelper.replaceMessage(client, message, proxyMatch.message, proxyMatch.member);
 }
 
 /**
@@ -39,11 +39,11 @@ wh.sendMessageAsMember = async function(client, message) {
  * @param {model} member - A member object from the database.
  * @throws {Error} When there's no message to send.
  */
-wh.replaceMessage = async function(client, message, text, member) {
+webhookHelper.replaceMessage = async function(client, message, text, member) {
     // attachment logic is not relevant yet, text length will always be over 0 right now
     if (text.length > 0 || message.attachments.size > 0) {
         const channel = client.channels.get(message.channelId);
-        const webhook = await wh.getOrCreateWebhook(client, channel);
+        const webhook = await webhookHelper.getOrCreateWebhook(client, channel);
         const username = member.displayname ?? member.name;
         if (text.length <= 2000) {
             await webhook.send({content: text, username: username, avatar_url: member.propic})
@@ -68,10 +68,10 @@ wh.replaceMessage = async function(client, message, text, member) {
  * @returns {Webhook} A webhook object.
  * @throws {Error} When no webhooks are allowed in the channel.
  */
-wh.getOrCreateWebhook = async function(client, channel) {
+webhookHelper.getOrCreateWebhook = async function(client, channel) {
     // If channel doesn't allow webhooks
     if (!channel?.createWebhook) throw new Error(enums.err.NO_WEBHOOKS_ALLOWED);
-    let webhook = await wh.getWebhook(client, channel)
+    let webhook = await webhookHelper.getWebhook(client, channel)
     if (!webhook) {
         webhook = await channel.createWebhook({name: name});
     }
@@ -85,7 +85,7 @@ wh.getOrCreateWebhook = async function(client, channel) {
  * @param {Channel} channel - The channel the message was sent in.
  * @returns {Webhook} A webhook object.
  */
-wh.getWebhook = async function(client, channel) {
+webhookHelper.getWebhook = async function(client, channel) {
     const channelWebhooks = await channel?.fetchWebhooks() ?? [];
     if (channelWebhooks.length === 0) {
         return;
@@ -93,4 +93,4 @@ wh.getWebhook = async function(client, channel) {
     return channelWebhooks.find((webhook) => webhook.name === name);
 }
 
-export const webhookHelper = wh;
+module.exports.webhookHelper = webhookHelper;

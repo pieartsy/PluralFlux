@@ -1,6 +1,6 @@
-const helperEnums = {};
+const enums = {};
 
-helperEnums.err = {
+enums.err = {
     NO_MEMBER: "No such member was found.",
     NO_NAME_PROVIDED: "No member name was provided for",
     NO_VALUE: "has not been set for this member.",
@@ -26,7 +26,7 @@ helperEnums.err = {
     CANNOT_FETCH_RESOURCE: "Could not download the file at this time."
 }
 
-helperEnums.help = {
+enums.help = {
     SHORT_DESC_HELP: "Lists available commands.",
     SHORT_DESC_MEMBER: "Accesses subcommands related to proxy members.",
     SHORT_DESC_IMPORT: "Imports from PluralKit.",
@@ -43,11 +43,11 @@ helperEnums.help = {
     IMPORT: "Imports from PluralKit using the JSON file provided by their export command. Importing from other proxy bots is TBD. `pf;import` and attach your JSON file to the message. This will only save the fields that are present in the bot currently, not anything else like birthdays or system handles (yet?). **Only one proxy can be set per member currently.**\n\n**PRO TIP**: For privacy reasons, try DMing the bot with this command and your JSON file--it should still work the same."
 }
 
-helperEnums.misc = {
+enums.misc = {
     ATTACHMENT_SENT_BY: "Attachment sent by:",
     ATTACHMENT_EXPIRATION_WARNING: "**NOTE:** Because this profile picture is hosted on Fluxer, it will expire. To avoid this, upload the picture to another website like <https://imgbb.com/> and link to it directly.",
     FLUXER_ATTACHMENT_URL: "https://fluxerusercontent.com/attachments/"
 
 }
 
-export const enums = helperEnums;
+module.exports.enums = enums;

@@ -56,6 +56,15 @@ jest.mock("../src/commands.js", () => {
     }
 })
 
+jest.mock('../database/data-source.ts', () => {
+    return {
+        AppDataSource: {
+            isInitialized: false,
+            initialize: jest.fn().mockResolvedValue()
+        }
+    }
+})
+
 
 const {Client, Events} = require('@fluxerjs/core');
 const {messageHelper} = require("../src/helpers/messageHelper.js");

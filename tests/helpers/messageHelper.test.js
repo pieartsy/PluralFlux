@@ -2,16 +2,16 @@ const env = require('dotenv');
 env.config();
 
 
-jest.mock('../../src/helpers/memberHelper.js', () => {
+jest.mock('../../src/repositories/memberRepo.js', () => {
     return {
-        memberHelper: {
+        memberRepo: {
             getMembersByAuthor: jest.fn()
         }
     }
 })
 
-const {memberHelper} = require("../../src/helpers/memberHelper.js");
 const {messageHelper} = require("../../src/helpers/messageHelper.js");
+const {memberRepo} = require("../../src/repositories/memberRepo");
 
 describe('messageHelper', () => {
 
@@ -54,7 +54,7 @@ describe('messageHelper', () => {
         const attachmentUrl = "../oya.png"
 
         beforeEach(() => {
-            memberHelper.getMembersByAuthor = jest.fn().mockImplementation((specificAuthorId) => {
+            memberRepo.getMembersByAuthor = jest.fn().mockImplementation((specificAuthorId) => {
                 if (specificAuthorId === "1") return membersFor1;
                 if (specificAuthorId === "2") return membersFor2;
                 if (specificAuthorId === "3") return membersFor3;

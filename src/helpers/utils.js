@@ -1,8 +1,8 @@
-import {enums} from '../enums.js'
+const {enums} = require('../enums');
 
-const u = {};
+const utils = {};
 
-u.debounce = function(func, delay) {
+utils.debounce = function(func, delay) {
     let timeout = null;
     return function (...args) {
         clearTimeout(timeout);
@@ -18,7 +18,7 @@ u.debounce = function(func, delay) {
  * @returns {bool} - Whether the image is in a valid format
  * @throws {Error} When loading the profile picture from a URL doesn't work, or it fails requirements.
  */
-u.checkImageFormatValidity = async function (imageUrl) {
+utils.checkImageFormatValidity = async function (imageUrl) {
     const acceptableImages = ['image/png', 'image/jpg', 'image/jpeg', 'image/webp'];
     let response, blobFile;
     try {
@@ -41,7 +41,7 @@ u.checkImageFormatValidity = async function (imageUrl) {
  * @param {string | null} [expirationString] - An expiration date string.
  * @returns {string | null} A description of the expiration, or null.
  */
-u.setExpirationWarning = function (imgUrl = null, expirationString = null) {
+utils.setExpirationWarning = function (imgUrl = null, expirationString = null) {
     if (imgUrl && imgUrl.startsWith(enums.misc.FLUXER_ATTACHMENT_URL)) {
         return enums.misc.ATTACHMENT_EXPIRATION_WARNING;
     }
@@ -54,4 +54,4 @@ u.setExpirationWarning = function (imgUrl = null, expirationString = null) {
     return null;
 }
 
-export const utils = u;
+module.exports.utils = utils;

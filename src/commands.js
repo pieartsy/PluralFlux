@@ -1,20 +1,20 @@
-import {messageHelper} from "./helpers/messageHelper.js";
-import {enums} from "./enums.js";
-import {memberHelper} from "./helpers/memberHelper.js";
-import {EmbedBuilder} from "@fluxerjs/core";
-import {importHelper} from "./helpers/importHelper.js";
+const {messageHelper} = require("./helpers/messageHelper.js");
+const {enums} = require("./enums.js");
+const {memberHelper} = require("./helpers/memberHelper.js");
+const {EmbedBuilder} = require("@fluxerjs/core");
+const {importHelper} = require("./helpers/importHelper.js");
 
-const cmds = {
+const commands = {
     commandsMap: new Map(),
     aliasesMap: new Map()
 };
 
-cmds.aliasesMap.set('m', {command: 'member'})
+commands.aliasesMap.set('m', {command: 'member'})
 
-cmds.commandsMap.set('member', {
+commands.commandsMap.set('member', {
     description: enums.help.SHORT_DESC_MEMBER,
     async execute(message, args) {
-        await cmds.memberCommand(message, args)
+        await commands.memberCommand(message, args)
     }
 })
 
@@ -26,7 +26,7 @@ cmds.commandsMap.set('member', {
  * @param {string[]} args - The parsed arguments
  *
  **/
-cmds.memberCommand = async function (message, args) {
+commands.memberCommand = async function (message, args) {
     const authorFull = `${message.author.username}#${message.author.discriminator}`
     const attachmentUrl = message.attachments.size > 0 ? message.attachments.first().url : null;
     const attachmentExpires = message.attachments.size > 0 ? message.attachments.first().expires_at : null;
@@ -53,10 +53,10 @@ cmds.memberCommand = async function (message, args) {
 }
 
 
-cmds.commandsMap.set('help', {
+commands.commandsMap.set('help', {
     description: enums.help.SHORT_DESC_HELP,
     async execute(message) {
-        const fields = [...cmds.commandsMap.entries()].map(([name, cmd]) => ({
+        const fields = [...commands.commandsMap.entries()].map(([name, cmd]) => ({
             name: `${messageHelper.prefix}${name}`,
             value: cmd.description,
             inline: true,
@@ -73,10 +73,10 @@ cmds.commandsMap.set('help', {
     },
 })
 
-cmds.commandsMap.set('import', {
+commands.commandsMap.set('import', {
     description: enums.help.SHORT_DESC_IMPORT,
     async execute(message, args) {
-        await cmds.importCommand(message, args);
+        await commands.importCommand(message, args);
     }
 })
 
@@ -88,7 +88,7 @@ cmds.commandsMap.set('import', {
  * @param {string[]} args - The parsed arguments
  *
  **/
-cmds.importCommand = async function (message, args) {
+commands.importCommand = async function (message, args) {
     const attachmentUrl = message.attachments.size > 0 ? message.attachments.first().url : null;
     if ((message.content.includes('--help') || (args[0] === '' && args.length === 1)) && !attachmentUrl) {
         return await message.reply(enums.help.IMPORT);
@@ -119,4 +119,4 @@ cmds.importCommand = async function (message, args) {
 
 }
 
-export const commands = cmds;
+module.exports.commands = commands;

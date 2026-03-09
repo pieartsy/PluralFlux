@@ -1,7 +1,7 @@
-import {enums} from "../enums.js";
-import {memberHelper} from "./memberHelper.js";
+const {enums} = require("../enums.js");
+const {memberHelper} = require("./memberHelper.js");
 
-const ih = {};
+const importHelper = {};
 
 /**
  * Tries to import from Pluralkit.
@@ -12,7 +12,7 @@ const ih = {};
  * @returns {Promise<string>} A successful addition of all members.
  * @throws {Error}  When the member exists, or creating a member doesn't work.
  */
-ih.pluralKitImport = async function (authorId, attachmentUrl= null) {
+importHelper.pluralKitImport = async function (authorId, attachmentUrl= null) {
     let fetchResult, pkData;
     if (!attachmentUrl) {
         throw new Error(enums.err.NOT_JSON_FILE);
@@ -55,4 +55,4 @@ ih.pluralKitImport = async function (authorId, attachmentUrl= null) {
     return aggregatedText;
 }
 
-export const importHelper = ih;
+exports.importHelper = importHelper;
