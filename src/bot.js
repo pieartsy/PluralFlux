@@ -72,7 +72,7 @@ module.exports.handleMessageCreate = async function(message) {
 
 client.on(Events.Ready, () => {
     console.log(`Logged in as ${client.user?.username}`);
-    if(debug){console.log(`Currently running in debug mode!`)}
+    if(debug){console.log(Date.now() + `: Currently running in debug mode!`)}
 });
 
 let guildCount = 0;
