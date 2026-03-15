@@ -64,7 +64,7 @@ module.exports.handleMessageCreate = async function(message) {
         }
     }
     catch(error) {
-        if(debug){console.error("An error occurred at unix timestamp " + Date.now() + "while processing the command: " + command + " with error:" + error);}
+        if(debug){console.error("An error occurred at unix timestamp " + Date.now() + "while processing the command: " + message + " with error:" + error);}
         else{console.error(error);}
         process.exit(2); //need this for now just to make sure the bot continues to restart on errors, since it would seem that fluxer.js doesn't define custom error types. TODO: map out some exit codes
     }
