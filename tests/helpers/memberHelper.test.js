@@ -67,6 +67,7 @@ describe('MemberHelper', () => {
         });
 
         test.each([
+            [[mockMember.name], null, null, undefined, false, mockMember.name],
             [[mockMember.name, '--help'], null, null, undefined, true, undefined],
             [['new', '--help'], null, null, 'new', true, '--help'],
             [['remove', '--help'], null, null, 'remove', true, '--help'],
@@ -474,6 +475,40 @@ describe('MemberHelper', () => {
         })
     })
 
+    describe('removeMember', () => {
+        test('calls removeMember', async () => {
+            // Arrange
+            memberRepo.removeMember.mockResolvedValue(1);
+            // Act
+            await memberHelper.removeMember(authorId, mockMember.name);
+            // Assert
+            expect(memberRepo.removeMember).toHaveBeenCalledTimes(1);
+            expect(memberRepo.removeMember).toHaveBeenCalledWith(authorId, mockMember.name);
+        })
+
+        test('if removeMember returns a positive number, return a success message', async () => {
+            // Arrange
+            memberRepo.removeMember.mockResolvedValue(1);
+            const expectedReturn = `Member "${mockMember.name}" has been deleted.`;
+            // Act
+            const res = await memberHelper.removeMember(authorId, mockMember.name);
+            // Assert
+            expect(memberRepo.removeMember).toHaveBeenCalledTimes(1);
+            expect(memberRepo.removeMember).toHaveBeenCalledWith(authorId, mockMember.name);
+            expect(res).toEqual(expectedReturn);
+        })
+
+        test('if removeMember returns a negative number, throw error', async () => {
+            // Arrange
+            memberRepo.removeMember.mockResolvedValue(-1);
+            // Act
+            expect(memberHelper.removeMember(authorId, mockMember.name)).rejects.toThrow(new Error(`${enums.err.NO_MEMBER}`));
+            // Assert
+            expect(memberRepo.removeMember).toHaveBeenCalledTimes(1);
+            expect(memberRepo.removeMember).toHaveBeenCalledWith(authorId, mockMember.name);
+        })
+    })
+
     describe('addFullMember', () => {
         test('calls getMemberByName', async () => {
             // Arrange
@@ -502,6 +537,29 @@ describe('MemberHelper', () => {
             await expect(memberHelper.addFullMember(authorId, "       ")).rejects.toThrow(`Name ${enums.err.NO_VALUE}. ${enums.err.NAME_REQUIRED}`);
             // Assert
             expect(memberRepo.createMember).not.toHaveBeenCalled();
+        })
+
+        test('if displayName is not filled out, call memberRepo.createMember with null value', async () => {
+            // Arrange
+            memberRepo.getMemberByName.mockResolvedValue();
+            const expectedMemberArgs = {
+                name: mockMember.name,
+                userid: authorId,
+                displayname: null,
+                proxy: null,
+                propic: null
+            }
+            memberRepo.createMember = jest.fn().mockResolvedValue(expectedMemberArgs);
+            const expectedReturn = {
+                member: expectedMemberArgs,
+                errors: [`Display name ${enums.err.NO_VALUE}. ${enums.err.SET_TO_NULL}`]
+            }
+            // Act
+            const res = await memberHelper.addFullMember(authorId, mockMember.name, "     ");
+            // Assert
+            expect(res).toEqual(expectedReturn);
+            expect(memberRepo.createMember).toHaveBeenCalledWith(expectedMemberArgs);
+            expect(memberRepo.createMember).toHaveBeenCalledTimes(1);
         })
 
         test('if displayname is over 32 characters, call memberRepo.createMember with null value', async () => {
