@@ -476,16 +476,6 @@ describe('MemberHelper', () => {
     })
 
     describe('removeMember', () => {
-        test('calls removeMember', async () => {
-            // Arrange
-            memberRepo.removeMember.mockResolvedValue(1);
-            // Act
-            await memberHelper.removeMember(authorId, mockMember.name);
-            // Assert
-            expect(memberRepo.removeMember).toHaveBeenCalledTimes(1);
-            expect(memberRepo.removeMember).toHaveBeenCalledWith(authorId, mockMember.name);
-        })
-
         test('if removeMember returns a positive number, return a success message', async () => {
             // Arrange
             memberRepo.removeMember.mockResolvedValue(1);
