@@ -5,7 +5,7 @@ import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColu
 @Unique("UQ_System_shortid", ['shortid'])
 export class System {
 
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn({primaryKeyConstraintName: "PK_System"})
     id: number
 
     @Column({

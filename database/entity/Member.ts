@@ -14,14 +14,14 @@ import {System} from "./System";
 @Unique("UQ_Member_userid_name", ['userid', 'name'])
 export class Member {
 
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn({primaryKeyConstraintName: "PK_Member"})
     id: number
 
     @Column()
     userid: string
 
-    @ManyToOne(() => System, (system) => system.id, {eager: true, orphanedRowAction: "delete", cascade: true, onDelete: "SET NULL"})
-    @JoinColumn({ name: "systemid" })
+    @ManyToOne(() => System, (system) => system.id, {eager: true, orphanedRowAction: "delete", cascade: true, onDelete: "SET NULL", onUpdate: "CASCADE"})
+    @JoinColumn({ name: "systemid", foreignKeyConstraintName: "FK_Member_System"})
     system: System
 
     @Column({
