@@ -5,7 +5,7 @@ export class Update1773756156389 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`ALTER TABLE "Member" ADD "systemid" integer`);
-        await queryRunner.query(`ALTER TABLE "Member" ADD CONSTRAINT "FK_Member_System" FOREIGN KEY ("systemid") REFERENCES "System"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "Member" ADD CONSTRAINT "FK_Member_System" FOREIGN KEY ("systemid") REFERENCES "System"("id") ON DELETE SET NULL ON UPDATE CASCADE`);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {

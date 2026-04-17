@@ -20,7 +20,7 @@ export class Member {
     @Column()
     userid: string
 
-    @ManyToOne(() => System, (system) => system.id, {eager: true, orphanedRowAction: "delete"})
+    @ManyToOne(() => System, (system) => system.id, {eager: true, orphanedRowAction: "delete", cascade: true, onDelete: "SET NULL"})
     @JoinColumn({ name: "systemid" })
     system: System
 
