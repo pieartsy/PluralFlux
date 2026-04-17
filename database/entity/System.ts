@@ -8,12 +8,6 @@ export class System {
     @PrimaryGeneratedColumn({primaryKeyConstraintName: "PK_System"})
     id: number
 
-    @Column({
-        length: 10,
-        nullable: true,
-    })
-    shortid: string
-
     @Column()
     userid: string
 
