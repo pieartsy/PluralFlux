@@ -9,6 +9,7 @@ export class System {
     id: number
 
     @Column({
+        length: 10,
         nullable: true,
     })
     shortid: string
