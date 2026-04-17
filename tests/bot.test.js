@@ -293,6 +293,21 @@ describe('bot', () => {
         expect(client.login).toHaveBeenCalledWith(process.env.FLUXER_BOT_TOKEN)
     })
 
+    test('login exits with code 1 if client.login fails', async () => {
+        // Arrange
+        let message = "client.login failed";
+        client.login = jest.fn().mockImplementation(() => { throw new Error(message) });
+        jest.spyOn(global.console, 'error').mockImplementation(() => {});
+        jest.spyOn(process, 'exit').mockImplementation(() => {});
+        // Act
+        await login();
+        // Assert
+        expect(console.error).toHaveBeenCalledTimes(1);
+        expect(console.error).toHaveBeenCalledWith('Login failed:', new Error(message));
+        expect(process.exit).toHaveBeenCalledTimes(1);
+        expect(process.exit).toHaveBeenCalledWith(1);
+    })
+
     afterEach(() => {
         // restore the spy created with spyOn
         jest.restoreAllMocks();
