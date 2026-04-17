@@ -1,14 +1,28 @@
-import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Unique} from "typeorm"
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    CreateDateColumn,
+    UpdateDateColumn,
+    Unique,
+    ManyToOne,
+    JoinColumn
+} from "typeorm"
+import {System} from "./System";
 
 @Entity({name: "Member", synchronize: true})
 @Unique("UQ_Member_userid_name", ['userid', 'name'])
 export class Member {
 
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn({primaryKeyConstraintName: "PK_Member"})
     id: number
 
     @Column()
     userid: string
+
+    @ManyToOne(() => System, (system) => system.id, {eager: true, orphanedRowAction: "delete", cascade: true, onDelete: "SET NULL", onUpdate: "CASCADE"})
+    @JoinColumn({ name: "systemid", foreignKeyConstraintName: "FK_Member_System"})
+    system: System
 
     @Column({
         length: 100

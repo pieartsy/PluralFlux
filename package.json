@@ -36,7 +36,8 @@
     "test": "jest",
     "start": "ts-node src/bot.js",
     "new-migration": "typeorm-ts-node-commonjs migration:create database/migrations/update",
-    "generate-db": "typeorm-ts-node-commonjs migration:generate -d database/data-source.ts database/migrations/update",
+    "revert-migration": "typeorm-ts-node-commonjs migration:revert -d database/data-source.ts",
+    "generate-migration": "typeorm-ts-node-commonjs migration:generate -d database/data-source.ts database/migrations/update",
     "run-migration": "typeorm-ts-node-commonjs migration:run -d database/data-source.ts"
   }
 }
