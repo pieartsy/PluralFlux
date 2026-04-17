@@ -1,4 +1,14 @@
-import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Unique} from "typeorm"
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    CreateDateColumn,
+    UpdateDateColumn,
+    Unique,
+    ManyToOne,
+    JoinColumn
+} from "typeorm"
+import {System} from "./System";
 
 @Entity({name: "Member", synchronize: true})
 @Unique("UQ_Member_userid_name", ['userid', 'name'])
@@ -9,6 +19,10 @@ export class Member {
 
     @Column()
     userid: string
+
+    @ManyToOne(() => System, (system) => system.id, {eager: true, orphanedRowAction: "delete"})
+    @JoinColumn({ name: "systemid" })
+    system: System
 
     @Column({
         length: 100
