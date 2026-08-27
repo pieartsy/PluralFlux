@@ -1,4 +1,4 @@
-# PluralFlux
+# PluralFlux (ARCHIVED, NOT MAINTAINED)
 PluralFlux is a proxybot akin to PluralKit and Tupperbox, but for [Fluxer](https://fluxer.app/). It is written with the [Fluxer.js](https://fluxerjs.blstmo.com/) library.
 
 [Invite it to your server](https://web.fluxer.app/oauth2/authorize?client_id=1471588659706540815&scope=bot&permissions=4503600164498496).
